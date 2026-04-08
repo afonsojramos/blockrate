@@ -98,6 +98,44 @@ export const POST = createBlockRateHandler({
 });
 ```
 
+## Self-hosted server
+
+If you don't want to build ingestion yourself, run `block-rate-server` — a batteries-included Bun server with SQLite storage, validation, rate limiting, multi-tenant API keys, and a one-page dashboard.
+
+```bash
+bunx block-rate-server
+# [block-rate-server] listening on http://localhost:4318
+# [block-rate-server] Bootstrapped default tenant. API key: br_xxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+Point your client at it with `serverReporter`:
+
+```ts
+import { BlockRate, serverReporter } from "block-rate";
+
+new BlockRate({
+  providers: ["optimizely", "posthog", "ga4"],
+  service: "web-app",
+  reporter: serverReporter({
+    endpoint: "https://br.example.com",
+    apiKey: process.env.NEXT_PUBLIC_BLOCK_RATE_KEY!,
+  }),
+}).check();
+```
+
+Then open `http://localhost:4318/dashboard`, paste the API key, and you'll see per-provider block rates for every service reporting into that tenant.
+
+**One server can serve many services.** The `service` field on each payload is stored per-row, so one organization can run a single `block-rate-server` for its entire fleet (web, mobile-web, admin, marketing site, etc.) and filter the dashboard by service.
+
+**Environment variables:**
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `PORT` | `4318` | HTTP port |
+| `DB_PATH` | `./block-rate.db` | SQLite file path |
+| `BLOCK_RATE_BOOTSTRAP_KEY` | random | Pin the bootstrap tenant's API key |
+| `BLOCK_RATE_BOOTSTRAP_NAME` | `default` | Name of the bootstrap tenant |
+
 ## Querying your data
 
 Once you're collecting `BlockRateResult` payloads, the question you actually want answered is: **for each provider, what fraction of sessions had it blocked?**
