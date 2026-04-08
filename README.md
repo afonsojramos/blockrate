@@ -2,6 +2,8 @@
 
 Know what your ad blockers are hiding from your analytics. A tiny, zero-dependency library that measures the **per-provider** block rate of the third-party tools your app depends on.
 
+> **Hosted version (in development):** [blockrate.app](https://blockrate.app) — sign up, get an API key, drop it into your app, see per-provider block rates without running any infrastructure. See [`docs/plans/2026-04-08-feat-blockrate-app-web-scaffold-plan.md`](docs/plans/2026-04-08-feat-blockrate-app-web-scaffold-plan.md) and [`docs/design.md`](docs/design.md). **Self-hostable:** see [`packages/server`](packages/server).
+
 ## Why
 
 You're running experiments, but 20% of your users are invisible — blocked by uBlock Origin, Brave, Pi-hole, corporate firewalls. Existing "ad block detectors" only tell you _a_ blocker exists. `block-rate` tells you **which specific tools are blocked**, so you can decide whether to reverse-proxy Optimizely, migrate PostHog server-side, or just accept the gap.
