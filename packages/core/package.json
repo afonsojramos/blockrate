@@ -1,0 +1,23 @@
+{
+  "name": "block-rate",
+  "version": "0.1.0",
+  "description": "Measure the actual block rate of third-party services caused by ad blockers and privacy tools.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist", "src"],
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --target browser --format esm && bun build ./src/index.ts --outdir ./dist --target browser --format cjs --outfile index.cjs",
+    "test": "bun test"
+  },
+  "keywords": ["ad-block", "analytics", "block-rate", "privacy"],
+  "license": "MIT"
+}
