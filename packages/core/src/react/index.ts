@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import { BlockRate, type BlockRateOptions } from "block-rate";
+import { BlockRate } from "../index";
+import type { BlockRateOptions } from "../types";
 
 export function useBlockRate(options: BlockRateOptions): void {
   const ranRef = useRef(false);
@@ -11,7 +12,7 @@ export function useBlockRate(options: BlockRateOptions): void {
 
     const br = new BlockRate(options);
     br.check().catch(() => {});
-    // Options are intentionally captured on mount; this hook runs once per session.
+    // Intentionally runs once on mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 }
