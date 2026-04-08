@@ -1,0 +1,28 @@
+{
+  "name": "block-rate-server",
+  "version": "0.1.0",
+  "description": "Self-hostable ingestion server and dashboard for block-rate.",
+  "type": "module",
+  "bin": {
+    "block-rate-server": "./src/cli.ts"
+  },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": ["src", "drizzle"],
+  "scripts": {
+    "dev": "bun run src/cli.ts",
+    "db:generate": "drizzle-kit generate",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.36.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.28.0"
+  },
+  "license": "MIT"
+}
