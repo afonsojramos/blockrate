@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "bun:test";
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from "bun:test";
 import {
   hasCheckedThisSession,
   markChecked,
@@ -6,17 +6,24 @@ import {
 } from "../src/session";
 
 const storage: Record<string, string> = {};
-(globalThis as any).sessionStorage = {
-  getItem: (k: string) => storage[k] ?? null,
-  setItem: (k: string, v: string) => {
-    storage[k] = v;
-  },
-  removeItem: (k: string) => {
-    delete storage[k];
-  },
-};
 
 describe("session", () => {
+  beforeAll(() => {
+    (globalThis as any).sessionStorage = {
+      getItem: (k: string) => storage[k] ?? null,
+      setItem: (k: string, v: string) => {
+        storage[k] = v;
+      },
+      removeItem: (k: string) => {
+        delete storage[k];
+      },
+    };
+  });
+
+  afterAll(() => {
+    delete (globalThis as any).sessionStorage;
+  });
+
   beforeEach(() => {
     for (const k of Object.keys(storage)) delete storage[k];
   });

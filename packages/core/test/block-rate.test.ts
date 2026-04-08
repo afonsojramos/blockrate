@@ -1,21 +1,31 @@
-import { describe, it, expect, beforeEach } from "bun:test";
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from "bun:test";
 import { BlockRate, createProvider } from "../src/index";
 
 const storage: Record<string, string> = {};
-(globalThis as any).sessionStorage = {
-  getItem: (k: string) => storage[k] ?? null,
-  setItem: (k: string, v: string) => {
-    storage[k] = v;
-  },
-  removeItem: (k: string) => {
-    delete storage[k];
-  },
-};
-(globalThis as any).window = {};
-(globalThis as any).location = { pathname: "/test" };
-(globalThis as any).navigator = { userAgent: "test-ua" };
 
 describe("BlockRate", () => {
+  beforeAll(() => {
+    (globalThis as any).sessionStorage = {
+      getItem: (k: string) => storage[k] ?? null,
+      setItem: (k: string, v: string) => {
+        storage[k] = v;
+      },
+      removeItem: (k: string) => {
+        delete storage[k];
+      },
+    };
+    (globalThis as any).window = {};
+    (globalThis as any).location = { pathname: "/test" };
+    (globalThis as any).navigator = { userAgent: "test-ua" };
+  });
+
+  afterAll(() => {
+    delete (globalThis as any).sessionStorage;
+    delete (globalThis as any).window;
+    delete (globalThis as any).location;
+    delete (globalThis as any).navigator;
+  });
+
   beforeEach(() => {
     for (const k of Object.keys(storage)) delete storage[k];
   });
