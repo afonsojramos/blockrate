@@ -1,15 +1,17 @@
 #!/usr/bin/env bun
 import { createServer } from "./server";
-import { createDb } from "./db";
+import { createStore } from "./stores";
 import {
   createTenant,
   listTenants,
   deleteTenant,
   rotateTenantKey,
 } from "./tenant";
+import type { Dialect } from "./store";
 
 const dbPath = process.env.DB_PATH || "./block-rate.db";
 const port = Number(process.env.PORT) || 4318;
+const dialect: Dialect = (process.env.DB_DIALECT as Dialect) || "sqlite";
 
 const [cmd, sub, ...rest] = process.argv.slice(2);
 
@@ -27,7 +29,9 @@ Usage:
 
 Environment:
   PORT                       HTTP port (default 4318)
-  DB_PATH                    SQLite file path (default ./block-rate.db)
+  DB_DIALECT                 sqlite | postgres (default sqlite)
+  DB_PATH                    SQLite file path or Postgres connection URL
+                             (default ./block-rate.db)
   BLOCK_RATE_BOOTSTRAP_KEY   Pin the bootstrap tenant's API key
   BLOCK_RATE_BOOTSTRAP_NAME  Name of the bootstrap tenant (default "default")
 `;
@@ -36,7 +40,7 @@ Environment:
 }
 
 if (cmd === "tenant") {
-  const db = createDb(dbPath);
+  const store = await createStore({ dialect, url: dbPath });
   switch (sub) {
     case "create": {
       const name = rest[0];
@@ -45,7 +49,7 @@ if (cmd === "tenant") {
         usage(1);
       }
       try {
-        const tenant = createTenant(db, name);
+        const tenant = await createTenant(store, name);
         console.log(`Created tenant "${tenant.name}"`);
         console.log(`API key: ${tenant.apiKey}`);
         console.log("Store this securely — it will not be shown again.");
@@ -56,13 +60,12 @@ if (cmd === "tenant") {
       break;
     }
     case "list": {
-      const rows = listTenants(db);
+      const rows = await listTenants(store);
       if (rows.length === 0) {
         console.log("(no tenants)");
       } else {
         for (const t of rows) {
-          const masked =
-            t.apiKey.slice(0, 6) + "…" + t.apiKey.slice(-4);
+          const masked = t.apiKey.slice(0, 6) + "…" + t.apiKey.slice(-4);
           console.log(`${t.id}\t${t.name}\t${masked}`);
         }
       }
@@ -74,7 +77,7 @@ if (cmd === "tenant") {
         console.error("error: tenant name is required");
         usage(1);
       }
-      const ok = deleteTenant(db, name);
+      const ok = await deleteTenant(store, name);
       if (!ok) {
         console.error(`tenant "${name}" not found`);
         process.exit(1);
@@ -88,7 +91,7 @@ if (cmd === "tenant") {
         console.error("error: tenant name is required");
         usage(1);
       }
-      const key = rotateTenantKey(db, name);
+      const key = await rotateTenantKey(store, name);
       if (!key) {
         console.error(`tenant "${name}" not found`);
         process.exit(1);
@@ -100,6 +103,7 @@ if (cmd === "tenant") {
     default:
       usage(1);
   }
+  store.close();
   process.exit(0);
 }
 
@@ -112,9 +116,11 @@ if (cmd && cmd !== "serve") {
   usage(1);
 }
 
-const app = createServer({ port, dbPath });
+const app = await createServer({ port, dbPath, dialect });
 
 Bun.serve({ port, fetch: app.fetch });
 
-console.log(`[block-rate-server] listening on http://localhost:${port}`);
+console.log(
+  `[block-rate-server] listening on http://localhost:${port} (${dialect})`
+);
 console.log(`[block-rate-server] dashboard: http://localhost:${port}/dashboard`);

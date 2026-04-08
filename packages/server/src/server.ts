@@ -1,40 +1,51 @@
-import { createDb, type DB } from "./db";
+import { createStore } from "./stores";
 import { authenticate, handleIngest, handleStats, json } from "./handlers";
 import { TokenBucketLimiter } from "./rate-limit";
 import { dashboardHtml } from "./dashboard";
-import { tenants } from "./schema";
-import { randomBytes } from "node:crypto";
+import { generateApiKey } from "./tenant";
+import type { BlockRateStore, Dialect } from "./store";
 
 export interface ServerOptions {
   port?: number;
+  /** SQLite file path or Postgres connection string. */
   dbPath?: string;
+  /** Storage backend. Default "sqlite". */
+  dialect?: Dialect;
   /** Requests/second per api key. Default 10. */
   rateLimit?: number;
   /** Burst capacity per api key. Default 60. */
   rateLimitBurst?: number;
   /** CORS allowed origin. Default "*". */
   corsOrigin?: string;
+  /** Inject a pre-built store (e.g. for tests). */
+  store?: BlockRateStore;
 }
 
 const CORS_HEADERS = (origin: string) => ({
   "Access-Control-Allow-Origin": origin,
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-  "Access-Control-Allow-Headers": "content-type, x-block-rate-key, authorization",
+  "Access-Control-Allow-Headers":
+    "content-type, x-block-rate-key, authorization",
   "Access-Control-Max-Age": "86400",
 });
 
-export function createServer(options: ServerOptions = {}) {
-  const db = createDb(options.dbPath);
+export async function createServer(options: ServerOptions = {}) {
+  const store =
+    options.store ??
+    (await createStore({
+      dialect: options.dialect,
+      url: options.dbPath,
+    }));
   const corsOrigin = options.corsOrigin ?? "*";
   const limiter = new TokenBucketLimiter(
     options.rateLimitBurst ?? 60,
     options.rateLimit ?? 10
   );
 
-  ensureBootstrapTenant(db);
+  await ensureBootstrapTenant(store);
 
   return {
-    db,
+    store,
     async fetch(request: Request): Promise<Response> {
       const url = new URL(request.url);
       const cors = CORS_HEADERS(corsOrigin);
@@ -63,7 +74,7 @@ export function createServer(options: ServerOptions = {}) {
         return withCors(json({ error: "not found" }, 404));
       }
 
-      const tenant = await authenticate(db, request);
+      const tenant = await authenticate(store, request);
       if (!tenant) {
         return withCors(json({ error: "unauthorized" }, 401));
       }
@@ -73,10 +84,10 @@ export function createServer(options: ServerOptions = {}) {
       }
 
       if (url.pathname === "/ingest" && request.method === "POST") {
-        return withCors(await handleIngest(db, request, tenant));
+        return withCors(await handleIngest(store, request, tenant));
       }
       if (url.pathname === "/stats" && request.method === "GET") {
-        return withCors(await handleStats(db, request, tenant));
+        return withCors(await handleStats(store, request, tenant));
       }
 
       return withCors(json({ error: "method not allowed" }, 405));
@@ -84,18 +95,14 @@ export function createServer(options: ServerOptions = {}) {
   };
 }
 
-function ensureBootstrapTenant(db: DB) {
-  const existing = db.select().from(tenants).limit(1).all();
+async function ensureBootstrapTenant(store: BlockRateStore): Promise<void> {
+  const existing = await store.listTenants();
   if (existing.length > 0) return;
-  const apiKey =
-    process.env.BLOCK_RATE_BOOTSTRAP_KEY ||
-    "br_" + randomBytes(24).toString("hex");
-  db.insert(tenants)
-    .values({
-      name: process.env.BLOCK_RATE_BOOTSTRAP_NAME || "default",
-      apiKey,
-    })
-    .run();
+  const apiKey = process.env.BLOCK_RATE_BOOTSTRAP_KEY || generateApiKey();
+  await store.createTenant({
+    name: process.env.BLOCK_RATE_BOOTSTRAP_NAME || "default",
+    apiKey,
+  });
   console.log(
     `[block-rate-server] Bootstrapped default tenant. API key: ${apiKey}`
   );

@@ -1,53 +1,40 @@
 import { randomBytes } from "node:crypto";
-import { eq } from "drizzle-orm";
-import type { DB } from "./db";
-import { tenants, events } from "./schema";
+import type { BlockRateStore, StoredTenant } from "./store";
 
 export function generateApiKey(): string {
   return "br_" + randomBytes(24).toString("hex");
 }
 
-export function createTenant(
-  db: DB,
+export async function createTenant(
+  store: BlockRateStore,
   name: string,
   apiKey: string = generateApiKey()
-) {
-  const existing = db
-    .select()
-    .from(tenants)
-    .where(eq(tenants.name, name))
-    .get();
+): Promise<StoredTenant> {
+  const existing = await store.findTenantByName(name);
   if (existing) {
     throw new Error(`Tenant "${name}" already exists`);
   }
-  db.insert(tenants).values({ name, apiKey }).run();
-  return db.select().from(tenants).where(eq(tenants.apiKey, apiKey)).get()!;
+  return store.createTenant({ name, apiKey });
 }
 
-export function listTenants(db: DB) {
-  return db.select().from(tenants).all();
+export async function listTenants(store: BlockRateStore): Promise<StoredTenant[]> {
+  return store.listTenants();
 }
 
-export function deleteTenant(db: DB, name: string): boolean {
-  const row = db
-    .select()
-    .from(tenants)
-    .where(eq(tenants.name, name))
-    .get();
-  if (!row) return false;
-  db.delete(events).where(eq(events.tenantId, row.id)).run();
-  db.delete(tenants).where(eq(tenants.id, row.id)).run();
-  return true;
+export async function deleteTenant(
+  store: BlockRateStore,
+  name: string
+): Promise<boolean> {
+  return store.deleteTenant(name);
 }
 
-export function rotateTenantKey(db: DB, name: string): string | null {
-  const row = db
-    .select()
-    .from(tenants)
-    .where(eq(tenants.name, name))
-    .get();
-  if (!row) return null;
+export async function rotateTenantKey(
+  store: BlockRateStore,
+  name: string
+): Promise<string | null> {
+  const existing = await store.findTenantByName(name);
+  if (!existing) return null;
   const newKey = generateApiKey();
-  db.update(tenants).set({ apiKey: newKey }).where(eq(tenants.id, row.id)).run();
+  await store.updateTenantApiKey(name, newKey);
   return newKey;
 }
