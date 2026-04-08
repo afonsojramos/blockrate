@@ -16,3 +16,13 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun test
       - run: cd packages/core && bun run build
+
+  web-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: cd apps/web && bun run build
