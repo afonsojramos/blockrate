@@ -15,6 +15,7 @@ export interface BlockRateResult {
   timestamp: string;
   url: string;
   userAgent: string;
+  service?: string;
   providers: ProviderResult[];
 }
 
@@ -23,6 +24,7 @@ export type Reporter = (result: BlockRateResult) => void;
 export interface BlockRateOptions {
   providers: (string | Provider)[];
   reporter: Reporter;
+  service?: string;
   sampleRate?: number;
   delay?: number;
   sessionKey?: string;

@@ -8,7 +8,8 @@ import type {
 } from "./types";
 
 export * from "./types";
-export { beaconReporter } from "./reporter";
+export { beaconReporter, serverReporter } from "./reporter";
+export type { ServerReporterOptions } from "./reporter";
 export { probe } from "./probe";
 export {
   builtInProviders,
@@ -34,6 +35,7 @@ export class BlockRate {
   private sampleRate: number;
   private delay: number;
   private sessionKey: string;
+  private service: string | undefined;
 
   constructor(options: BlockRateOptions) {
     this.providers = options.providers
@@ -43,6 +45,7 @@ export class BlockRate {
     this.sampleRate = options.sampleRate ?? 1;
     this.delay = options.delay ?? 3000;
     this.sessionKey = options.sessionKey ?? "__block_rate";
+    this.service = options.service;
   }
 
   async check(): Promise<BlockRateResult | null> {
@@ -74,6 +77,7 @@ export class BlockRate {
       url: typeof location !== "undefined" ? location.pathname : "",
       userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
       providers: providerResults,
+      ...(this.service ? { service: this.service } : {}),
     };
 
     try {
