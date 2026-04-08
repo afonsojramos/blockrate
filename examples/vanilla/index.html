@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>block-rate vanilla example</title>
+  </head>
+  <body>
+    <h1>block-rate</h1>
+    <p>Open devtools to see the result.</p>
+    <pre id="out">Running...</pre>
+    <script type="module">
+      import { BlockRate } from "../../packages/core/src/index.ts";
+
+      const br = new BlockRate({
+        providers: ["optimizely", "posthog", "ga4"],
+        delay: 1000,
+        reporter: (result) => {
+          document.getElementById("out").textContent = JSON.stringify(
+            result,
+            null,
+            2
+          );
+          console.log("block-rate result", result);
+        },
+      });
+
+      br.check();
+    </script>
+  </body>
+</html>
