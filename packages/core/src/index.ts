@@ -10,7 +10,19 @@ import type {
 export * from "./types";
 export { beaconReporter } from "./reporter";
 export { probe } from "./probe";
-export { builtInProviders, optimizely, posthog, ga4 } from "./providers";
+export {
+  builtInProviders,
+  optimizely,
+  posthog,
+  ga4,
+  gtm,
+  segment,
+  hotjar,
+  amplitude,
+  mixpanel,
+  metaPixel,
+  intercom,
+} from "./providers";
 
 export function createProvider(provider: Provider): Provider {
   return provider;
