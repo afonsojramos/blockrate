@@ -11,12 +11,26 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.js"
+    },
+    "./next": {
+      "types": "./dist/next/index.d.ts",
+      "import": "./dist/next/index.js"
     }
   },
   "files": ["dist", "src"],
   "scripts": {
-    "build": "bun build ./src/index.ts --outdir ./dist --target browser --format esm && bun build ./src/index.ts --outdir ./dist --target browser --format cjs --outfile index.cjs",
+    "build": "bun build ./src/index.ts --outdir ./dist --target browser --format esm --minify && bun build ./src/index.ts --outdir ./dist --target browser --format cjs --outfile index.cjs --minify && bun build ./src/react/index.ts --outdir ./dist/react --target browser --format esm --external react --minify && bun build ./src/next/index.ts --outdir ./dist/next --target browser --format esm --external react --minify",
     "test": "bun test"
+  },
+  "peerDependencies": {
+    "react": ">=17"
+  },
+  "peerDependenciesMeta": {
+    "react": { "optional": true }
   },
   "keywords": ["ad-block", "analytics", "block-rate", "privacy"],
   "license": "MIT"
