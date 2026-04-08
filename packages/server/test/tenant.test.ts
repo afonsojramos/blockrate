@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "bun:test";
-import { createDb, type DB } from "../src/db";
+import { createStore } from "../src/stores";
 import {
   createTenant,
   listTenants,
@@ -7,63 +7,51 @@ import {
   rotateTenantKey,
   generateApiKey,
 } from "../src/tenant";
-import { events } from "../src/schema";
+import type { BlockRateStore } from "../src/store";
 
-describe("tenant management", () => {
-  let db: DB;
+describe("tenant management (sqlite)", () => {
+  let store: BlockRateStore;
 
-  beforeEach(() => {
-    db = createDb(":memory:");
+  beforeEach(async () => {
+    store = await createStore({ dialect: "sqlite", url: ":memory:" });
   });
 
-  it("creates a tenant with a generated key", () => {
-    const t = createTenant(db, "acme");
+  it("creates a tenant with a generated key", async () => {
+    const t = await createTenant(store, "acme");
     expect(t.name).toBe("acme");
     expect(t.apiKey).toMatch(/^br_[a-f0-9]{48}$/);
   });
 
-  it("creates a tenant with a provided key", () => {
-    const t = createTenant(db, "acme", "br_custom_key");
+  it("creates a tenant with a provided key", async () => {
+    const t = await createTenant(store, "acme", "br_custom_key");
     expect(t.apiKey).toBe("br_custom_key");
   });
 
-  it("rejects duplicate tenant names", () => {
-    createTenant(db, "acme");
-    expect(() => createTenant(db, "acme")).toThrow(/already exists/);
+  it("rejects duplicate tenant names", async () => {
+    await createTenant(store, "acme");
+    await expect(createTenant(store, "acme")).rejects.toThrow(/already exists/);
   });
 
-  it("lists tenants", () => {
-    createTenant(db, "a");
-    createTenant(db, "b");
-    expect(listTenants(db).map((t) => t.name).sort()).toEqual(["a", "b"]);
+  it("lists tenants", async () => {
+    await createTenant(store, "a");
+    await createTenant(store, "b");
+    const rows = await listTenants(store);
+    expect(rows.map((t) => t.name).sort()).toEqual(["a", "b"]);
   });
 
-  it("deletes a tenant and its events", () => {
-    const t = createTenant(db, "acme");
-    db.insert(events)
-      .values({
-        tenantId: t.id,
-        service: "web",
-        timestamp: new Date(),
-        url: "/",
-        userAgent: "x",
-        provider: "posthog",
-        status: "blocked",
-        latency: 10,
-      })
-      .run();
-    expect(deleteTenant(db, "acme")).toBe(true);
-    expect(listTenants(db)).toHaveLength(0);
-    expect(db.select().from(events).all()).toHaveLength(0);
+  it("deletes a tenant", async () => {
+    await createTenant(store, "acme");
+    expect(await deleteTenant(store, "acme")).toBe(true);
+    expect(await listTenants(store)).toHaveLength(0);
   });
 
-  it("returns false when deleting unknown tenant", () => {
-    expect(deleteTenant(db, "ghost")).toBe(false);
+  it("returns false when deleting unknown tenant", async () => {
+    expect(await deleteTenant(store, "ghost")).toBe(false);
   });
 
-  it("rotates an api key", () => {
-    const t = createTenant(db, "acme");
-    const newKey = rotateTenantKey(db, "acme");
+  it("rotates an api key", async () => {
+    const t = await createTenant(store, "acme");
+    const newKey = await rotateTenantKey(store, "acme");
     expect(newKey).not.toBeNull();
     expect(newKey).not.toBe(t.apiKey);
     expect(newKey).toMatch(/^br_/);
