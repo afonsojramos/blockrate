@@ -6,3 +6,10 @@ export { tenants, events } from "./schema";
 export type { Tenant, Event, NewEvent } from "./schema";
 export { blockRatePayloadSchema } from "./validate";
 export type { BlockRatePayload } from "./validate";
+export {
+  createTenant,
+  listTenants,
+  deleteTenant,
+  rotateTenantKey,
+  generateApiKey,
+} from "./tenant";
