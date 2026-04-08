@@ -127,6 +127,15 @@ Then open `http://localhost:4318/dashboard`, paste the API key, and you'll see p
 
 **One server can serve many services.** The `service` field on each payload is stored per-row, so one organization can run a single `block-rate-server` for its entire fleet (web, mobile-web, admin, marketing site, etc.) and filter the dashboard by service.
 
+**Managing tenants:**
+
+```bash
+block-rate-server tenant create web-app    # prints a new API key
+block-rate-server tenant list
+block-rate-server tenant rotate web-app    # rotates the key
+block-rate-server tenant delete web-app    # deletes tenant + all events
+```
+
 **Environment variables:**
 
 | Variable | Default | Description |
