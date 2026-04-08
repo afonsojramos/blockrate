@@ -28,7 +28,7 @@ br.check();
 
 ## Built-in providers
 
-`optimizely`, `posthog`, `ga4` (v0.1.0). Each provider is checked first via a `window` global, then via a `HEAD` probe to its CDN.
+`optimizely`, `posthog`, `ga4`, `gtm`, `segment`, `hotjar`, `amplitude`, `mixpanel`, `meta-pixel`, `intercom`. Each provider is checked first via a `window` global, then via a `HEAD` probe to its CDN.
 
 ## Custom providers
 
@@ -56,7 +56,7 @@ new BlockRate({ providers: [mine], reporter: console.log }).check();
 ## React
 
 ```tsx
-import { useBlockRate } from "block-rate-react";
+import { useBlockRate } from "block-rate/react";
 
 useBlockRate({
   providers: ["optimizely", "posthog"],
@@ -64,6 +64,75 @@ useBlockRate({
     fetch("/api/block-rate", { method: "POST", body: JSON.stringify(r) }),
 });
 ```
+
+## Next.js
+
+```tsx
+// app/layout.tsx
+import { BlockRateScript } from "block-rate/next";
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        {children}
+        <BlockRateScript
+          providers={["optimizely", "posthog", "ga4"]}
+          endpoint="/api/block-rate"
+          sampleRate={0.1}
+        />
+      </body>
+    </html>
+  );
+}
+```
+
+```ts
+// app/api/block-rate/route.ts
+import { createBlockRateHandler } from "block-rate/next";
+
+export const POST = createBlockRateHandler({
+  onResult: async (result) => {
+    console.log(JSON.stringify({ event: "block_rate_check", ...result }));
+  },
+});
+```
+
+## Querying your data
+
+Once you're collecting `BlockRateResult` payloads, the question you actually want answered is: **for each provider, what fraction of sessions had it blocked?**
+
+### SQL
+
+Assuming you've flattened each provider into its own row (`session_id`, `provider`, `status`):
+
+```sql
+SELECT
+  provider,
+  COUNT(*) FILTER (WHERE status = 'blocked')::float / COUNT(*) AS block_rate,
+  COUNT(*) AS sessions
+FROM block_rate_events
+WHERE timestamp > now() - interval '7 days'
+GROUP BY provider
+ORDER BY block_rate DESC;
+```
+
+### PostHog
+
+```sql
+SELECT
+  properties.provider AS provider,
+  countIf(properties.status = 'blocked') / count() AS block_rate
+FROM events
+WHERE event = 'block_rate_check'
+  AND timestamp > now() - INTERVAL 7 DAY
+GROUP BY provider
+ORDER BY block_rate DESC
+```
+
+### Amplitude
+
+Create a custom event `block_rate_check` and chart `unique sessions` segmented by `provider` where `status = blocked`, divided by total sessions.
 
 ## How it works
 
