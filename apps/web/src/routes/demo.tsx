@@ -110,11 +110,35 @@ function Demo() {
 
       {done && blocked > 0 && (
         <div className="mt-8 rounded-lg border border-rate-high/30 bg-rate-high/5 p-6">
-          <p className="text-lg font-semibold">
-            <span className="tabular-nums">{blocked}</span> of {total}{" "}
-            providers are blocked in your browser.
-          </p>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <div className="flex items-baseline gap-3">
+            <span
+              className="text-5xl font-bold tabular-nums"
+              style={{
+                color:
+                  blocked > 5
+                    ? "var(--rate-high)"
+                    : blocked > 2
+                      ? "var(--rate-mid)"
+                      : "var(--rate-low)",
+              }}
+            >
+              {blocked}
+            </span>
+            <span className="text-base text-muted-foreground">
+              of {total} providers are blocked in your browser.
+            </span>
+          </div>
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full transition-[width] duration-300 ease-out"
+              style={{
+                width: `${(blocked / total) * 100}%`,
+                background:
+                  "linear-gradient(90deg, var(--rate-low), var(--rate-mid), var(--rate-high))",
+              }}
+            />
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">
             If your app depends on any of these tools, {blocked > 1 ? "those" : "that"}{" "}
             {blocked > 1 ? "services are" : "service is"} invisible for a
             fraction of your users. blockrate.app measures exactly how large
@@ -125,10 +149,21 @@ function Demo() {
 
       {done && blocked === 0 && (
         <div className="mt-8 rounded-lg border border-rate-low/30 bg-rate-low/5 p-6">
-          <p className="text-lg font-semibold">
-            All {total} providers are reachable from your browser.
-          </p>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <div className="flex items-baseline gap-3">
+            <span
+              className="text-5xl font-bold tabular-nums"
+              style={{ color: "var(--rate-low)" }}
+            >
+              0
+            </span>
+            <span className="text-base text-muted-foreground">
+              providers blocked — your browser lets everything through.
+            </span>
+          </div>
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+            <div className="h-full w-0 rounded-full" />
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">
             You're not running an ad blocker (or it doesn't target these
             tools). But many of your users are — blockrate.app tells you
             exactly how many per provider.
@@ -164,10 +199,15 @@ function Demo() {
         </CardHeader>
         <CardContent>
           <div className="divide-y divide-border">
-            {results.map((r) => (
+            {results.map((r, i) => (
               <div
                 key={r.name}
-                className="flex items-center justify-between py-3"
+                className={`flex items-center justify-between py-3 transition-[opacity,transform] duration-150 ease-out ${
+                  done
+                    ? "translate-y-0 opacity-100"
+                    : "translate-y-2 opacity-0"
+                }`}
+                style={{ transitionDelay: `${i * 50}ms` }}
               >
                 <span className="font-medium">{r.name}</span>
                 <div className="flex items-center gap-3">
@@ -184,13 +224,13 @@ function Demo() {
                           ? "default"
                           : "secondary"
                     }
-                    className={
+                    className={`transition-[background-color,color] duration-150 ease-out ${
                       r.status === "loaded"
                         ? "bg-rate-low/15 text-rate-low hover:bg-rate-low/20"
                         : r.status === "checking"
                           ? "animate-pulse"
                           : ""
-                    }
+                    }`}
                   >
                     {r.status}
                   </Badge>
