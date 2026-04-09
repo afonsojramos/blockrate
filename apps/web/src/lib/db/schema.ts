@@ -30,6 +30,7 @@ import {
   text,
   timestamp,
   index,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 import { user } from "./auth-schema";
@@ -130,9 +131,35 @@ export const usageCounters = pgTable(
   })
 );
 
+// ─── Daily provider stats (rollup for hero chart) ───────────────────────
+
+/**
+ * Global aggregate of per-provider block rates by calendar day. Populated
+ * by the retention cron BEFORE deleting old events, so the historical
+ * trend survives retention. No account_id — this is public data for the
+ * landing page hero chart.
+ */
+export const dailyProviderStats = pgTable(
+  "daily_provider_stats",
+  {
+    id: serial("id").primaryKey(),
+    date: text("date").notNull(), // YYYY-MM-DD (UTC)
+    provider: text("provider").notNull(),
+    totalChecks: integer("total_checks").notNull().default(0),
+    blocked: integer("blocked").notNull().default(0),
+  },
+  (t) => ({
+    byDateProvider: uniqueIndex("idx_daily_stats_date_provider").on(
+      t.date,
+      t.provider
+    ),
+  })
+);
+
 export type AppAccount = typeof appAccounts.$inferSelect;
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type NewApiKey = typeof apiKeys.$inferInsert;
 export type Event = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;
 export type UsageCounter = typeof usageCounters.$inferSelect;
+export type DailyProviderStat = typeof dailyProviderStats.$inferSelect;

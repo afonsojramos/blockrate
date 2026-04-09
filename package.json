@@ -8,11 +8,11 @@
     "test": "bun test"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.4.3",
+    "@electric-sql/pglite": "^0.4.4",
     "@types/bun": "latest",
     "@types/react": "^19.2.14",
-    "react": "^19.2.4",
-    "typescript": "^5.6.0"
+    "react": "^19.2.5",
+    "typescript": "^6.0.2"
   },
   "dependencies": {
     "nitro": "npm:nitro-nightly@latest",

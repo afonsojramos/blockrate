@@ -55,6 +55,25 @@ export const Route = createFileRoute("/api/internal/retention")({
           return jsonError("unauthorized", 401);
         }
 
+        // ─── Step 1: Rollup daily stats BEFORE deleting ─────────────
+        // Aggregate all events by day + provider into daily_provider_stats.
+        // ON CONFLICT upsert makes this idempotent — safe to re-run.
+        const { dailyProviderStats } = await import("@/lib/db/schema");
+        await db.execute(drizzle.sql`
+          INSERT INTO daily_provider_stats (date, provider, total_checks, blocked)
+          SELECT
+            to_char(timestamp AT TIME ZONE 'UTC', 'YYYY-MM-DD') as date,
+            provider,
+            COUNT(*)::int as total_checks,
+            SUM(CASE WHEN status = 'blocked' THEN 1 ELSE 0 END)::int as blocked
+          FROM events
+          GROUP BY date, provider
+          ON CONFLICT (date, provider) DO UPDATE SET
+            total_checks = EXCLUDED.total_checks,
+            blocked = EXCLUDED.blocked
+        `);
+
+        // ─── Step 2: Retention delete ───────────────────────────────
         // Fetch every account once
         const accounts = await db
           .select({ id: appAccounts.id, plan: appAccounts.plan })

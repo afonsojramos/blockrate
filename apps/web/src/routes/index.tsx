@@ -1,39 +1,23 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { CodeBlock } from '@/components/code-block'
+import { HeroChart } from '@/components/hero-chart'
+import { getHeroStats } from '@/server/hero-stats'
 
-export const Route = createFileRoute('/')({ component: Landing })
+export const Route = createFileRoute('/')({
+  loader: () => getHeroStats(),
+  component: Landing,
+})
 
 function Landing() {
+  const heroStats = Route.useLoaderData();
+
   return (
     <main className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
       <section className="space-y-6">
-        {/* Signature visual — animated blockrate bar */}
-        <div className="rounded-lg border border-border bg-card p-5 sm:p-6">
-          <p className="mb-3 text-sm font-medium text-muted-foreground">
-            Right now, across the average site
-          </p>
-          <div className="flex items-baseline gap-3">
-            <span
-              className="tabular text-4xl font-bold"
-              style={{ color: 'var(--rate-high)' }}
-            >
-              23.4%
-            </span>
-            <span className="text-base text-muted-foreground">
-              of your Optimizely users are invisible
-            </span>
-          </div>
-          <div className="mt-4 h-2.5 w-full overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full"
-              style={{
-                background:
-                  'linear-gradient(90deg, var(--rate-low), var(--rate-mid), var(--rate-high))',
-                animation: 'hero-bar-fill 1.5s ease-out 0.3s both',
-              }}
-            />
-          </div>
-        </div>
+        {/* Real data hero chart — hidden when no data exists */}
+        {heroStats && heroStats.providers.length > 0 && (
+          <HeroChart data={heroStats} />
+        )}
 
         <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
           early access
