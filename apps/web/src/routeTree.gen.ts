@@ -15,7 +15,9 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiIngestRouteImport } from './routes/api/ingest'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as AuthedKeysRouteImport } from './routes/_authed/keys'
 import { Route as AuthedAppRouteImport } from './routes/_authed/app'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
 
@@ -48,10 +50,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiIngestRoute = ApiIngestRouteImport.update({
+  id: '/api/ingest',
+  path: '/api/ingest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
   id: '/api/health',
   path: '/api/health',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthedKeysRoute = AuthedKeysRouteImport.update({
+  id: '/keys',
+  path: '/keys',
+  getParentRoute: () => AuthedRoute,
 } as any)
 const AuthedAppRoute = AuthedAppRouteImport.update({
   id: '/app',
@@ -71,7 +83,9 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/signup': typeof SignupRoute
   '/app': typeof AuthedAppRoute
+  '/keys': typeof AuthedKeysRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/ingest': typeof ApiIngestRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
@@ -81,7 +95,9 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/signup': typeof SignupRoute
   '/app': typeof AuthedAppRoute
+  '/keys': typeof AuthedKeysRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/ingest': typeof ApiIngestRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
@@ -93,7 +109,9 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/signup': typeof SignupRoute
   '/_authed/app': typeof AuthedAppRoute
+  '/_authed/keys': typeof AuthedKeysRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/ingest': typeof ApiIngestRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
@@ -105,7 +123,9 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/signup'
     | '/app'
+    | '/keys'
     | '/api/health'
+    | '/api/ingest'
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -115,7 +135,9 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/signup'
     | '/app'
+    | '/keys'
     | '/api/health'
+    | '/api/ingest'
     | '/api/auth/$'
   id:
     | '__root__'
@@ -126,7 +148,9 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/signup'
     | '/_authed/app'
+    | '/_authed/keys'
     | '/api/health'
+    | '/api/ingest'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
@@ -138,6 +162,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   SignupRoute: typeof SignupRoute
   ApiHealthRoute: typeof ApiHealthRoute
+  ApiIngestRoute: typeof ApiIngestRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -185,12 +210,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ingest': {
+      id: '/api/ingest'
+      path: '/api/ingest'
+      fullPath: '/api/ingest'
+      preLoaderRoute: typeof ApiIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/health': {
       id: '/api/health'
       path: '/api/health'
       fullPath: '/api/health'
       preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authed/keys': {
+      id: '/_authed/keys'
+      path: '/keys'
+      fullPath: '/keys'
+      preLoaderRoute: typeof AuthedKeysRouteImport
+      parentRoute: typeof AuthedRoute
     }
     '/_authed/app': {
       id: '/_authed/app'
@@ -211,10 +250,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthedRouteChildren {
   AuthedAppRoute: typeof AuthedAppRoute
+  AuthedKeysRoute: typeof AuthedKeysRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedAppRoute: AuthedAppRoute,
+  AuthedKeysRoute: AuthedKeysRoute,
 }
 
 const AuthedRouteWithChildren =
@@ -228,6 +269,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   SignupRoute: SignupRoute,
   ApiHealthRoute: ApiHealthRoute,
+  ApiIngestRoute: ApiIngestRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

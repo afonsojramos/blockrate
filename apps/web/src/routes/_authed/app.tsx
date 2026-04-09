@@ -25,7 +25,13 @@ function AppDashboard() {
         </p>
       </div>
 
-      <div className="mt-8 flex gap-3">
+      <div className="mt-8 flex gap-4">
+        <Link
+          to="/app/keys"
+          className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out active:scale-[0.96]"
+        >
+          Manage API keys
+        </Link>
         <Link
           to="/"
           className="text-sm text-muted-foreground underline-offset-4 hover:underline"
