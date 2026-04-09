@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Copy, Plus, RotateCw, Trash2 } from "lucide-react";
 
@@ -19,7 +19,7 @@ import { createKey, deleteKey, listKeys, revokeKey } from "@/server/keys";
 
 type KeyRow = Awaited<ReturnType<typeof listKeys>>[number];
 
-export const Route = createFileRoute("/_authed/keys")({
+export const Route = createFileRoute("/_authed/app/keys")({
   loader: () => listKeys(),
   component: KeysPage,
 });
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authed/keys")({
 function KeysPage() {
   const initial = Route.useLoaderData() as KeyRow[];
   const [keys, setKeys] = useState<KeyRow[]>(initial);
-  const router = Route.useRouter();
+  const router = useRouter();
 
   // Create dialog
   const [createOpen, setCreateOpen] = useState(false);
@@ -116,6 +116,7 @@ function KeysPage() {
             stored hashed.{" "}
             <Link
               to="/app"
+              search={{ since: 7 }}
               className="underline-offset-4 hover:underline"
             >
               Back to dashboard

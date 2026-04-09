@@ -16,7 +16,7 @@ const search = z.object({
   since: z.coerce.number().int().min(1).max(90).default(7),
 });
 
-export const Route = createFileRoute("/_authed/app")({
+export const Route = createFileRoute("/_authed/app/")({
   validateSearch: (input) => search.parse(input),
   loaderDeps: ({ search }) => ({
     since: search.since,

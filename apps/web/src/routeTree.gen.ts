@@ -17,11 +17,11 @@ import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiIngestRouteImport } from './routes/api/ingest'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
-import { Route as AuthedSettingsRouteImport } from './routes/_authed/settings'
-import { Route as AuthedKeysRouteImport } from './routes/_authed/keys'
-import { Route as AuthedAppRouteImport } from './routes/_authed/app'
+import { Route as AuthedAppIndexRouteImport } from './routes/_authed/app/index'
 import { Route as ApiInternalRetentionRouteImport } from './routes/api/internal/retention'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
+import { Route as AuthedAppSettingsRouteImport } from './routes/_authed/app/settings'
+import { Route as AuthedAppKeysRouteImport } from './routes/_authed/app/keys'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -62,19 +62,9 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
   path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthedSettingsRoute = AuthedSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AuthedRoute,
-} as any)
-const AuthedKeysRoute = AuthedKeysRouteImport.update({
-  id: '/keys',
-  path: '/keys',
-  getParentRoute: () => AuthedRoute,
-} as any)
-const AuthedAppRoute = AuthedAppRouteImport.update({
-  id: '/app',
-  path: '/app',
+const AuthedAppIndexRoute = AuthedAppIndexRouteImport.update({
+  id: '/app/',
+  path: '/app/',
   getParentRoute: () => AuthedRoute,
 } as any)
 const ApiInternalRetentionRoute = ApiInternalRetentionRouteImport.update({
@@ -87,6 +77,16 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthedAppSettingsRoute = AuthedAppSettingsRouteImport.update({
+  id: '/app/settings',
+  path: '/app/settings',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedAppKeysRoute = AuthedAppKeysRouteImport.update({
+  id: '/app/keys',
+  path: '/app/keys',
+  getParentRoute: () => AuthedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -94,13 +94,13 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/signup': typeof SignupRoute
-  '/app': typeof AuthedAppRoute
-  '/keys': typeof AuthedKeysRoute
-  '/settings': typeof AuthedSettingsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
+  '/app/keys': typeof AuthedAppKeysRoute
+  '/app/settings': typeof AuthedAppSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/internal/retention': typeof ApiInternalRetentionRoute
+  '/app/': typeof AuthedAppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -108,13 +108,13 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/signup': typeof SignupRoute
-  '/app': typeof AuthedAppRoute
-  '/keys': typeof AuthedKeysRoute
-  '/settings': typeof AuthedSettingsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
+  '/app/keys': typeof AuthedAppKeysRoute
+  '/app/settings': typeof AuthedAppSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/internal/retention': typeof ApiInternalRetentionRoute
+  '/app': typeof AuthedAppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -124,13 +124,13 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/signup': typeof SignupRoute
-  '/_authed/app': typeof AuthedAppRoute
-  '/_authed/keys': typeof AuthedKeysRoute
-  '/_authed/settings': typeof AuthedSettingsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
+  '/_authed/app/keys': typeof AuthedAppKeysRoute
+  '/_authed/app/settings': typeof AuthedAppSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/internal/retention': typeof ApiInternalRetentionRoute
+  '/_authed/app/': typeof AuthedAppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -140,13 +140,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/signup'
-    | '/app'
-    | '/keys'
-    | '/settings'
     | '/api/health'
     | '/api/ingest'
+    | '/app/keys'
+    | '/app/settings'
     | '/api/auth/$'
     | '/api/internal/retention'
+    | '/app/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -154,13 +154,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/signup'
-    | '/app'
-    | '/keys'
-    | '/settings'
     | '/api/health'
     | '/api/ingest'
+    | '/app/keys'
+    | '/app/settings'
     | '/api/auth/$'
     | '/api/internal/retention'
+    | '/app'
   id:
     | '__root__'
     | '/'
@@ -169,13 +169,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/signup'
-    | '/_authed/app'
-    | '/_authed/keys'
-    | '/_authed/settings'
     | '/api/health'
     | '/api/ingest'
+    | '/_authed/app/keys'
+    | '/_authed/app/settings'
     | '/api/auth/$'
     | '/api/internal/retention'
+    | '/_authed/app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -249,25 +249,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authed/settings': {
-      id: '/_authed/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AuthedSettingsRouteImport
-      parentRoute: typeof AuthedRoute
-    }
-    '/_authed/keys': {
-      id: '/_authed/keys'
-      path: '/keys'
-      fullPath: '/keys'
-      preLoaderRoute: typeof AuthedKeysRouteImport
-      parentRoute: typeof AuthedRoute
-    }
-    '/_authed/app': {
-      id: '/_authed/app'
+    '/_authed/app/': {
+      id: '/_authed/app/'
       path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof AuthedAppRouteImport
+      fullPath: '/app/'
+      preLoaderRoute: typeof AuthedAppIndexRouteImport
       parentRoute: typeof AuthedRoute
     }
     '/api/internal/retention': {
@@ -284,19 +270,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authed/app/settings': {
+      id: '/_authed/app/settings'
+      path: '/app/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AuthedAppSettingsRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/app/keys': {
+      id: '/_authed/app/keys'
+      path: '/app/keys'
+      fullPath: '/app/keys'
+      preLoaderRoute: typeof AuthedAppKeysRouteImport
+      parentRoute: typeof AuthedRoute
+    }
   }
 }
 
 interface AuthedRouteChildren {
-  AuthedAppRoute: typeof AuthedAppRoute
-  AuthedKeysRoute: typeof AuthedKeysRoute
-  AuthedSettingsRoute: typeof AuthedSettingsRoute
+  AuthedAppKeysRoute: typeof AuthedAppKeysRoute
+  AuthedAppSettingsRoute: typeof AuthedAppSettingsRoute
+  AuthedAppIndexRoute: typeof AuthedAppIndexRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
-  AuthedAppRoute: AuthedAppRoute,
-  AuthedKeysRoute: AuthedKeysRoute,
-  AuthedSettingsRoute: AuthedSettingsRoute,
+  AuthedAppKeysRoute: AuthedAppKeysRoute,
+  AuthedAppSettingsRoute: AuthedAppSettingsRoute,
+  AuthedAppIndexRoute: AuthedAppIndexRoute,
 }
 
 const AuthedRouteWithChildren =

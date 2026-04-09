@@ -17,7 +17,7 @@ import {
   getUsageSnapshot,
 } from "@/server/stats";
 
-export const Route = createFileRoute("/_authed/settings")({
+export const Route = createFileRoute("/_authed/app/settings")({
   loader: () => getUsageSnapshot(),
   component: Settings,
 });
