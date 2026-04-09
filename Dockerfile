@@ -54,22 +54,12 @@ WORKDIR /app
 # Copy the built server output
 COPY --from=build /app/apps/web/.output apps/web/.output
 
-# Copy the migration runner + drizzle SQL + its deps
-COPY --from=build /app/apps/web/drizzle apps/web/drizzle
-COPY --from=build /app/apps/web/src apps/web/src
-COPY --from=build /app/apps/web/package.json apps/web/package.json
-COPY --from=build /app/apps/web/node_modules apps/web/node_modules
-
-# packages/server is needed at runtime for:
-#   - block-rate-server/ua (truncateUserAgent) used by /api/ingest
-#   - block-rate-server/rate-limit (TokenBucketLimiter)
-#   - block-rate-server/validate (blockRatePayloadSchema)
-COPY --from=build /app/packages/server/src packages/server/src
-COPY --from=build /app/packages/server/package.json packages/server/package.json
-COPY --from=build /app/packages/core/src packages/core/src
-COPY --from=build /app/packages/core/dist packages/core/dist
-COPY --from=build /app/packages/core/package.json packages/core/package.json
-COPY --from=build /app/package.json package.json
+# Copy the ENTIRE workspace — Bun's pnpm-style hoisting puts real packages
+# in node_modules/.bun/ at the repo root, with symlinks from each workspace
+# member's node_modules. Copying individual dirs breaks the symlink chain.
+# The .output/ is already built so the extra source files don't matter — they
+# just aren't referenced at runtime (only the migration runner + .output are).
+COPY --from=build /app .
 
 ENV NODE_ENV=production
 ENV PORT=8080
