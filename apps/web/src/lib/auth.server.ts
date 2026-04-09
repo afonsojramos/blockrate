@@ -16,6 +16,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
 import { db } from "./db/index.server";
+import { appAccounts } from "./db/schema";
 import { env } from "./env.server";
 
 export const auth = betterAuth({
@@ -46,6 +47,22 @@ export const auth = betterAuth({
     window: 60,
     max: 10,
     storage: "memory",
+  },
+
+  // Phase 2: bootstrap an app_accounts row 1:1 with every Better Auth user.
+  // Runs in the same transaction as user creation so we never get a user
+  // without a billing row.
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          await db
+            .insert(appAccounts)
+            .values({ userId: user.id, plan: "free" })
+            .onConflictDoNothing();
+        },
+      },
+    },
   },
 
   plugins: [
