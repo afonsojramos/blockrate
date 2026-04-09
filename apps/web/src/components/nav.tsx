@@ -1,5 +1,7 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useState, useRef, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { SiGithub } from "@icons-pack/react-simple-icons";
+import { Menu, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +15,14 @@ import type { NavSession } from "@/server/session";
 
 export function Nav({ session }: { session: NavSession }) {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   async function onSignOut() {
     await authClient.signOut();
@@ -66,6 +76,18 @@ export function Nav({ session }: { session: NavSession }) {
             <SiGithub size={20} />
           </a>
           <ThemeToggle />
+
+          {/* Mobile hamburger toggle */}
+          <button
+            type="button"
+            onClick={() => setMobileOpen((prev) => !prev)}
+            className="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-[background-color,color] duration-150 ease-out hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.96] sm:hidden"
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
+          >
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+
           {session ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -114,6 +136,48 @@ export function Nav({ session }: { session: NavSession }) {
           )}
         </div>
       </nav>
+
+      {/* Mobile menu dropdown */}
+      <div
+        ref={menuRef}
+        className="grid overflow-hidden border-t border-border transition-[grid-template-rows] duration-150 ease-out sm:hidden"
+        style={{
+          gridTemplateRows: mobileOpen ? "1fr" : "0fr",
+        }}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <div className="flex flex-col gap-1 px-6 py-3">
+            <Link
+              to="/demo"
+              className="rounded-md px-3 py-2 text-sm text-muted-foreground transition-[background-color,color] duration-150 ease-out hover:bg-accent hover:text-foreground"
+              activeProps={{ className: "text-foreground" }}
+            >
+              Demo
+            </Link>
+            <Link
+              to="/pricing"
+              className="rounded-md px-3 py-2 text-sm text-muted-foreground transition-[background-color,color] duration-150 ease-out hover:bg-accent hover:text-foreground"
+              activeProps={{ className: "text-foreground" }}
+            >
+              Pricing
+            </Link>
+            <Link
+              to="/docs"
+              className="rounded-md px-3 py-2 text-sm text-muted-foreground transition-[background-color,color] duration-150 ease-out hover:bg-accent hover:text-foreground"
+              activeProps={{ className: "text-foreground" }}
+            >
+              Docs
+            </Link>
+            <a
+              href="https://github.com/afonsojramos/block-rate"
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-[background-color,color] duration-150 ease-out hover:bg-accent hover:text-foreground"
+            >
+              <SiGithub size={16} />
+              GitHub
+            </a>
+          </div>
+        </div>
+      </div>
     </header>
   );
 }
