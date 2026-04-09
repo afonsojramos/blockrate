@@ -20,8 +20,7 @@ COPY packages/core/package.json packages/core/
 COPY packages/server/package.json packages/server/
 COPY apps/web/package.json apps/web/
 
-# Install with frozen lockfile (CI mode)
-RUN bun install --frozen-lockfile
+RUN bun install
 
 # ─── Build ───────────────────────────────────────────────────────────────
 
