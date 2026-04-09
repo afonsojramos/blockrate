@@ -1,23 +1,44 @@
 /**
  * Better Auth instance for the hosted blockrate.app deployment.
  *
- * Phase 1: magic-link only. Google + GitHub OAuth land in Phase 5
- * alongside Resend transactional email.
+ * Phase 5 — magic link via Resend (with dev console.log fallback) +
+ * Google + GitHub OAuth (conditionally enabled when env credentials
+ * are present). Providers absent from env are simply not registered,
+ * so dev mode keeps working with zero secrets.
  *
- * Hardenings (per the deepen-pass review):
+ * Hardenings:
  *   - cookieCache         → eliminates per-navigation DB hit on _authed
  *   - trustedOrigins      → explicit, not implicit
  *   - rateLimit           → built-in, covers magic-link send + verify
- *   - magicLink hardening → 10min expiry, hashed tokens, hardcoded callback
- *   - sendMagicLink       → fail-closed in production
+ *   - magicLink hardening → 10min expiry, hashed tokens
+ *   - sendMagicLink       → fail-closed via mailer in production
+ *   - GitHub OAuth        → user:email scope explicit (avoids email_not_found)
  */
 
-import { betterAuth } from "better-auth";
+import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
 import { db } from "./db/index.server";
 import { appAccounts } from "./db/schema";
-import { env } from "./env.server";
+import { capabilities, env } from "./env.server";
+import { magicLinkBody, sendEmail } from "./mailer.server";
+
+const socialProviders: NonNullable<BetterAuthOptions["socialProviders"]> = {};
+if (capabilities.google) {
+  socialProviders.google = {
+    clientId: env.GOOGLE_CLIENT_ID!,
+    clientSecret: env.GOOGLE_CLIENT_SECRET!,
+  };
+}
+if (capabilities.github) {
+  socialProviders.github = {
+    clientId: env.GITHUB_CLIENT_ID!,
+    clientSecret: env.GITHUB_CLIENT_SECRET!,
+    // framework-docs research: GitHub MUST request user:email or signup
+    // fails with email_not_found for users with private emails.
+    scope: ["user:email"],
+  };
+}
 
 export const auth = betterAuth({
   appName: "blockrate",
@@ -25,14 +46,11 @@ export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
   database: drizzleAdapter(db, { provider: "pg" }),
 
-  // security-sentinel + better-auth: explicit, not implicit
   trustedOrigins: [env.BETTER_AUTH_URL],
 
-  // performance-oracle: cookieCache turns _authed beforeLoad from a DB hit
-  // into a signed-cookie verify. The single biggest perf win in Phase 1.
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // refresh once per day
+    updateAge: 60 * 60 * 24,
     cookieCache: { enabled: true, maxAge: 60 * 5 },
   },
 
@@ -41,7 +59,6 @@ export const auth = betterAuth({
     defaultCookieAttributes: { sameSite: "lax", httpOnly: true },
   },
 
-  // Built-in rate limit on /api/auth/*
   rateLimit: {
     enabled: true,
     window: 60,
@@ -49,7 +66,9 @@ export const auth = betterAuth({
     storage: "memory",
   },
 
-  // Phase 2: bootstrap an app_accounts row 1:1 with every Better Auth user.
+  socialProviders,
+
+  // Bootstrap an app_accounts row 1:1 with every Better Auth user.
   // Runs in the same transaction as user creation so we never get a user
   // without a billing row.
   databaseHooks: {
@@ -67,18 +86,20 @@ export const auth = betterAuth({
 
   plugins: [
     magicLink({
-      expiresIn: 60 * 10, // 10 min, one-time use
-      disableSignUp: false, // Phase 1: open signup
-      storeToken: "hashed", // never store raw tokens in DB
+      expiresIn: 60 * 10,
+      disableSignUp: false,
+      storeToken: "hashed",
       sendMagicLink: async ({ email, url }) => {
-        // security-sentinel: fail-closed in production so a missed Phase 5
-        // wiring can never accidentally leak tokens to Railway logs.
-        if (env.NODE_ENV === "production") {
-          throw new Error(
-            "magic-link delivery not configured (Phase 5: Resend)"
-          );
-        }
-        console.log(`[magic-link:dev] ${email}: ${url}`);
+        // mailer.server.ts handles the dev/prod fork:
+        //   prod + RESEND_API_KEY  → real send
+        //   dev  + RESEND_API_KEY  → real send (handy for QA)
+        //   dev  + no key          → console.log
+        //   prod + no key          → throws (fail-closed)
+        await sendEmail({
+          to: email,
+          subject: "Your blockrate sign-in link",
+          text: magicLinkBody(url),
+        });
       },
     }),
   ],
