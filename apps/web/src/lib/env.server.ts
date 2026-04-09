@@ -36,7 +36,7 @@ const schema = z.object({
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z
     .string()
-    .default("blockrate <magic@blockrate.app>"),
+    .default("blockrate <noreply@blockrate.app>"),
 
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
