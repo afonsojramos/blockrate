@@ -32,7 +32,7 @@ export function Dogfood() {
           // Empty endpoint → relative "/ingest" URL → browser resolves it
           // against the current origin. Avoids touching window during SSR.
           reporter: serverReporter({
-            endpoint: "",
+            endpoint: "/api",
             apiKey,
           }),
         }

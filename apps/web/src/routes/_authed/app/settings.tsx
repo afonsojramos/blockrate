@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { authClient } from "@/lib/auth-client";
 import {
   deleteAccount,
   exportEventsCsv,
@@ -26,7 +25,6 @@ function Settings() {
   const data = Route.useLoaderData();
   const navigate = useNavigate();
   const [exporting, setExporting] = useState(false);
-  const [signingOut, setSigningOut] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const usagePct = Math.min(
@@ -51,13 +49,6 @@ function Settings() {
     } finally {
       setExporting(false);
     }
-  }
-
-  async function onSignOut() {
-    if (signingOut) return;
-    setSigningOut(true);
-    await authClient.signOut();
-    navigate({ to: "/" });
   }
 
   async function onDelete() {
@@ -139,21 +130,6 @@ function Settings() {
             aria-disabled={exporting}
           >
             {exporting ? "Generating…" : "Export events as CSV"}
-          </Button>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Session</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Button
-            variant="outline"
-            onClick={onSignOut}
-            aria-disabled={signingOut}
-          >
-            {signingOut ? "Signing out…" : "Sign out"}
           </Button>
         </CardContent>
       </Card>

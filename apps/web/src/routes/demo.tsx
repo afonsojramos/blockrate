@@ -69,7 +69,7 @@ function Demo() {
 
         // Also report to the hosted dashboard when the key is configured
         if (apiKey) {
-          serverReporter({ endpoint: "", apiKey })(result);
+          serverReporter({ endpoint: "/api", apiKey })(result);
         }
       },
     });
