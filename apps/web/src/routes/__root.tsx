@@ -49,7 +49,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             <div className="flex gap-4">
               <a href="https://github.com/afonsojramos/block-rate" className="hover:text-foreground">OSS</a>
               <a href="https://github.com/afonsojramos/block-rate/tree/main/packages/server" className="hover:text-foreground">Self-host</a>
-              <a href="#" className="hover:text-foreground">Privacy</a>
+              <a href="/privacy" className="hover:text-foreground">Privacy</a>
             </div>
           </div>
         </footer>
