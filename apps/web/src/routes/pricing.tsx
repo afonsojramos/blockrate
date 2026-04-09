@@ -6,7 +6,8 @@ export const Route = createFileRoute("/pricing")({ component: Pricing });
 const tiers = [
   {
     name: "Free",
-    price: "$0",
+    price: "€0",
+    period: "",
     badge: null,
     href: "/signup",
     cta: "Sign up",
@@ -19,7 +20,8 @@ const tiers = [
   },
   {
     name: "Pro",
-    price: "—",
+    price: "€5",
+    period: "/mo",
     badge: "Coming soon",
     href: null,
     cta: null,
@@ -32,7 +34,8 @@ const tiers = [
   },
   {
     name: "Team",
-    price: "—",
+    price: "€19",
+    period: "/mo",
     badge: "Coming soon",
     href: null,
     cta: null,
@@ -72,9 +75,11 @@ function Pricing() {
               </div>
               <p className="mt-2 text-3xl font-semibold tabular-nums">
                 {tier.price}
-                <span className="text-sm font-normal text-muted-foreground">
-                  {tier.price === "$0" ? " forever" : ""}
-                </span>
+                {tier.period && (
+                  <span className="text-sm font-normal text-muted-foreground">
+                    {tier.period}
+                  </span>
+                )}
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
