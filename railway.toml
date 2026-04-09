@@ -1,9 +1,11 @@
 [build]
 # Use the Dockerfile at the repo root, not Nixpacks.
-# The Dockerfile handles the monorepo workspace: installs deps, builds
-# packages/core, builds apps/web, copies only the runtime artifacts.
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
+# Watch the entire repo — monorepo changes to packages/core or packages/server
+# affect the apps/web build. Without this, Railway only watches the service's
+# root directory and misses Dockerfile/lockfile changes.
+watchPatterns = ["**"]
 
 [deploy]
 healthcheckPath = "/api/health"

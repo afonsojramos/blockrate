@@ -17,11 +17,15 @@ FROM oven/bun:1.3.11-alpine AS base
 FROM base AS deps
 WORKDIR /app
 
-# Copy workspace root + all package.json files for dep resolution
+# Copy workspace root + ALL workspace members' package.json files.
+# Missing any member causes bun --frozen-lockfile to recompute a different
+# resolution graph and fail. The workspace glob in root package.json is
+# ["packages/*", "apps/*", "examples/*"].
 COPY package.json bun.lock ./
 COPY packages/core/package.json packages/core/
 COPY packages/server/package.json packages/server/
 COPY apps/web/package.json apps/web/
+COPY examples/vanilla/package.json examples/vanilla/
 
 RUN bun install --frozen-lockfile
 
