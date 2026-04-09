@@ -40,7 +40,7 @@ export const Route = createFileRoute("/api/internal/retention")({
             import("@/lib/plans"),
             import("drizzle-orm"),
           ]);
-        const { and, eq, inArray, lt } = drizzle;
+        const { and, inArray, lt } = drizzle;
 
         if (!env.CRON_SECRET) {
           return jsonError(

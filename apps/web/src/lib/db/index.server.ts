@@ -9,7 +9,10 @@
  * Production deploys (Railway) MUST use a postgres:// URL. PGlite is dev-only.
  */
 
-import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js";
+import {
+  drizzle as drizzlePostgres,
+  type PostgresJsDatabase,
+} from "drizzle-orm/postgres-js";
 import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
 import postgres from "postgres";
 import { PGlite } from "@electric-sql/pglite";
@@ -54,4 +57,10 @@ function createDb() {
   return drizzlePostgres(client, { schema });
 }
 
-export const db = createDb();
+/**
+ * The PGlite and postgres-js Drizzle adapters return slightly different
+ * concrete types, but they share the same query API surface. Cast to the
+ * postgres-js shape (the production target) so TypeScript exposes the full
+ * `.returning()` overloads on every consumer.
+ */
+export const db = createDb() as unknown as PostgresJsDatabase<typeof schema>;
