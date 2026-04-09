@@ -46,8 +46,55 @@ Open `http://localhost:3000`. Sign in via `/login` — the magic link URL prints
 | `DATABASE_URL` | no | `pglite://./.local/blockrate.db` | Either `pglite://...` (dev) or `postgres://...` (prod) |
 | `BETTER_AUTH_SECRET` | **yes** | — | ≥32 chars; `openssl rand -base64 32` |
 | `BETTER_AUTH_URL` | no | `http://localhost:3000` | Set to `https://blockrate.app` in prod |
+| `CRON_SECRET` | prod only | — | ≥32 chars; bearer for `/api/internal/retention` |
 
 OAuth (Google, GitHub) and Resend are deferred to Phase 5.
+
+## Retention sweep (Phase 4)
+
+`/api/internal/retention` deletes events older than each plan's `retentionDays` (free = 7 days). It's bearer-authenticated via `CRON_SECRET` and **fails closed** in two ways:
+
+- If `CRON_SECRET` is unset → **503** (deployment misconfigured)
+- If the bearer is missing or wrong → **401**
+
+Trigger from Railway by adding a separate "Cron" service in the same project, scheduled nightly at `0 3 * * *`:
+
+```bash
+curl -fsS -X POST \
+  -H "Authorization: Bearer $CRON_SECRET" \
+  https://blockrate.app/api/internal/retention
+```
+
+Response shape:
+
+```json
+{
+  "ok": true,
+  "accountsProcessed": 12,
+  "eventsDeleted": 38194,
+  "byPlan": {
+    "free": {
+      "accounts": 12,
+      "eventsDeleted": 38194,
+      "cutoff": "2026-04-02T03:00:00.000Z"
+    }
+  },
+  "ranAt": "2026-04-09T03:00:00.123Z"
+}
+```
+
+Manual smoke locally:
+
+```bash
+echo "CRON_SECRET=$(openssl rand -base64 32)" >> .env
+bun run dev
+
+# in another terminal, with the same secret
+curl -X POST -H "Authorization: Bearer <secret>" \
+  http://localhost:3001/api/internal/retention
+```
+
+The implementation groups accounts by plan name and runs **one DELETE per plan tier** with `IN (account_ids)` — N queries where N is the number of plans (currently 3), not N accounts. Scales fine to thousands of users.
 
 ## Project structure
 
