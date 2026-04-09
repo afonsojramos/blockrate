@@ -1,0 +1,12 @@
+[build]
+# Use the Dockerfile at the repo root, not Nixpacks.
+# The Dockerfile handles the monorepo workspace: installs deps, builds
+# packages/core, builds apps/web, copies only the runtime artifacts.
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
