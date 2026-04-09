@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { CodeBlock } from "@/components/code-block";
 
 export const Route = createFileRoute("/docs")({ component: Docs });
 
@@ -231,10 +232,4 @@ export const Route = createFileRoute("/api/block-rate")({
   );
 }
 
-function CodeBlock({ children }: { children: string }) {
-  return (
-    <pre className="overflow-x-auto rounded-md border border-border bg-card p-4 text-sm">
-      <code className="font-mono text-xs">{children}</code>
-    </pre>
-  );
-}
+// Uses the shared CodeBlock from @/components/code-block

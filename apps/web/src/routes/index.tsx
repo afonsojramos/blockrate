@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { CodeBlock } from '@/components/code-block'
 
 export const Route = createFileRoute('/')({ component: Landing })
 
@@ -39,9 +40,8 @@ function Landing() {
         </div>
       </section>
 
-      <section className="mt-16 rounded-lg border border-border bg-card p-6">
-        <pre className="overflow-x-auto text-sm">
-          <code className="font-mono text-muted-foreground">{`import { BlockRate, serverReporter } from "block-rate";
+      <section className="mt-16">
+        <CodeBlock>{`import { BlockRate, serverReporter } from "block-rate";
 
 new BlockRate({
   providers: ["optimizely", "posthog", "ga4"],
@@ -50,8 +50,7 @@ new BlockRate({
     endpoint: "https://blockrate.app",
     apiKey: process.env.NEXT_PUBLIC_BR_KEY!,
   }),
-}).check();`}</code>
-        </pre>
+}).check();`}</CodeBlock>
       </section>
 
       <section className="mt-16 grid gap-6 sm:grid-cols-3">

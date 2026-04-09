@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { CodeBlock as Code } from "@/components/code-block";
 
 export const Route = createFileRoute("/docs/api")({ component: ApiDocs });
 
@@ -192,10 +193,4 @@ function ApiDocs() {
   );
 }
 
-function Code({ children }: { children: string }) {
-  return (
-    <pre className="overflow-x-auto rounded-md border border-border bg-card p-4 text-sm">
-      <code className="font-mono text-xs">{children}</code>
-    </pre>
-  );
-}
+// Uses the shared CodeBlock from @/components/code-block (imported as Code above)
