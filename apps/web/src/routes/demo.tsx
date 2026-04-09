@@ -45,14 +45,18 @@ function Demo() {
     );
 
     // Dynamic import so the library only loads when the user visits /demo
-    const { BlockRate } = await import("block-rate");
+    const { BlockRate, serverReporter } = await import("block-rate");
+
+    const apiKey = import.meta.env.VITE_BLOCKRATE_PUBLIC_KEY;
 
     const br = new BlockRate({
       providers: [...PROVIDERS],
       delay: 0,
       sampleRate: 1,
+      service: "demo",
       sessionKey: "__block_rate_demo",
       reporter: (result) => {
+        // Always update the UI
         setResults(
           result.providers.map((p) => ({
             name: p.name,
@@ -62,6 +66,11 @@ function Demo() {
         );
         setDone(true);
         setRunning(false);
+
+        // Also report to the hosted dashboard when the key is configured
+        if (apiKey) {
+          serverReporter({ endpoint: "", apiKey })(result);
+        }
       },
     });
 
@@ -194,9 +203,15 @@ function Demo() {
 
       <div className="mt-10 space-y-4 text-center">
         <p className="text-sm text-muted-foreground">
-          This demo runs entirely in your browser. No data is sent anywhere.
-          To measure block rate across your real users, add the library to
-          your app:
+          This demo checks provider reachability from your browser. Results
+          are sent to our own blockrate.app dashboard (we eat our own
+          dogfood) so we can see aggregate block rates across demo visitors.
+          No personal data is collected — only provider name, status, and
+          browser family. See our{" "}
+          <Link to="/privacy" className="underline-offset-4 hover:underline">
+            privacy policy
+          </Link>
+          .
         </p>
         <div className="flex justify-center gap-3">
           <Link
