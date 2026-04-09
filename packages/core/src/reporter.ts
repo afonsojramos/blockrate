@@ -1,14 +1,14 @@
 import type { BlockRateResult, Reporter } from "./types";
 
 export interface ServerReporterOptions {
-  /** Base URL of your block-rate-server (e.g. https://br.example.com). */
+  /** Base URL of your blockrate-server (e.g. https://br.example.com). */
   endpoint: string;
   /** Tenant API key. */
   apiKey: string;
 }
 
 /**
- * Reporter targeting a `block-rate-server` instance. Uses fetch with keepalive
+ * Reporter targeting a `blockrate-server` instance. Uses fetch with keepalive
  * because sendBeacon does not support custom headers (needed for the API key).
  */
 export function serverReporter({ endpoint, apiKey }: ServerReporterOptions): Reporter {
@@ -20,7 +20,7 @@ export function serverReporter({ endpoint, apiKey }: ServerReporterOptions): Rep
         body: JSON.stringify(result),
         headers: {
           "Content-Type": "application/json",
-          "x-block-rate-key": apiKey,
+          "x-blockrate-key": apiKey,
         },
         keepalive: true,
       }).catch(() => {});

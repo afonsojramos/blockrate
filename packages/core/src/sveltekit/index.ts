@@ -7,7 +7,7 @@ export type { BlockRateHandlerOptions } from "../handler";
  * SvelteKit `+server.ts` POST handler.
  *
  * ```ts
- * // src/routes/api/block-rate/+server.ts
+ * // src/routes/api/blockrate/+server.ts
  * import { createBlockRateHandler } from "blockrate/sveltekit";
  *
  * export const POST = createBlockRateHandler({

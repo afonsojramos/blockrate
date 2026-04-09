@@ -16,7 +16,7 @@ const tiers = [
       "100,000 events / month",
       "3 API keys",
       "30-day history",
-      "Per-provider block-rate dashboard",
+      "Per-provider blockrate dashboard",
     ],
   },
   {

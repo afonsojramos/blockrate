@@ -7,7 +7,7 @@ export type { BlockRateHandlerOptions } from "../handler";
  * TanStack Start API route handler.
  *
  * ```ts
- * // src/routes/api/block-rate.ts
+ * // src/routes/api/blockrate.ts
  * import { createFileRoute } from "@tanstack/react-router";
  * import { createBlockRateHandler } from "blockrate/tanstack-start";
  *
@@ -15,7 +15,7 @@ export type { BlockRateHandlerOptions } from "../handler";
  *   onResult: async (result) => console.log(result),
  * });
  *
- * export const Route = createFileRoute("/api/block-rate")({
+ * export const Route = createFileRoute("/api/blockrate")({
  *   server: {
  *     handlers: {
  *       POST: ({ request }) => handler(request),

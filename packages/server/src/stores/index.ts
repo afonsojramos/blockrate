@@ -6,7 +6,7 @@ import { PostgresStore } from "./postgres";
  * Build a store from a dialect + URL. SQLite is the default for self-hosters;
  * Postgres is available for users with existing PG infrastructure.
  *
- *   createStore({ dialect: "sqlite", url: "./block-rate.db" })
+ *   createStore({ dialect: "sqlite", url: "./blockrate.db" })
  *   createStore({ dialect: "postgres", url: "postgres://..." })
  */
 export async function createStore(
@@ -14,7 +14,7 @@ export async function createStore(
 ): Promise<BlockRateStore> {
   const dialect = options.dialect ?? "sqlite";
   if (dialect === "sqlite") {
-    return new SqliteStore(options.url ?? "./block-rate.db");
+    return new SqliteStore(options.url ?? "./blockrate.db");
   }
   if (dialect === "postgres") {
     if (!options.url) {

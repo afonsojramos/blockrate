@@ -1,5 +1,5 @@
 /**
- * Framework-agnostic data layer for block-rate-server. Both SQLite (self-hosted
+ * Framework-agnostic data layer for blockrate-server. Both SQLite (self-hosted
  * default) and Postgres (for users with an existing Postgres) implement this
  * interface. Handlers talk to `BlockRateStore` — never to Drizzle directly.
  */

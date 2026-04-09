@@ -7,7 +7,7 @@ export async function authenticate(
   request: Request
 ): Promise<StoredTenant | null> {
   const key =
-    request.headers.get("x-block-rate-key") ||
+    request.headers.get("x-blockrate-key") ||
     request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ||
     null;
   if (!key) return null;

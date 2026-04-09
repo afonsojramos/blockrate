@@ -2,7 +2,7 @@ export const dashboardHtml = /* html */ `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>block-rate dashboard</title>
+<title>blockrate dashboard</title>
 <style>
   :root { color-scheme: light dark; }
   body { font: 14px/1.5 ui-sans-serif, system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
@@ -19,7 +19,7 @@ export const dashboardHtml = /* html */ `<!doctype html>
 </style>
 </head>
 <body>
-<h1>block-rate</h1>
+<h1>blockrate</h1>
 <p class="muted">Per-provider block rate across your services.</p>
 <form id="f">
   <input name="key" type="password" placeholder="API key" required>
@@ -46,7 +46,7 @@ f.addEventListener("submit", async (e) => {
   out.innerHTML = "Loading...";
   try {
     const res = await fetch("/stats?" + params, {
-      headers: { "x-block-rate-key": key },
+      headers: { "x-blockrate-key": key },
     });
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();

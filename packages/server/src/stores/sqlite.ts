@@ -17,7 +17,7 @@ export class SqliteStore implements BlockRateStore {
   private sqlite: Database;
   private db: ReturnType<typeof drizzle<{ tenants: typeof tenants; events: typeof events }>>;
 
-  constructor(path = "./block-rate.db") {
+  constructor(path = "./blockrate.db") {
     this.sqlite = new Database(path);
     this.sqlite.exec("PRAGMA journal_mode = WAL;");
     this.sqlite.exec("PRAGMA foreign_keys = ON;");

@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 /**
- * Public ingest endpoint. Customers POST block-rate payloads here from their
+ * Public ingest endpoint. Customers POST blockrate payloads here from their
  * production websites. Cross-origin (CORS *) and unauthenticated except for
- * the per-account API key in `x-block-rate-key`.
+ * the per-account API key in `x-blockrate-key`.
  *
  * Hot path:
  *   1. Parse + validate header api key
@@ -21,7 +21,7 @@ import { createFileRoute } from "@tanstack/react-router";
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "content-type, x-block-rate-key",
+  "Access-Control-Allow-Headers": "content-type, x-blockrate-key",
   "Access-Control-Max-Age": "86400",
 } as const;
 
@@ -70,9 +70,9 @@ export const Route = createFileRoute("/api/ingest")({
         ]);
 
         // 1. Resolve API key
-        const headerKey = request.headers.get("x-block-rate-key");
+        const headerKey = request.headers.get("x-blockrate-key");
         if (!headerKey || !headerKey.startsWith("br_")) {
-          return jsonError("missing or malformed x-block-rate-key", 401);
+          return jsonError("missing or malformed x-blockrate-key", 401);
         }
 
         const prefix = keyPrefix(headerKey);

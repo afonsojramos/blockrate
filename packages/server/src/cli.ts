@@ -9,7 +9,7 @@ import {
 } from "./tenant";
 import type { Dialect } from "./store";
 
-const dbPath = process.env.DB_PATH || "./block-rate.db";
+const dbPath = process.env.DB_PATH || "./blockrate.db";
 const port = Number(process.env.PORT) || 4318;
 const dialect: Dialect = (process.env.DB_DIALECT as Dialect) || "sqlite";
 
@@ -17,21 +17,21 @@ const [cmd, sub, ...rest] = process.argv.slice(2);
 
 function usage(exitCode = 0): never {
   const msg = `\
-block-rate-server — self-hostable block-rate ingestion + dashboard
+blockrate-server — self-hostable blockrate ingestion + dashboard
 
 Usage:
-  block-rate-server                       Start the server (default)
-  block-rate-server serve                 Start the server
-  block-rate-server tenant create <name>  Create a tenant and print its API key
-  block-rate-server tenant list           List all tenants
-  block-rate-server tenant delete <name>  Delete a tenant and all its events
-  block-rate-server tenant rotate <name>  Rotate a tenant's API key
+  blockrate-server                       Start the server (default)
+  blockrate-server serve                 Start the server
+  blockrate-server tenant create <name>  Create a tenant and print its API key
+  blockrate-server tenant list           List all tenants
+  blockrate-server tenant delete <name>  Delete a tenant and all its events
+  blockrate-server tenant rotate <name>  Rotate a tenant's API key
 
 Environment:
   PORT                       HTTP port (default 4318)
   DB_DIALECT                 sqlite | postgres (default sqlite)
   DB_PATH                    SQLite file path or Postgres connection URL
-                             (default ./block-rate.db)
+                             (default ./blockrate.db)
   BLOCK_RATE_BOOTSTRAP_KEY   Pin the bootstrap tenant's API key
   BLOCK_RATE_BOOTSTRAP_NAME  Name of the bootstrap tenant (default "default")
 `;
@@ -121,6 +121,6 @@ const app = await createServer({ port, dbPath, dialect });
 Bun.serve({ port, fetch: app.fetch });
 
 console.log(
-  `[block-rate-server] listening on http://localhost:${port} (${dialect})`
+  `[blockrate-server] listening on http://localhost:${port} (${dialect})`
 );
-console.log(`[block-rate-server] dashboard: http://localhost:${port}/dashboard`);
+console.log(`[blockrate-server] dashboard: http://localhost:${port}/dashboard`);

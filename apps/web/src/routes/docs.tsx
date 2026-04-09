@@ -24,7 +24,7 @@ function Docs() {
           documentation
         </p>
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          block-rate docs
+          blockrate docs
         </h1>
         <p className="text-lg text-muted-foreground">
           A 1.6 KB client library that measures per-provider block rate. Drop
@@ -59,7 +59,7 @@ function Docs() {
           The library is one tiny dependency. Pick the reporter that fits.
         </p>
 
-        <CodeBlock>{`bun add block-rate`}</CodeBlock>
+        <CodeBlock>{`bun add blockrate`}</CodeBlock>
 
         <p className="text-sm text-muted-foreground">
           With the hosted blockrate.app — get an API key from{" "}
@@ -86,13 +86,13 @@ new BlockRate({
             href="https://github.com/afonsojramos/blockrate/tree/main/packages/server"
             className="underline-offset-4 hover:underline"
           >
-            block-rate-server
+            blockrate-server
           </a>
           ) — same shape, different endpoint:
         </p>
 
         <CodeBlock>{`reporter: serverReporter({
-  endpoint: "https://block-rate.your-domain.com",
+  endpoint: "https://blockrate.your-domain.com",
   apiKey: process.env.NEXT_PUBLIC_BR_KEY!,
 }),`}</CodeBlock>
 
@@ -192,7 +192,7 @@ export default function RootLayout({ children }) {
 }`}</CodeBlock>
 
         <h3 className="mt-4 text-base font-medium">SvelteKit</h3>
-        <CodeBlock>{`// src/routes/api/block-rate/+server.ts
+        <CodeBlock>{`// src/routes/api/blockrate/+server.ts
 import { createBlockRateHandler } from "blockrate/sveltekit";
 
 export const POST = createBlockRateHandler({
@@ -200,7 +200,7 @@ export const POST = createBlockRateHandler({
 });`}</CodeBlock>
 
         <h3 className="mt-4 text-base font-medium">TanStack Start</h3>
-        <CodeBlock>{`// src/routes/api/block-rate.ts
+        <CodeBlock>{`// src/routes/api/blockrate.ts
 import { createFileRoute } from "@tanstack/react-router";
 import { createBlockRateHandler } from "blockrate/tanstack-start";
 
@@ -208,7 +208,7 @@ const handler = createBlockRateHandler({
   onResult: async (result) => console.log(result),
 });
 
-export const Route = createFileRoute("/api/block-rate")({
+export const Route = createFileRoute("/api/blockrate")({
   server: { handlers: { POST: ({ request }) => handler(request) } },
 });`}</CodeBlock>
       </section>

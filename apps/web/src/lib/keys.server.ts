@@ -6,7 +6,7 @@
  *   hash   = sha256(plaintext) — stored in DB
  *
  * Lookup at /api/ingest:
- *   1. Read x-block-rate-key header → plaintext
+ *   1. Read x-blockrate-key header → plaintext
  *   2. Compute prefix + hash
  *   3. SELECT api_keys WHERE key_prefix = $1 AND key_hash = $2 AND revoked_at IS NULL
  *   The unique index on (key_hash) makes this fast; the prefix index is for

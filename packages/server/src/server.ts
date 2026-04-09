@@ -25,7 +25,7 @@ const CORS_HEADERS = (origin: string) => ({
   "Access-Control-Allow-Origin": origin,
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
   "Access-Control-Allow-Headers":
-    "content-type, x-block-rate-key, authorization",
+    "content-type, x-blockrate-key, authorization",
   "Access-Control-Max-Age": "86400",
 });
 
@@ -104,9 +104,9 @@ async function ensureBootstrapTenant(store: BlockRateStore): Promise<void> {
     apiKey,
   });
   console.log(
-    `[block-rate-server] Bootstrapped default tenant. API key: ${apiKey}`
+    `[blockrate-server] Bootstrapped default tenant. API key: ${apiKey}`
   );
   console.log(
-    "[block-rate-server] Store this securely — it will not be shown again."
+    "[blockrate-server] Store this securely — it will not be shown again."
   );
 }

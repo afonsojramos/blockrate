@@ -20,7 +20,7 @@ function payload(overrides: Record<string, unknown> = {}) {
   };
 }
 
-describe("block-rate-server (sqlite)", () => {
+describe("blockrate-server (sqlite)", () => {
   let app: Awaited<ReturnType<typeof newApp>>;
 
   beforeEach(async () => {
@@ -41,7 +41,7 @@ describe("block-rate-server (sqlite)", () => {
     const res = await app.fetch(
       new Request("http://x/ingest", {
         method: "POST",
-        headers: { "x-block-rate-key": "br_test_key" },
+        headers: { "x-blockrate-key": "br_test_key" },
         body: JSON.stringify({ bogus: true }),
       })
     );
@@ -53,7 +53,7 @@ describe("block-rate-server (sqlite)", () => {
       app.fetch(
         new Request("http://x/ingest", {
           method: "POST",
-          headers: { "x-block-rate-key": "br_test_key" },
+          headers: { "x-blockrate-key": "br_test_key" },
           body: JSON.stringify(body),
         })
       );
@@ -72,7 +72,7 @@ describe("block-rate-server (sqlite)", () => {
 
     const res = await app.fetch(
       new Request("http://x/stats?since=7", {
-        headers: { "x-block-rate-key": "br_test_key" },
+        headers: { "x-blockrate-key": "br_test_key" },
       })
     );
     expect(res.status).toBe(200);
@@ -93,7 +93,7 @@ describe("block-rate-server (sqlite)", () => {
       app.fetch(
         new Request("http://x/ingest", {
           method: "POST",
-          headers: { "x-block-rate-key": "br_test_key" },
+          headers: { "x-blockrate-key": "br_test_key" },
           body: JSON.stringify(body),
         })
       );
@@ -102,7 +102,7 @@ describe("block-rate-server (sqlite)", () => {
 
     const res = await app.fetch(
       new Request("http://x/stats?service=web", {
-        headers: { "x-block-rate-key": "br_test_key" },
+        headers: { "x-blockrate-key": "br_test_key" },
       })
     );
     const data: any = await res.json();
@@ -114,7 +114,7 @@ describe("block-rate-server (sqlite)", () => {
     const res = await app.fetch(new Request("http://x/dashboard"));
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toContain("text/html");
-    expect(await res.text()).toContain("block-rate");
+    expect(await res.text()).toContain("blockrate");
   });
 
   it("responds to CORS preflight", async () => {
@@ -135,7 +135,7 @@ describe("block-rate-server (sqlite)", () => {
     await app.fetch(
       new Request("http://x/ingest", {
         method: "POST",
-        headers: { "x-block-rate-key": "br_test_key" },
+        headers: { "x-blockrate-key": "br_test_key" },
         body: JSON.stringify(
           payload({
             userAgent:

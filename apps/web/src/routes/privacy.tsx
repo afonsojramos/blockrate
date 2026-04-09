@@ -22,11 +22,11 @@ function Privacy() {
           </h2>
           <p>
             blockrate.app receives small JSON payloads from the{" "}
-            <code className="font-mono text-xs">block-rate</code> library
+            <code className="font-mono text-xs">blockrate</code> library
             running on your customers' websites. Each payload reports whether
             specific third-party tools (Optimizely, PostHog, Google Analytics,
             etc.) were reachable from the visitor's browser. We aggregate that
-            into per-provider block-rate statistics for your dashboard.
+            into per-provider blockrate statistics for your dashboard.
           </p>
           <p>
             We are an analytics tool's analytics tool. We try very hard to

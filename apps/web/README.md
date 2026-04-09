@@ -139,7 +139,7 @@ Setup:
 
 ## Dogfooding (Phase 5)
 
-`components/dogfood.tsx` adds `useBlockRate` from the OSS `block-rate` library to the root layout, reporting to **its own** `/api/ingest`. The blockrate.app marketing surface measures itself the same way customers measure theirs — putting our money where our mouth is for a "your analytics are blocked more than you think" product.
+`components/dogfood.tsx` adds `useBlockRate` from the OSS `blockrate` library to the root layout, reporting to **its own** `/api/ingest`. The blockrate.app marketing surface measures itself the same way customers measure theirs — putting our money where our mouth is for a "your analytics are blocked more than you think" product.
 
 Setup post-deploy:
 
@@ -181,7 +181,7 @@ The `nixpacks.toml` shipped with the TanStack Start scaffold + the `start` scrip
    curl -fsS https://blockrate.app/api/health                     # → "ok"
    curl -fsS -o /dev/null -w "%{http_code}\n" https://blockrate.app/  # → 200
    curl -fsS -X POST https://blockrate.app/api/ingest \
-     -H "Content-Type: application/json" -H "x-block-rate-key: $YOUR_KEY" \
+     -H "Content-Type: application/json" -H "x-blockrate-key: $YOUR_KEY" \
      -d '{"timestamp":"...","url":"/","userAgent":"...","providers":[...]}'
    # → 204
    ```

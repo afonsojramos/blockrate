@@ -20,7 +20,7 @@ function ApiDocs() {
         <p className="text-lg text-muted-foreground">
           The blockrate.app ingest endpoint accepts POSTs from any origin
           (CORS *) and authenticates via a per-account API key in the{" "}
-          <code className="font-mono text-sm">x-block-rate-key</code> header.
+          <code className="font-mono text-sm">x-blockrate-key</code> header.
         </p>
       </header>
 
@@ -39,7 +39,7 @@ function ApiDocs() {
           <tbody>
             <tr className="border-b border-border">
               <td className="py-2 pr-4 align-top font-mono text-xs">
-                x-block-rate-key
+                x-blockrate-key
               </td>
               <td className="py-2 text-xs text-muted-foreground">
                 Required. Your API key from{" "}
@@ -114,13 +114,13 @@ function ApiDocs() {
         <h2 className="text-2xl font-semibold tracking-tight">Example</h2>
         <p className="text-sm text-muted-foreground">
           Most users won't write this manually — the{" "}
-          <code className="font-mono text-xs">block-rate</code> library does
+          <code className="font-mono text-xs">blockrate</code> library does
           it for you. But if you're integrating from a non-JavaScript runtime
           or testing the endpoint:
         </p>
         <Code>{`curl -X POST https://blockrate.app/api/ingest \\
   -H "Content-Type: application/json" \\
-  -H "x-block-rate-key: br_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \\
+  -H "x-blockrate-key: br_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \\
   -d '{
     "timestamp": "2026-04-09T03:14:15.926Z",
     "url": "/",

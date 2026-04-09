@@ -1,19 +1,19 @@
-# block-rate-server
+# blockrate-server
 
-Self-hostable ingestion server and dashboard for [block-rate](https://github.com/afonsojramos/blockrate). One command, one binary, your data on your infrastructure.
+Self-hostable ingestion server and dashboard for [blockrate](https://github.com/afonsojramos/blockrate). One command, one binary, your data on your infrastructure.
 
 ```bash
-bunx block-rate-server
-# [block-rate-server] listening on http://localhost:4318
-# [block-rate-server] Bootstrapped default tenant. API key: br_xxxxxxxxxxxxxxxxxxxx
-# [block-rate-server] dashboard: http://localhost:4318/dashboard
+bunx blockrate-server
+# [blockrate-server] listening on http://localhost:4318
+# [blockrate-server] Bootstrapped default tenant. API key: br_xxxxxxxxxxxxxxxxxxxx
+# [blockrate-server] dashboard: http://localhost:4318/dashboard
 ```
 
-That's the entire setup. Open the printed dashboard URL, paste the API key, point your client at the `/ingest` endpoint with the same key in `x-block-rate-key`. Done.
+That's the entire setup. Open the printed dashboard URL, paste the API key, point your client at the `/ingest` endpoint with the same key in `x-blockrate-key`. Done.
 
 ## What it gives you
 
-- **POST /ingest** — accepts payloads from the OSS [`block-rate`](../core/README.md) client
+- **POST /ingest** — accepts payloads from the OSS [`blockrate`](../core/README.md) client
 - **GET /stats** — per-provider block rate aggregation, sliced by service and date range
 - **/dashboard** — single-page vanilla HTML dashboard reading from `/stats`
 - **Multi-tenant** — one server can ingest for many services across many teams
@@ -38,19 +38,19 @@ Both are first-class — same `BlockRateStore` interface, same migrations, same 
 | --- | --- | --- |
 | `PORT` | `4318` | HTTP port |
 | `DB_DIALECT` | `sqlite` | `sqlite` or `postgres` |
-| `DB_PATH` | `./block-rate.db` | SQLite file path or Postgres connection URL |
+| `DB_PATH` | `./blockrate.db` | SQLite file path or Postgres connection URL |
 | `BLOCK_RATE_BOOTSTRAP_KEY` | random | Pin the bootstrap tenant's API key (otherwise generated and printed once) |
 | `BLOCK_RATE_BOOTSTRAP_NAME` | `default` | Name of the bootstrap tenant |
 
-The server has **no other env vars** by design — everything else is wired through `block-rate-server tenant *` commands.
+The server has **no other env vars** by design — everything else is wired through `blockrate-server tenant *` commands.
 
 ## Tenant CLI
 
 ```bash
-block-rate-server tenant create <name>     # → prints a new API key
-block-rate-server tenant list              # → id, name, masked key
-block-rate-server tenant rotate <name>     # → new key, old key invalidated
-block-rate-server tenant delete <name>     # → cascades to all events
+blockrate-server tenant create <name>     # → prints a new API key
+blockrate-server tenant list              # → id, name, masked key
+blockrate-server tenant rotate <name>     # → new key, old key invalidated
+blockrate-server tenant delete <name>     # → cascades to all events
 ```
 
 The bootstrap tenant is created on first run with a random API key (printed to the terminal). For production, pin it via `BLOCK_RATE_BOOTSTRAP_KEY` so you don't lose it on container restart.
@@ -62,34 +62,34 @@ The bootstrap tenant is created on first run with a random API key (printed to t
 ```dockerfile
 FROM oven/bun:1.3-alpine
 WORKDIR /app
-RUN bun install -g block-rate-server
+RUN bun install -g blockrate-server
 EXPOSE 4318
 ENV PORT=4318
-ENV DB_PATH=/data/block-rate.db
+ENV DB_PATH=/data/blockrate.db
 VOLUME /data
-CMD ["block-rate-server"]
+CMD ["blockrate-server"]
 ```
 
 ```bash
-docker build -t block-rate-server .
-docker run -d -p 4318:4318 -v /opt/block-rate-data:/data \
+docker build -t blockrate-server .
+docker run -d -p 4318:4318 -v /opt/blockrate-data:/data \
   -e BLOCK_RATE_BOOTSTRAP_KEY=$(openssl rand -base64 32) \
-  --name block-rate block-rate-server
+  --name blockrate blockrate-server
 ```
 
 ### docker-compose
 
 ```yaml
 services:
-  block-rate:
+  blockrate:
     image: oven/bun:1.3-alpine
-    command: bunx block-rate-server
+    command: bunx blockrate-server
     ports: ["4318:4318"]
     volumes:
       - ./data:/app
     environment:
       PORT: 4318
-      DB_PATH: /app/block-rate.db
+      DB_PATH: /app/blockrate.db
       BLOCK_RATE_BOOTSTRAP_KEY: ${BLOCK_RATE_KEY}
     restart: unless-stopped
 ```
@@ -101,7 +101,7 @@ services:
 3. Env vars:
    ```
    PORT=4318
-   DB_PATH=/data/block-rate.db
+   DB_PATH=/data/blockrate.db
    BLOCK_RATE_BOOTSTRAP_KEY=<openssl rand -base64 32>
    ```
 4. Add a custom domain pointing at the service
@@ -111,7 +111,7 @@ services:
 
 ```toml
 # fly.toml
-app = "block-rate"
+app = "blockrate"
 
 [build]
   image = "oven/bun:1.3-alpine"
@@ -122,7 +122,7 @@ app = "block-rate"
 
 [env]
   PORT = "4318"
-  DB_PATH = "/data/block-rate.db"
+  DB_PATH = "/data/blockrate.db"
 
 [[services]]
   internal_port = 4318
@@ -142,19 +142,19 @@ fly deploy
 ### systemd (bare metal / VPS)
 
 ```ini
-# /etc/systemd/system/block-rate.service
+# /etc/systemd/system/blockrate.service
 [Unit]
-Description=block-rate ingestion server
+Description=blockrate ingestion server
 After=network.target
 
 [Service]
 Type=simple
 User=blockrate
-WorkingDirectory=/opt/block-rate
+WorkingDirectory=/opt/blockrate
 Environment=PORT=4318
-Environment=DB_PATH=/var/lib/block-rate/block-rate.db
-EnvironmentFile=/etc/block-rate/block-rate.env
-ExecStart=/usr/local/bin/bun /opt/block-rate/node_modules/.bin/block-rate-server
+Environment=DB_PATH=/var/lib/blockrate/blockrate.db
+EnvironmentFile=/etc/blockrate/blockrate.env
+ExecStart=/usr/local/bin/bun /opt/blockrate/node_modules/.bin/blockrate-server
 Restart=on-failure
 RestartSec=5
 
@@ -163,7 +163,7 @@ NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
 PrivateTmp=true
-ReadWritePaths=/var/lib/block-rate
+ReadWritePaths=/var/lib/blockrate
 
 [Install]
 WantedBy=multi-user.target
@@ -171,12 +171,12 @@ WantedBy=multi-user.target
 
 ```bash
 sudo useradd -r -s /bin/false blockrate
-sudo mkdir -p /var/lib/block-rate /etc/block-rate
-sudo chown blockrate:blockrate /var/lib/block-rate
-echo "BLOCK_RATE_BOOTSTRAP_KEY=$(openssl rand -base64 32)" | sudo tee /etc/block-rate/block-rate.env
-sudo chmod 600 /etc/block-rate/block-rate.env
+sudo mkdir -p /var/lib/blockrate /etc/blockrate
+sudo chown blockrate:blockrate /var/lib/blockrate
+echo "BLOCK_RATE_BOOTSTRAP_KEY=$(openssl rand -base64 32)" | sudo tee /etc/blockrate/blockrate.env
+sudo chmod 600 /etc/blockrate/blockrate.env
 sudo systemctl daemon-reload
-sudo systemctl enable --now block-rate
+sudo systemctl enable --now blockrate
 ```
 
 ## Reverse proxy
@@ -241,9 +241,9 @@ Use [Litestream](https://litestream.io) for continuous replication to S3/B2/etc:
 ```yaml
 # /etc/litestream.yml
 dbs:
-  - path: /var/lib/block-rate/block-rate.db
+  - path: /var/lib/blockrate/blockrate.db
     replicas:
-      - url: s3://my-bucket/block-rate
+      - url: s3://my-bucket/blockrate
 ```
 
 WAL mode is already enabled. Litestream sees writes immediately.
@@ -266,11 +266,11 @@ For Phase 1 of any deployment, **start with one instance**. Postgres connection 
 
 ```bash
 # 1. Export from SQLite
-DB_DIALECT=sqlite DB_PATH=./block-rate.db block-rate-server tenant list > tenants.txt
+DB_DIALECT=sqlite DB_PATH=./blockrate.db blockrate-server tenant list > tenants.txt
 
 # 2. Stop the SQLite-backed server
 # 3. Run migrations against Postgres
-DB_DIALECT=postgres DB_PATH="postgres://..." block-rate-server  # creates tables
+DB_DIALECT=postgres DB_PATH="postgres://..." blockrate-server  # creates tables
 
 # 4. Manually copy tenants and events (the schemas are identical)
 #    Use pgloader or a one-shot script reading both DBs
@@ -283,7 +283,7 @@ The SQLite ↔ Postgres parity is enforced at the test level (`packages/server/t
 You don't have to use the CLI:
 
 ```ts
-import { createServer, createStore, createTenant } from "block-rate-server";
+import { createServer, createStore, createTenant } from "blockrate-server";
 
 const store = await createStore({ dialect: "postgres", url: process.env.DATABASE_URL });
 await createTenant(store, "my-app");
@@ -298,8 +298,8 @@ The full public surface is in [`src/index.ts`](src/index.ts):
 - `createServer`, `ServerOptions`
 - `createTenant`, `listTenants`, `deleteTenant`, `rotateTenantKey`, `generateApiKey`
 - `blockRatePayloadSchema` (Zod)
-- `truncateUserAgent` — pure function, also exposed at `block-rate-server/ua` for use without pulling in the SQLite store
-- `TokenBucketLimiter` — same, at `block-rate-server/rate-limit`
+- `truncateUserAgent` — pure function, also exposed at `blockrate-server/ua` for use without pulling in the SQLite store
+- `TokenBucketLimiter` — same, at `blockrate-server/rate-limit`
 
 ## License
 

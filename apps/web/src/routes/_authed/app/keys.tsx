@@ -139,7 +139,7 @@ function KeysPage() {
           {keys.length === 0 ? (
             <div className="rounded-md border border-dashed border-border/60 bg-muted/30 p-10 text-center">
               <p className="text-sm text-muted-foreground">
-                No keys yet. Create one to start ingesting block-rate data.
+                No keys yet. Create one to start ingesting blockrate data.
               </p>
             </div>
           ) : (

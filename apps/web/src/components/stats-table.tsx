@@ -30,7 +30,7 @@ export function StatsTable({ stats }: { stats: StatsRow[] }) {
       <div className="rounded-md border border-dashed border-border/60 bg-muted/30 p-10 text-center">
         <h3 className="text-base font-medium">No data yet</h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          Drop the block-rate library into your app and POST events to{" "}
+          Drop the blockrate library into your app and POST events to{" "}
           <code className="font-mono text-xs">/api/ingest</code>. Once data
           arrives, this table will show per-provider block rates.
         </p>

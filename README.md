@@ -1,8 +1,8 @@
-# block-rate
+# blockrate
 
 > **Know what your ad blockers are hiding from your analytics.** Measure the *per-provider* block rate of the third-party tools your app depends on — Optimizely, PostHog, GA4, Segment, and the rest. Tiny, zero-dependency, first-party.
 
-Existing "ad block detectors" tell you whether *a* blocker exists. `block-rate` tells you **which specific tools are blocked**, so you can decide whether to reverse-proxy Optimizely, migrate PostHog server-side, or just accept the gap.
+Existing "ad block detectors" tell you whether *a* blocker exists. `blockrate` tells you **which specific tools are blocked**, so you can decide whether to reverse-proxy Optimizely, migrate PostHog server-side, or just accept the gap.
 
 ## Three ways to use it
 
@@ -15,11 +15,11 @@ Existing "ad block detectors" tell you whether *a* blocker exists. `block-rate` 
 ## Repository layout
 
 ```
-block-rate/
+blockrate/
 ├── packages/
-│   ├── core/                 OSS client library — published as `block-rate` on npm
+│   ├── core/                 OSS client library — published as `blockrate` on npm
 │   │   └── src/              core + react + next + sveltekit + tanstack-start subpaths
-│   └── server/               self-hostable ingestion server — `block-rate-server` on npm
+│   └── server/               self-hostable ingestion server — `blockrate-server` on npm
 │       └── src/              Bun + Drizzle, SQLite default, Postgres optional
 ├── apps/
 │   └── web/                  blockrate.app hosted dashboard — TanStack Start + Better Auth
@@ -32,16 +32,16 @@ block-rate/
 ## Quick start (OSS library)
 
 ```bash
-bun add block-rate
+bun add blockrate
 ```
 
 ```ts
-import { BlockRate } from "block-rate";
+import { BlockRate } from "blockrate";
 
 new BlockRate({
   providers: ["optimizely", "posthog", "ga4"],
   reporter: (result) => {
-    navigator.sendBeacon("/api/block-rate", JSON.stringify(result));
+    navigator.sendBeacon("/api/blockrate", JSON.stringify(result));
   },
   sampleRate: 0.1,
 }).check();
@@ -52,10 +52,10 @@ Full library docs (built-in providers, custom providers, framework adapters, que
 ## Quick start (self-hosted)
 
 ```bash
-bunx block-rate-server
-# [block-rate-server] listening on http://localhost:4318
-# [block-rate-server] Bootstrapped default tenant. API key: br_xxxxxxxxxxxxxxxxxxxx
-# [block-rate-server] dashboard: http://localhost:4318/dashboard
+bunx blockrate-server
+# [blockrate-server] listening on http://localhost:4318
+# [blockrate-server] Bootstrapped default tenant. API key: br_xxxxxxxxxxxxxxxxxxxx
+# [blockrate-server] dashboard: http://localhost:4318/dashboard
 ```
 
 That's the entire setup. Open the dashboard, paste the printed API key, point your client at it. Full self-host guide (Docker, Railway, fly.io, systemd, reverse proxy, backups) in [`packages/server/README.md`](packages/server/README.md).

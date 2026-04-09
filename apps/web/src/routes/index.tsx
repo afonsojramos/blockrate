@@ -7,7 +7,7 @@ function Landing() {
   return (
     <main className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
       <section className="space-y-6">
-        {/* Signature visual — animated block-rate bar */}
+        {/* Signature visual — animated blockrate bar */}
         <div className="rounded-lg border border-border bg-card p-5 sm:p-6">
           <p className="mb-3 text-sm font-medium text-muted-foreground">
             Right now, across the average site

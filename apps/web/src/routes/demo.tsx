@@ -102,7 +102,7 @@ function Demo() {
         <p className="text-lg text-muted-foreground">
           This page checks 10 common third-party analytics tools from your
           browser, right now, using the same{" "}
-          <code className="font-mono text-sm">block-rate</code> library your
+          <code className="font-mono text-sm">blockrate</code> library your
           app would use. No data leaves your browser — this is purely
           client-side.
         </p>
