@@ -78,4 +78,5 @@ EXPOSE 8080
 # Migrations run before server boot. On Railway, DATABASE_URL is the
 # managed Postgres addon's URL — the migration runner detects postgres://
 # vs pglite:// automatically.
-CMD ["sh", "-c", "cd apps/web && bun run db:migrate && bun .output/server/index.mjs"]
+# Echo early so Railway shows SOMETHING in the logs even if the process crashes
+CMD ["sh", "-c", "echo '[blockrate] starting...' && cd apps/web && echo '[blockrate] running migrations...' && bun run db:migrate 2>&1 && echo '[blockrate] starting server...' && bun .output/server/index.mjs"]
