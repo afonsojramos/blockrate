@@ -85,7 +85,7 @@ new BlockRate({
         ].map((card) => (
           <article
             key={card.title}
-            className="rounded-lg border border-border bg-card p-6"
+            className="rounded-lg border border-border bg-card p-6 transition-[border-color,box-shadow] duration-150 ease-out hover:border-muted-foreground/30 hover:shadow-sm"
           >
             <h2 className="text-base font-semibold">{card.title}</h2>
             <p className="mt-2 text-sm text-muted-foreground">{card.body}</p>
