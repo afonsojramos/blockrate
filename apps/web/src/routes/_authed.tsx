@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
+import { AppSubnav } from "@/components/app-subnav";
 
 /**
  * Session check via createServerFn so the import of auth never leaks into
@@ -33,5 +34,10 @@ export const Route = createFileRoute("/_authed")({
     return { user: session.user };
   },
   errorComponent: () => <Navigate to="/login" />,
-  component: () => <Outlet />,
+  component: () => (
+    <>
+      <AppSubnav />
+      <Outlet />
+    </>
+  ),
 });
