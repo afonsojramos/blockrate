@@ -40,15 +40,21 @@ Open `http://localhost:3000`. Sign in via `/login` — the magic link URL prints
 
 ## Environment variables
 
+**Do not set `NODE_ENV` in `.env`.** Vite reads `.env` at build time, and a hardcoded `NODE_ENV=development` causes `vite build` to bundle a dev-mode build. Mode is determined by the script you run (`bun run dev` vs `bun run start`, the latter sets `NODE_ENV=production`).
+
 | Variable | Required | Default | Notes |
 | --- | --- | --- | --- |
-| `NODE_ENV` | no | `development` | `production` enables SSL on Postgres + fail-closed magic-link send |
 | `DATABASE_URL` | no | `pglite://./.local/blockrate.db` | Either `pglite://...` (dev) or `postgres://...` (prod) |
 | `BETTER_AUTH_SECRET` | **yes** | — | ≥32 chars; `openssl rand -base64 32` |
 | `BETTER_AUTH_URL` | no | `http://localhost:3000` | Set to `https://blockrate.app` in prod |
 | `CRON_SECRET` | prod only | — | ≥32 chars; bearer for `/api/internal/retention` |
-
-OAuth (Google, GitHub) and Resend are deferred to Phase 5.
+| `RESEND_API_KEY` | prod only | — | sendMagicLink falls back to console.log when unset (dev only) |
+| `EMAIL_FROM` | no | `blockrate <magic@blockrate.app>` | From address for transactional email |
+| `GOOGLE_CLIENT_ID` | optional | — | Enables Google OAuth button when set with secret |
+| `GOOGLE_CLIENT_SECRET` | optional | — | |
+| `GITHUB_CLIENT_ID` | optional | — | Enables GitHub OAuth button when set with secret |
+| `GITHUB_CLIENT_SECRET` | optional | — | Required scope: `user:email` |
+| `VITE_BLOCKRATE_PUBLIC_KEY` | optional | — | Dogfood key — exposed to the browser. No-op when unset |
 
 ## Retention sweep (Phase 4)
 
@@ -95,6 +101,101 @@ curl -X POST -H "Authorization: Bearer <secret>" \
 ```
 
 The implementation groups accounts by plan name and runs **one DELETE per plan tier** with `IN (account_ids)` — N queries where N is the number of plans (currently 3), not N accounts. Scales fine to thousands of users.
+
+## OAuth (Phase 5)
+
+Google and GitHub providers are wired in `lib/auth.server.ts` and **conditionally enabled** based on env vars. With neither configured (dev default), only the magic-link form renders on `/login` and `/signup`. As soon as a provider's `_CLIENT_ID` and `_CLIENT_SECRET` pair appears in env, the corresponding button shows up.
+
+### Google
+
+1. Provision an OAuth client at <https://console.cloud.google.com/apis/credentials>
+2. Authorized redirect URI: `${BETTER_AUTH_URL}/api/auth/callback/google` (e.g. `https://blockrate.app/api/auth/callback/google`)
+3. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in the deployment env
+
+### GitHub
+
+1. Create an OAuth app at <https://github.com/settings/developers>
+2. Authorization callback URL: `${BETTER_AUTH_URL}/api/auth/callback/github`
+3. **Required scope: `user:email`** — without it, signup fails with `email_not_found` for any user with a private email. The auth config requests this explicitly.
+4. Set `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` in the deployment env
+
+## Magic-link email via Resend (Phase 5)
+
+`lib/mailer.server.ts` chooses dev console-log vs real Resend send via this matrix:
+
+| `NODE_ENV` | `RESEND_API_KEY` | Behaviour |
+| --- | --- | --- |
+| development | unset | `console.log` (dev convenience) |
+| development | set | real Resend send (handy for QA) |
+| **production** | unset | **throws** — fail-closed against deployment bugs |
+| production | set | real Resend send |
+
+Setup:
+
+1. Get an API key at <https://resend.com/api-keys>
+2. Set `RESEND_API_KEY` in production env
+3. Optionally override `EMAIL_FROM` (default: `blockrate <magic@blockrate.app>`)
+4. Verify your sending domain in Resend before deploying
+
+## Dogfooding (Phase 5)
+
+`components/dogfood.tsx` adds `useBlockRate` from the OSS `block-rate` library to the root layout, reporting to **its own** `/api/ingest`. The blockrate.app marketing surface measures itself the same way customers measure theirs — putting our money where our mouth is for a "your analytics are blocked more than you think" product.
+
+Setup post-deploy:
+
+1. Sign up on the deployed blockrate.app with an internal admin email
+2. Visit `/app/keys`, create a new key named "blockrate-app" with service "blockrate-app"
+3. **Copy the plaintext** (it's shown only once)
+4. Set `VITE_BLOCKRATE_PUBLIC_KEY=<plaintext>` as a Railway env var on the web service
+5. Trigger a redeploy so Vite picks up the new client-side env
+
+When the var is unset (dev or pre-bootstrap), `useBlockRate` is configured with `sampleRate: 0` and an empty providers list — a complete no-op.
+
+## Railway deploy (Phase 5)
+
+The `nixpacks.toml` shipped with the TanStack Start scaffold + the `start` script in `package.json` are sufficient. Steps:
+
+1. **Create a Railway project** with three services:
+   - `web` — this directory, deploys via Nixpacks
+   - `Postgres` — managed addon
+   - `Cron` — separate service for the nightly retention sweep
+2. **Set web service env vars** (in Railway → Variables):
+   ```
+   DATABASE_URL=${{Postgres.DATABASE_URL}}
+   BETTER_AUTH_SECRET=<openssl rand -base64 32>
+   BETTER_AUTH_URL=https://blockrate.app
+   CRON_SECRET=<openssl rand -base64 32>
+   RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxx
+   GOOGLE_CLIENT_ID=...
+   GOOGLE_CLIENT_SECRET=...
+   GITHUB_CLIENT_ID=...
+   GITHUB_CLIENT_SECRET=...
+   ```
+3. **Custom domain**: Railway → Settings → Domains, add `blockrate.app` and `www.blockrate.app`. TLS auto-provisioned via Let's Encrypt.
+4. **Cron service** (separate Railway service, same project):
+   - Schedule: `0 3 * * *`
+   - Command: `curl -fsS -X POST -H "Authorization: Bearer $CRON_SECRET" https://blockrate.app/api/internal/retention`
+5. **Bootstrap dogfood key**: see "Dogfooding" above. Then add `VITE_BLOCKRATE_PUBLIC_KEY` to the web service vars and redeploy.
+6. **Smoke tests** post-deploy:
+   ```bash
+   curl -fsS https://blockrate.app/api/health                     # → "ok"
+   curl -fsS -o /dev/null -w "%{http_code}\n" https://blockrate.app/  # → 200
+   curl -fsS -X POST https://blockrate.app/api/ingest \
+     -H "Content-Type: application/json" -H "x-block-rate-key: $YOUR_KEY" \
+     -d '{"timestamp":"...","url":"/","userAgent":"...","providers":[...]}'
+   # → 204
+   ```
+
+### Migrations on start (not build)
+
+The `start` script runs `bun run db:migrate` before booting the server. **Do not** put migration in the build step — Railway's build image cannot reach the Postgres addon. Migrations are no-op if already applied.
+
+### Multi-instance scaling
+
+The in-process `TokenBucketLimiter` doesn't survive horizontal scaling. For Phase 1 single-instance Railway this is fine. When you go multi-instance:
+
+- Switch the limiter to a Postgres-backed or Redis-backed implementation
+- Bump `postgres-js` `max` from 5 to ~8 per instance, with ≤2 instances under Railway's 20-conn cap (or move to PgBouncer)
 
 ## Project structure
 
