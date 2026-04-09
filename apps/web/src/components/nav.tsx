@@ -1,8 +1,24 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { SiGithub } from "@icons-pack/react-simple-icons";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "./theme-toggle";
+import { authClient } from "@/lib/auth-client";
 import type { NavSession } from "@/server/session";
 
 export function Nav({ session }: { session: NavSession }) {
+  const navigate = useNavigate();
+
+  async function onSignOut() {
+    await authClient.signOut();
+    navigate({ to: "/" });
+  }
+
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
@@ -47,25 +63,50 @@ export function Nav({ session }: { session: NavSession }) {
             className="hidden rounded-md p-2 text-muted-foreground transition-[background-color,color] duration-150 ease-out hover:bg-accent hover:text-foreground sm:inline-block"
             aria-label="GitHub"
           >
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden>
-              <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.92.58.1.79-.25.79-.56v-2.06c-3.2.7-3.87-1.36-3.87-1.36-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.69 1.24 3.34.95.1-.74.4-1.24.72-1.53-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.05 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.62 1.59.23 2.76.11 3.05.74.81 1.18 1.84 1.18 3.1 0 4.42-2.69 5.39-5.25 5.68.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z" />
-            </svg>
+            <SiGithub size={20} />
           </a>
           <ThemeToggle />
           {session ? (
-            <Link
-              to="/app"
-              search={{ since: 7 }}
-              className="ml-1 inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out active:scale-[0.96]"
-            >
-              <span
-                className="flex size-6 items-center justify-center rounded-full bg-primary-foreground/20 text-xs font-semibold"
-                aria-hidden
+            <div className="ml-1 flex items-center gap-1.5">
+              <Link
+                to="/app"
+                search={{ since: 7 }}
+                className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out active:scale-[0.96]"
               >
-                {(session.name?.[0] ?? session.email[0]).toUpperCase()}
-              </span>
-              Dashboard
-            </Link>
+                Dashboard
+              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex size-9 items-center justify-center rounded-full bg-muted text-sm font-semibold transition-[background-color] duration-150 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    aria-label="Account menu"
+                  >
+                    {(session.name?.[0] ?? session.email[0]).toUpperCase()}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-2 py-1.5">
+                    <p className="text-sm font-medium">{session.name ?? "Account"}</p>
+                    <p className="text-xs text-muted-foreground">{session.email}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/app" search={{ since: 7 }}>Overview</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/app/keys">API keys</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/app/settings">Settings</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={onSignOut}>
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           ) : (
             <Link
               to="/login"
