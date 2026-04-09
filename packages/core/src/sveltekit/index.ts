@@ -8,7 +8,7 @@ export type { BlockRateHandlerOptions } from "../handler";
  *
  * ```ts
  * // src/routes/api/block-rate/+server.ts
- * import { createBlockRateHandler } from "block-rate/sveltekit";
+ * import { createBlockRateHandler } from "blockrate/sveltekit";
  *
  * export const POST = createBlockRateHandler({
  *   onResult: async (result) => console.log(result),

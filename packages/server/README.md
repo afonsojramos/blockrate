@@ -1,6 +1,6 @@
 # block-rate-server
 
-Self-hostable ingestion server and dashboard for [block-rate](https://github.com/afonsojramos/block-rate). One command, one binary, your data on your infrastructure.
+Self-hostable ingestion server and dashboard for [block-rate](https://github.com/afonsojramos/blockrate). One command, one binary, your data on your infrastructure.
 
 ```bash
 bunx block-rate-server

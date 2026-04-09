@@ -72,8 +72,8 @@ function RootLayout() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-6 py-8 text-sm text-muted-foreground sm:flex-row">
           <p>© 2026 blockrate</p>
           <div className="flex gap-4">
-            <a href="https://github.com/afonsojramos/block-rate" className="hover:text-foreground">OSS</a>
-            <a href="https://github.com/afonsojramos/block-rate/tree/main/packages/server" className="hover:text-foreground">Self-host</a>
+            <a href="https://github.com/afonsojramos/blockrate" className="hover:text-foreground">OSS</a>
+            <a href="https://github.com/afonsojramos/blockrate/tree/main/packages/server" className="hover:text-foreground">Self-host</a>
             <a href="/privacy" className="hover:text-foreground">Privacy</a>
           </div>
         </div>

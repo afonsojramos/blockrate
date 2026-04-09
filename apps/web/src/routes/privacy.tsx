@@ -194,7 +194,7 @@ function Privacy() {
           <p>
             If you'd rather not send any data to us at all, the{" "}
             <a
-              href="https://github.com/afonsojramos/block-rate/tree/main/packages/server"
+              href="https://github.com/afonsojramos/blockrate/tree/main/packages/server"
               className="underline-offset-4 hover:underline"
             >
               self-hosted server

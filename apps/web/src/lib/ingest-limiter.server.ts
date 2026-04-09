@@ -8,7 +8,7 @@
  * Redis-backed implementation.
  */
 
-import { TokenBucketLimiter } from "block-rate-server/rate-limit";
+import { TokenBucketLimiter } from "blockrate-server/rate-limit";
 
 // 60 events/minute burst, refilled at 2/sec → ~120 events/minute sustained.
 // Per api_key, not per IP, so a customer with multiple users on one key

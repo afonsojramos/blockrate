@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { BarChart3, Eye, Shield } from 'lucide-react'
 import { CodeBlock } from '@/components/code-block'
 
 export const Route = createFileRoute('/')({ component: Landing })
@@ -61,7 +60,7 @@ function Landing() {
             Get a hosted account
           </Link>
           <a
-            href="https://github.com/afonsojramos/block-rate"
+            href="https://github.com/afonsojramos/blockrate"
             className="inline-flex h-10 items-center justify-center rounded-md border border-border bg-transparent px-5 text-sm font-medium text-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-accent active:scale-[0.96]"
           >
             View on GitHub
@@ -70,7 +69,7 @@ function Landing() {
       </section>
 
       <section className="mt-16">
-        <CodeBlock>{`import { BlockRate, serverReporter } from "block-rate";
+        <CodeBlock>{`import { BlockRate, serverReporter } from "blockrate";
 
 new BlockRate({
   providers: ["optimizely", "posthog", "ga4"],
@@ -88,37 +87,22 @@ new BlockRate({
             title: 'Per-provider, not "is there a blocker"',
             body:
               'Block rate is checked per service. Optimizely might be blocked while PostHog gets through. Other libraries only tell you whether ANY blocker exists.',
-            icon: BarChart3,
-            accent: 'var(--rate-high)',
           },
           {
             title: 'First-party, not third-party',
             body:
               'Bundles into your own code. Under 2 KB gzipped. The detection script itself can\u2019t be blocked because it isn\u2019t served from a third-party CDN.',
-            icon: Shield,
-            accent: 'var(--rate-low)',
           },
           {
             title: 'Honest about the gap',
             body:
               'See the exact percentage of users who can\u2019t reach each tool, sliced by browser family. No fingerprinting, no personal data.',
-            icon: Eye,
-            accent: 'var(--primary)',
           },
-        ].map((card, i) => (
+        ].map((card) => (
           <article
             key={card.title}
-            className="animate-card-enter rounded-lg border border-border border-l-[3px] bg-card p-6 transition-[border-left-width] duration-150 ease-out hover:border-l-[4px]"
-            style={{
-              borderLeftColor: card.accent,
-              animationDelay: `${i * 100}ms`,
-            }}
+            className="rounded-lg border border-border bg-card p-6"
           >
-            <card.icon
-              size={24}
-              className="mb-3"
-              style={{ color: card.accent }}
-            />
             <h2 className="text-base font-semibold">{card.title}</h2>
             <p className="mt-2 text-sm text-muted-foreground">{card.body}</p>
           </article>

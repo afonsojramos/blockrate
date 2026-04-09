@@ -1,10 +1,10 @@
 {
-  "name": "block-rate-server",
+  "name": "blockrate-server",
   "version": "0.1.0",
   "description": "Self-hostable ingestion server and dashboard for block-rate.",
   "type": "module",
   "bin": {
-    "block-rate-server": "./src/cli.ts"
+    "blockrate-server": "./src/cli.ts"
   },
   "main": "./src/index.ts",
   "types": "./src/index.ts",

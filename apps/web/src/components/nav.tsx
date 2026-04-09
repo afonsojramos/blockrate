@@ -69,7 +69,7 @@ export function Nav({ session }: { session: NavSession }) {
             Docs
           </Link>
           <a
-            href="https://github.com/afonsojramos/block-rate"
+            href="https://github.com/afonsojramos/blockrate"
             className="hidden rounded-md p-2 text-muted-foreground transition-[background-color,color] duration-150 ease-out hover:bg-accent hover:text-foreground sm:inline-block"
             aria-label="GitHub"
           >
@@ -90,14 +90,11 @@ export function Nav({ session }: { session: NavSession }) {
 
           {session ? (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="ml-1 flex size-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground transition-[background-color,transform] duration-150 hover:bg-primary/80 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  aria-label="Account menu"
-                >
-                  {(session.name?.[0] ?? session.email[0]).toUpperCase()}
-                </button>
+              <DropdownMenuTrigger
+                className="ml-1 flex size-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground transition-[background-color,transform] duration-150 hover:bg-primary/80 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                aria-label="Account menu"
+              >
+                {(session.name?.[0] ?? session.email[0]).toUpperCase()}
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <div className="px-2 py-1.5">
@@ -169,7 +166,7 @@ export function Nav({ session }: { session: NavSession }) {
               Docs
             </Link>
             <a
-              href="https://github.com/afonsojramos/block-rate"
+              href="https://github.com/afonsojramos/blockrate"
               className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-[background-color,color] duration-150 ease-out hover:bg-accent hover:text-foreground"
             >
               <SiGithub size={16} />

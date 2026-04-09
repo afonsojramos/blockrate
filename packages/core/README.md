@@ -2,7 +2,7 @@
 
 Know what your ad blockers are hiding from your analytics. A tiny, zero-dependency library that measures the **per-provider** block rate of the third-party tools your app depends on.
 
-> **Reporters welcome.** Pair this OSS client with [`block-rate-server`](https://github.com/afonsojramos/block-rate/tree/main/packages/server) for a one-command self-hosted ingestion server, or use [blockrate.app](https://blockrate.app) for a hosted dashboard with zero infrastructure. The library is identical either way — pick the reporter that fits.
+> **Reporters welcome.** Pair this OSS client with [`block-rate-server`](https://github.com/afonsojramos/blockrate/tree/main/packages/server) for a one-command self-hosted ingestion server, or use [blockrate.app](https://blockrate.app) for a hosted dashboard with zero infrastructure. The library is identical either way — pick the reporter that fits.
 
 ## Why
 

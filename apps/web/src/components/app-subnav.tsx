@@ -10,18 +10,19 @@ export function AppSubnav() {
   return (
     <div className="border-b border-border bg-background">
       <nav
-        className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-6"
+        className="mx-auto flex max-w-5xl gap-1 px-6"
         aria-label="Dashboard sections"
       >
         {TABS.map((tab) => (
           <Link
             key={tab.to}
             to={tab.to}
+            search={tab.to === "/app" ? { since: 7 } : undefined}
             className="relative inline-flex h-12 items-center px-3 text-sm font-medium text-muted-foreground transition-[color] duration-150 ease-out hover:text-foreground"
             activeProps={{
               className: "text-foreground",
             }}
-            activeOptions={{ exact: tab.to === "/app" }}
+            activeOptions={{ exact: tab.to === "/app", includeSearch: false }}
           >
             {({ isActive }) => (
               <>

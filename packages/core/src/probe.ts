@@ -26,7 +26,7 @@ export async function probe(
     ? setTimeout(() => controller.abort(), timeoutMs)
     : null;
   try {
-    const response = await fetch(url, {
+    await fetch(url, {
       method: "HEAD",
       mode: "cors",
       cache: "no-store",

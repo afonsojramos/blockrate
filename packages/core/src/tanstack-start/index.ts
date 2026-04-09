@@ -9,7 +9,7 @@ export type { BlockRateHandlerOptions } from "../handler";
  * ```ts
  * // src/routes/api/block-rate.ts
  * import { createFileRoute } from "@tanstack/react-router";
- * import { createBlockRateHandler } from "block-rate/tanstack-start";
+ * import { createBlockRateHandler } from "blockrate/tanstack-start";
  *
  * const handler = createBlockRateHandler({
  *   onResult: async (result) => console.log(result),

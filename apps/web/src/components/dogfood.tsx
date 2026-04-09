@@ -1,5 +1,5 @@
-import { serverReporter } from "block-rate";
-import { useBlockRate } from "block-rate/react";
+import { serverReporter } from "blockrate";
+import { useBlockRate } from "blockrate/react";
 
 /**
  * Dogfood: blockrate.app uses the block-rate library on itself, reporting

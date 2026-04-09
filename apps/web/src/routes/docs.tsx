@@ -69,7 +69,7 @@ function Docs() {
           after signing up:
         </p>
 
-        <CodeBlock>{`import { BlockRate, serverReporter } from "block-rate";
+        <CodeBlock>{`import { BlockRate, serverReporter } from "blockrate";
 
 new BlockRate({
   providers: ["optimizely", "posthog", "ga4"],
@@ -83,7 +83,7 @@ new BlockRate({
         <p className="text-sm text-muted-foreground">
           Self-hosted with your own ingestion server (
           <a
-            href="https://github.com/afonsojramos/block-rate/tree/main/packages/server"
+            href="https://github.com/afonsojramos/blockrate/tree/main/packages/server"
             className="underline-offset-4 hover:underline"
           >
             block-rate-server
@@ -148,7 +148,7 @@ new BlockRate({
           Custom providers are a single function:
         </p>
 
-        <CodeBlock>{`import { BlockRate, createProvider } from "block-rate";
+        <CodeBlock>{`import { BlockRate, createProvider } from "blockrate";
 
 const myProvider = createProvider({
   name: "my-analytics",
@@ -165,7 +165,7 @@ new BlockRate({ providers: [myProvider], reporter: console.log }).check();`}</Co
         </h2>
 
         <h3 className="mt-4 text-base font-medium">React</h3>
-        <CodeBlock>{`import { useBlockRate } from "block-rate/react";
+        <CodeBlock>{`import { useBlockRate } from "blockrate/react";
 
 useBlockRate({
   providers: ["optimizely", "posthog"],
@@ -174,7 +174,7 @@ useBlockRate({
 
         <h3 className="mt-4 text-base font-medium">Next.js</h3>
         <CodeBlock>{`// app/layout.tsx
-import { BlockRateScript } from "block-rate/next";
+import { BlockRateScript } from "blockrate/next";
 
 export default function RootLayout({ children }) {
   return (
@@ -193,7 +193,7 @@ export default function RootLayout({ children }) {
 
         <h3 className="mt-4 text-base font-medium">SvelteKit</h3>
         <CodeBlock>{`// src/routes/api/block-rate/+server.ts
-import { createBlockRateHandler } from "block-rate/sveltekit";
+import { createBlockRateHandler } from "blockrate/sveltekit";
 
 export const POST = createBlockRateHandler({
   onResult: async (result) => console.log(result),
@@ -202,7 +202,7 @@ export const POST = createBlockRateHandler({
         <h3 className="mt-4 text-base font-medium">TanStack Start</h3>
         <CodeBlock>{`// src/routes/api/block-rate.ts
 import { createFileRoute } from "@tanstack/react-router";
-import { createBlockRateHandler } from "block-rate/tanstack-start";
+import { createBlockRateHandler } from "blockrate/tanstack-start";
 
 const handler = createBlockRateHandler({
   onResult: async (result) => console.log(result),
@@ -222,7 +222,7 @@ export const Route = createFileRoute("/api/block-rate")({
         </Link>{" "}
         · Self-hosting?{" "}
         <a
-          href="https://github.com/afonsojramos/block-rate/tree/main/packages/server"
+          href="https://github.com/afonsojramos/blockrate/tree/main/packages/server"
           className="underline-offset-4 hover:underline"
         >
           See packages/server
