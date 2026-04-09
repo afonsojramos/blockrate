@@ -5,9 +5,12 @@
 #   1. The lockfile is bun.lock (npm/yarn can't read it)
 #   2. The migration runner (src/lib/db/migrate.ts) is TypeScript — Bun runs it natively
 #   3. The Nitro output (.output/server/index.mjs) runs fine under both Node and Bun
-#   4. oven/bun:1.3-alpine is ~150MB, comparable to node:22-alpine
+#   4. oven/bun:1.3.11-alpine is ~150MB, comparable to node:22-alpine
+#
+# IMPORTANT: pin the exact Bun version so --frozen-lockfile never drifts
+# between local dev and Railway. Update this + mise.toml together.
 
-FROM oven/bun:1.3-alpine AS base
+FROM oven/bun:1.3.11-alpine AS base
 
 # ─── Dependencies ────────────────────────────────────────────────────────
 
@@ -20,7 +23,7 @@ COPY packages/core/package.json packages/core/
 COPY packages/server/package.json packages/server/
 COPY apps/web/package.json apps/web/
 
-RUN bun install
+RUN bun install --frozen-lockfile
 
 # ─── Build ───────────────────────────────────────────────────────────────
 
