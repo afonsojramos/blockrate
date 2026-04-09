@@ -1,9 +1,192 @@
 {
-  "id": "230f75c4-dcd8-4390-8d57-b6729cd6fe3e",
+  "id": "96c9f9fd-2af3-4679-a923-24f24d04ca3c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.api_keys": {
+      "name": "api_keys",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "key_prefix": {
+          "name": "key_prefix",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "key_hash": {
+          "name": "key_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "service": {
+          "name": "service",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'default'"
+        },
+        "last_used_at": {
+          "name": "last_used_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_api_keys_account": {
+          "name": "idx_api_keys_account",
+          "columns": [
+            {
+              "expression": "account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_api_keys_prefix": {
+          "name": "idx_api_keys_prefix",
+          "columns": [
+            {
+              "expression": "key_prefix",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "api_keys_account_id_app_accounts_id_fk": {
+          "name": "api_keys_account_id_app_accounts_id_fk",
+          "tableFrom": "api_keys",
+          "tableTo": "app_accounts",
+          "columnsFrom": [
+            "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "api_keys_key_hash_unique": {
+          "name": "api_keys_key_hash_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "key_hash"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.app_accounts": {
+      "name": "app_accounts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "plan": {
+          "name": "plan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'free'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "app_accounts_user_id_user_id_fk": {
+          "name": "app_accounts_user_id_user_id_fk",
+          "tableFrom": "app_accounts",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "app_accounts_user_id_unique": {
+          "name": "app_accounts_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.events": {
       "name": "events",
       "schema": "",
@@ -14,8 +197,14 @@
           "primaryKey": true,
           "notNull": true
         },
-        "tenant_id": {
-          "name": "tenant_id",
+        "account_id": {
+          "name": "account_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "api_key_id": {
+          "name": "api_key_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
@@ -66,11 +255,11 @@
         }
       },
       "indexes": {
-        "idx_events_tenant_service": {
-          "name": "idx_events_tenant_service",
+        "idx_events_account_service": {
+          "name": "idx_events_account_service",
           "columns": [
             {
-              "expression": "tenant_id",
+              "expression": "account_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -83,6 +272,21 @@
             },
             {
               "expression": "timestamp",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_events_api_key": {
+          "name": "idx_events_api_key",
+          "columns": [
+            {
+              "expression": "api_key_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -110,12 +314,25 @@
         }
       },
       "foreignKeys": {
-        "events_tenant_id_tenants_id_fk": {
-          "name": "events_tenant_id_tenants_id_fk",
+        "events_account_id_app_accounts_id_fk": {
+          "name": "events_account_id_app_accounts_id_fk",
           "tableFrom": "events",
-          "tableTo": "tenants",
+          "tableTo": "app_accounts",
           "columnsFrom": [
-            "tenant_id"
+            "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "events_api_key_id_api_keys_id_fk": {
+          "name": "events_api_key_id_api_keys_id_fk",
+          "tableFrom": "events",
+          "tableTo": "api_keys",
+          "columnsFrom": [
+            "api_key_id"
           ],
           "columnsTo": [
             "id"
@@ -130,48 +347,56 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.tenants": {
-      "name": "tenants",
+    "public.usage_counters": {
+      "name": "usage_counters",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
+        "account_id": {
+          "name": "account_id",
+          "type": "integer",
+          "primaryKey": false,
           "notNull": true
         },
-        "name": {
-          "name": "name",
+        "year_month": {
+          "name": "year_month",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "api_key": {
-          "name": "api_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
+        "event_count": {
+          "name": "event_count",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "default": "now()"
+          "default": 0
         }
       },
       "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "tenants_api_key_unique": {
-          "name": "tenants_api_key_unique",
-          "nullsNotDistinct": false,
+      "foreignKeys": {
+        "usage_counters_account_id_app_accounts_id_fk": {
+          "name": "usage_counters_account_id_app_accounts_id_fk",
+          "tableFrom": "usage_counters",
+          "tableTo": "app_accounts",
+          "columnsFrom": [
+            "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "usage_counters_account_id_year_month_pk": {
+          "name": "usage_counters_account_id_year_month_pk",
           "columns": [
-            "api_key"
+            "account_id",
+            "year_month"
           ]
         }
       },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

@@ -1,7 +1,29 @@
 CREATE TYPE "public"."block_rate_status" AS ENUM('loaded', 'blocked');--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "api_keys" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"account_id" integer NOT NULL,
+	"name" text NOT NULL,
+	"key_prefix" text NOT NULL,
+	"key_hash" text NOT NULL,
+	"service" text DEFAULT 'default' NOT NULL,
+	"last_used_at" timestamp with time zone,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"revoked_at" timestamp with time zone,
+	CONSTRAINT "api_keys_key_hash_unique" UNIQUE("key_hash")
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "app_accounts" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"plan" text DEFAULT 'free' NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "app_accounts_user_id_unique" UNIQUE("user_id")
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "events" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"tenant_id" integer NOT NULL,
+	"account_id" integer NOT NULL,
+	"api_key_id" integer NOT NULL,
 	"service" text DEFAULT 'default' NOT NULL,
 	"timestamp" timestamp with time zone NOT NULL,
 	"url" text NOT NULL,
@@ -11,12 +33,11 @@ CREATE TABLE IF NOT EXISTS "events" (
 	"latency" integer NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "tenants" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"name" text NOT NULL,
-	"api_key" text NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "tenants_api_key_unique" UNIQUE("api_key")
+CREATE TABLE IF NOT EXISTS "usage_counters" (
+	"account_id" integer NOT NULL,
+	"year_month" text NOT NULL,
+	"event_count" integer DEFAULT 0 NOT NULL,
+	CONSTRAINT "usage_counters_account_id_year_month_pk" PRIMARY KEY("account_id","year_month")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "account" (
@@ -68,7 +89,31 @@ CREATE TABLE IF NOT EXISTS "verification" (
 );
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "events" ADD CONSTRAINT "events_tenant_id_tenants_id_fk" FOREIGN KEY ("tenant_id") REFERENCES "public"."tenants"("id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "api_keys" ADD CONSTRAINT "api_keys_account_id_app_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."app_accounts"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "app_accounts" ADD CONSTRAINT "app_accounts_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "events" ADD CONSTRAINT "events_account_id_app_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."app_accounts"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "events" ADD CONSTRAINT "events_api_key_id_api_keys_id_fk" FOREIGN KEY ("api_key_id") REFERENCES "public"."api_keys"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "usage_counters" ADD CONSTRAINT "usage_counters_account_id_app_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."app_accounts"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -85,7 +130,10 @@ EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "idx_events_tenant_service" ON "events" USING btree ("tenant_id","service","timestamp");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_api_keys_account" ON "api_keys" USING btree ("account_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_api_keys_prefix" ON "api_keys" USING btree ("key_prefix");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_events_account_service" ON "events" USING btree ("account_id","service","timestamp");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_events_api_key" ON "events" USING btree ("api_key_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_events_provider" ON "events" USING btree ("provider");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "account_userId_idx" ON "account" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "session_userId_idx" ON "session" USING btree ("user_id");--> statement-breakpoint
