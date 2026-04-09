@@ -20,6 +20,7 @@ import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AuthedSettingsRouteImport } from './routes/_authed/settings'
 import { Route as AuthedKeysRouteImport } from './routes/_authed/keys'
 import { Route as AuthedAppRouteImport } from './routes/_authed/app'
+import { Route as ApiInternalRetentionRouteImport } from './routes/api/internal/retention'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
 
 const SignupRoute = SignupRouteImport.update({
@@ -76,6 +77,11 @@ const AuthedAppRoute = AuthedAppRouteImport.update({
   path: '/app',
   getParentRoute: () => AuthedRoute,
 } as any)
+const ApiInternalRetentionRoute = ApiInternalRetentionRouteImport.update({
+  id: '/api/internal/retention',
+  path: '/api/internal/retention',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/internal/retention': typeof ApiInternalRetentionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/internal/retention': typeof ApiInternalRetentionRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/internal/retention': typeof ApiInternalRetentionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/api/ingest'
     | '/api/auth/$'
+    | '/api/internal/retention'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/api/ingest'
     | '/api/auth/$'
+    | '/api/internal/retention'
   id:
     | '__root__'
     | '/'
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/api/ingest'
     | '/api/auth/$'
+    | '/api/internal/retention'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -176,6 +188,7 @@ export interface RootRouteChildren {
   ApiHealthRoute: typeof ApiHealthRoute
   ApiIngestRoute: typeof ApiIngestRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiInternalRetentionRoute: typeof ApiInternalRetentionRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -257,6 +270,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAppRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/api/internal/retention': {
+      id: '/api/internal/retention'
+      path: '/api/internal/retention'
+      fullPath: '/api/internal/retention'
+      preLoaderRoute: typeof ApiInternalRetentionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -292,6 +312,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiHealthRoute: ApiHealthRoute,
   ApiIngestRoute: ApiIngestRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiInternalRetentionRoute: ApiInternalRetentionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
