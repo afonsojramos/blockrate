@@ -24,13 +24,11 @@ interface SendArgs {
 
 export async function sendEmail({ to, subject, text }: SendArgs): Promise<void> {
   if (!capabilities.resend) {
-    if (env.NODE_ENV === "production") {
-      throw new Error(
-        "RESEND_API_KEY is not set in production — refusing to silently drop email"
-      );
-    }
+    // Log the email to stdout — in production this shows up in Railway logs
+    // so you can copy-paste the magic link URL to sign in. Once RESEND_API_KEY
+    // is set, this code path is never taken.
     console.log(
-      `[mailer:dev] to=${to} subject="${subject}"\n${text.replace(/^/gm, "  ")}`
+      `[mailer] to=${to} subject="${subject}"\n${text.replace(/^/gm, "  ")}`
     );
     return;
   }
