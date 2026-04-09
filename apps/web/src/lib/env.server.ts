@@ -23,6 +23,12 @@ const schema = z.object({
     .string()
     .min(32, "≥32 chars; generate via `openssl rand -base64 32`"),
   BETTER_AUTH_URL: z.string().url().default("http://localhost:3000"),
+  /**
+   * Bearer token for /api/internal/retention. Optional at boot — validated
+   * lazily inside the handler. If unset in production, the retention
+   * endpoint refuses all requests (fail closed).
+   */
+  CRON_SECRET: z.string().min(32).optional(),
 });
 
 function loadEnv() {
