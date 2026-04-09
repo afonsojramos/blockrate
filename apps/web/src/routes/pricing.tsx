@@ -15,7 +15,7 @@ const tiers = [
     features: [
       "100,000 events / month",
       "3 API keys",
-      "7-day data retention",
+      "30-day history",
       "Per-provider block-rate dashboard",
     ],
   },
@@ -29,7 +29,7 @@ const tiers = [
     features: [
       "1M events / month",
       "Unlimited API keys",
-      "30-day data retention",
+      "90-day history",
       "Browser-family slicing",
     ],
   },
@@ -43,7 +43,7 @@ const tiers = [
     features: [
       "10M events / month",
       "Multi-seat accounts",
-      "90-day data retention",
+      "1-year history",
       "Priority support",
     ],
   },

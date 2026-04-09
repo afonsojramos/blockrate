@@ -91,14 +91,20 @@ export function Nav({ session }: { session: NavSession }) {
                     <p className="text-xs text-muted-foreground">{session.email}</p>
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/app" search={{ since: 7 }}>Overview</Link>
+                  <DropdownMenuItem
+                    onClick={() => navigate({ to: "/app", search: { since: 7 } })}
+                  >
+                    Overview
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/app/keys">API keys</Link>
+                  <DropdownMenuItem
+                    onClick={() => navigate({ to: "/app/keys" })}
+                  >
+                    API keys
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/app/settings">Settings</Link>
+                  <DropdownMenuItem
+                    onClick={() => navigate({ to: "/app/settings" })}
+                  >
+                    Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={onSignOut}>

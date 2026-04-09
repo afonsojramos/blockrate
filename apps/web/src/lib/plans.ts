@@ -1,9 +1,8 @@
 /**
  * Plan tier configuration. Single source of truth for quota limits.
  *
- * Phase 2 ships only `free`. The Pro/Team rows exist so the pricing page
- * and the keys/settings UI can render labels without hardcoded strings,
- * but they're not enforceable until billing lands in Phase 5.
+ * Differentiation is on volume + keys + features, not on deleting data.
+ * Free gets 30 days — generous enough that hobbyists never feel squeezed.
  */
 
 export type PlanName = "free" | "pro" | "team";
@@ -27,24 +26,24 @@ export const PLANS: Record<PlanName, Plan> = {
     label: "Free",
     eventsPerMonth: 100_000,
     maxKeys: 3,
-    retentionDays: 7,
-    dashboardHistoryDays: 7,
+    retentionDays: 30,
+    dashboardHistoryDays: 30,
   },
   pro: {
     name: "pro",
     label: "Pro",
     eventsPerMonth: 1_000_000,
     maxKeys: 50,
-    retentionDays: 30,
-    dashboardHistoryDays: 30,
+    retentionDays: 90,
+    dashboardHistoryDays: 90,
   },
   team: {
     name: "team",
     label: "Team",
     eventsPerMonth: 10_000_000,
     maxKeys: 500,
-    retentionDays: 90,
-    dashboardHistoryDays: 90,
+    retentionDays: 365,
+    dashboardHistoryDays: 365,
   },
 };
 
