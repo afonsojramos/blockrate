@@ -5,33 +5,33 @@
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./src/index.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./src/index.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./react": {
-      "types": "./dist/react/index.d.ts",
+      "types": "./src/react/index.ts",
       "import": "./dist/react/index.js"
     },
     "./next": {
-      "types": "./dist/next/index.d.ts",
+      "types": "./src/next/index.tsx",
       "import": "./dist/next/index.js"
     },
     "./sveltekit": {
-      "types": "./dist/sveltekit/index.d.ts",
+      "types": "./src/sveltekit/index.ts",
       "import": "./dist/sveltekit/index.js"
     },
     "./tanstack-start": {
-      "types": "./dist/tanstack-start/index.d.ts",
+      "types": "./src/tanstack-start/index.ts",
       "import": "./dist/tanstack-start/index.js"
     }
   },
   "files": ["dist", "src"],
   "scripts": {
-    "build": "bun build ./src/index.ts --outdir ./dist --target browser --format esm --minify && bun build ./src/index.ts --outdir ./dist --target browser --format cjs --outfile index.cjs --minify && bun build ./src/react/index.ts --outdir ./dist/react --target browser --format esm --external react --minify && bun build ./src/next/index.ts --outdir ./dist/next --target browser --format esm --external react --minify && bun build ./src/sveltekit/index.ts --outdir ./dist/sveltekit --target node --format esm --minify && bun build ./src/tanstack-start/index.ts --outdir ./dist/tanstack-start --target node --format esm --minify",
+    "build": "bun build ./src/index.ts --outdir ./dist --target browser --format esm --minify && bun build ./src/index.ts --outfile ./dist/index.cjs --target browser --format cjs --minify && bun build ./src/react/index.ts --outdir ./dist/react --target browser --format esm --external react --minify && bun build ./src/next/index.ts --outdir ./dist/next --target browser --format esm --external react --minify && bun build ./src/sveltekit/index.ts --outdir ./dist/sveltekit --target node --format esm --minify && bun build ./src/tanstack-start/index.ts --outdir ./dist/tanstack-start --target node --format esm --minify",
     "test": "bun test"
   },
   "peerDependencies": {
