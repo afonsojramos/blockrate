@@ -17,6 +17,7 @@ import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiIngestRouteImport } from './routes/api/ingest'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as AuthedSettingsRouteImport } from './routes/_authed/settings'
 import { Route as AuthedKeysRouteImport } from './routes/_authed/keys'
 import { Route as AuthedAppRouteImport } from './routes/_authed/app'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
@@ -60,6 +61,11 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
   path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthedSettingsRoute = AuthedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const AuthedKeysRoute = AuthedKeysRouteImport.update({
   id: '/keys',
   path: '/keys',
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/app': typeof AuthedAppRoute
   '/keys': typeof AuthedKeysRoute
+  '/settings': typeof AuthedSettingsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/app': typeof AuthedAppRoute
   '/keys': typeof AuthedKeysRoute
+  '/settings': typeof AuthedSettingsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_authed/app': typeof AuthedAppRoute
   '/_authed/keys': typeof AuthedKeysRoute
+  '/_authed/settings': typeof AuthedSettingsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/app'
     | '/keys'
+    | '/settings'
     | '/api/health'
     | '/api/ingest'
     | '/api/auth/$'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/app'
     | '/keys'
+    | '/settings'
     | '/api/health'
     | '/api/ingest'
     | '/api/auth/$'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_authed/app'
     | '/_authed/keys'
+    | '/_authed/settings'
     | '/api/health'
     | '/api/ingest'
     | '/api/auth/$'
@@ -224,6 +236,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authed/settings': {
+      id: '/_authed/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthedSettingsRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/keys': {
       id: '/_authed/keys'
       path: '/keys'
@@ -251,11 +270,13 @@ declare module '@tanstack/react-router' {
 interface AuthedRouteChildren {
   AuthedAppRoute: typeof AuthedAppRoute
   AuthedKeysRoute: typeof AuthedKeysRoute
+  AuthedSettingsRoute: typeof AuthedSettingsRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedAppRoute: AuthedAppRoute,
   AuthedKeysRoute: AuthedKeysRoute,
+  AuthedSettingsRoute: AuthedSettingsRoute,
 }
 
 const AuthedRouteWithChildren =

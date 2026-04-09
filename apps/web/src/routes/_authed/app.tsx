@@ -1,44 +1,132 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { z } from "zod";
 
-export const Route = createFileRoute("/_authed/app")({
-  component: AppDashboard,
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { StatsTable } from "@/components/stats-table";
+import { getOverviewData } from "@/server/stats";
+
+const search = z.object({
+  service: z.string().optional(),
+  since: z.coerce.number().int().min(1).max(90).default(7),
 });
 
-function AppDashboard() {
-  const { user } = Route.useRouteContext();
+export const Route = createFileRoute("/_authed/app")({
+  validateSearch: (input) => search.parse(input),
+  loaderDeps: ({ search }) => ({
+    since: search.since,
+    service: search.service,
+  }),
+  loader: ({ deps }) =>
+    getOverviewData({
+      data: { sinceDays: deps.since, service: deps.service },
+    }),
+  component: Overview,
+});
+
+const RANGES: { days: number; label: string }[] = [
+  { days: 1, label: "24h" },
+  { days: 7, label: "7d" },
+  { days: 30, label: "30d" },
+];
+
+function Overview() {
+  const data = Route.useLoaderData();
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
+
+  function setRange(days: number) {
+    navigate({ search: { ...search, since: days } });
+  }
+
+  function setService(service: string | undefined) {
+    navigate({ search: { ...search, service } });
+  }
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-16 sm:py-24">
-      <div className="space-y-2">
-        <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
-          signed in
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Welcome back, {user.email}
-        </h1>
-      </div>
+    <main className="mx-auto max-w-5xl px-6 py-12">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+            overview
+          </p>
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight">
+            Block rate by provider
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Last {data.sinceDays} {data.sinceDays === 1 ? "day" : "days"}
+            {data.service ? ` · service: ${data.service}` : ""}
+          </p>
+        </div>
 
-      <div className="mt-10 rounded-xl border border-dashed border-border/60 bg-muted/30 p-8">
-        <p className="text-sm text-muted-foreground">
-          Your block-rate dashboards will appear here. Phase 2 adds live
-          per-provider stats, the API key management UI, and quota tracking.
-        </p>
-      </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Service filter */}
+          {data.services.length > 0 && (
+            <select
+              value={data.service ?? ""}
+              onChange={(e) => setService(e.target.value || undefined)}
+              className="h-9 rounded-md border border-border bg-background px-3 text-sm transition-[background-color] duration-150 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <option value="">All services</option>
+              {data.services.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          )}
 
-      <div className="mt-8 flex gap-4">
-        <Link
-          to="/app/keys"
-          className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out active:scale-[0.96]"
-        >
-          Manage API keys
+          {/* Date range buttons */}
+          <div className="flex items-center rounded-md border border-border p-0.5">
+            {RANGES.filter((r) => r.days <= data.planDashboardHistoryDays).map(
+              (r) => (
+                <button
+                  key={r.days}
+                  type="button"
+                  onClick={() => setRange(r.days)}
+                  className={
+                    "h-8 rounded px-3 text-xs font-medium transition-[background-color,color] duration-150 ease-out " +
+                    (search.since === r.days
+                      ? "bg-accent text-foreground"
+                      : "text-muted-foreground hover:text-foreground")
+                  }
+                >
+                  {r.label}
+                </button>
+              )
+            )}
+          </div>
+        </div>
+      </header>
+
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle className="text-base">
+            {data.stats.length}{" "}
+            {data.stats.length === 1 ? "provider" : "providers"}
+          </CardTitle>
+          <CardDescription>
+            Sorted by block rate, worst first. Bars use the brand gradient
+            (green &lt; 5%, amber 5–15%, red &gt; 15%).
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <StatsTable stats={data.stats} />
+        </CardContent>
+      </Card>
+
+      <p className="mt-6 text-center text-xs text-muted-foreground">
+        Need more history?{" "}
+        <Link to="/pricing" className="underline-offset-4 hover:underline">
+          Upgrade plans coming soon
         </Link>
-        <Link
-          to="/"
-          className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-        >
-          ← Back to landing
-        </Link>
-      </div>
+        .
+      </p>
     </main>
   );
 }
