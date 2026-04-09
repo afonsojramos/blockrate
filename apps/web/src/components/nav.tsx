@@ -21,6 +21,13 @@ export function Nav() {
 
         <div className="flex items-center gap-1 sm:gap-2">
           <Link
+            to="/demo"
+            className="hidden rounded-md px-3 py-2 text-sm text-muted-foreground transition-[background-color,color] duration-150 ease-out hover:bg-accent hover:text-foreground sm:inline-block"
+            activeProps={{ className: "text-foreground" }}
+          >
+            Demo
+          </Link>
+          <Link
             to="/pricing"
             className="hidden rounded-md px-3 py-2 text-sm text-muted-foreground transition-[background-color,color] duration-150 ease-out hover:bg-accent hover:text-foreground sm:inline-block"
             activeProps={{ className: "text-foreground" }}

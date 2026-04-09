@@ -19,8 +19,14 @@ function Landing() {
         </p>
         <div className="flex flex-wrap gap-3 pt-2">
           <Link
-            to="/signup"
+            to="/demo"
             className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out active:scale-[0.96]"
+          >
+            Try the live demo
+          </Link>
+          <Link
+            to="/signup"
+            className="inline-flex h-10 items-center justify-center rounded-md border border-border bg-transparent px-5 text-sm font-medium text-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-accent active:scale-[0.96]"
           >
             Get a hosted account
           </Link>
