@@ -67,52 +67,43 @@ export function Nav({ session }: { session: NavSession }) {
           </a>
           <ThemeToggle />
           {session ? (
-            <div className="ml-1 flex items-center gap-1.5">
-              <Link
-                to="/app"
-                search={{ since: 7 }}
-                className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out active:scale-[0.96]"
-              >
-                Dashboard
-              </Link>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="flex size-9 items-center justify-center rounded-full bg-muted text-sm font-semibold transition-[background-color] duration-150 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                    aria-label="Account menu"
-                  >
-                    {(session.name?.[0] ?? session.email[0]).toUpperCase()}
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <div className="px-2 py-1.5">
-                    <p className="text-sm font-medium">{session.name ?? "Account"}</p>
-                    <p className="text-xs text-muted-foreground">{session.email}</p>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => navigate({ to: "/app", search: { since: 7 } })}
-                  >
-                    Overview
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => navigate({ to: "/app/keys" })}
-                  >
-                    API keys
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => navigate({ to: "/app/settings" })}
-                  >
-                    Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={onSignOut}>
-                    Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="ml-1 flex size-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground transition-[background-color,transform] duration-150 hover:bg-primary/80 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  aria-label="Account menu"
+                >
+                  {(session.name?.[0] ?? session.email[0]).toUpperCase()}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <div className="px-2 py-1.5">
+                  <p className="text-sm font-medium">{session.name ?? "Account"}</p>
+                  <p className="text-xs text-muted-foreground">{session.email}</p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => navigate({ to: "/app", search: { since: 7 } })}
+                >
+                  Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => navigate({ to: "/app/keys" })}
+                >
+                  API keys
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => navigate({ to: "/app/settings" })}
+                >
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={onSignOut}>
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Link
               to="/login"
