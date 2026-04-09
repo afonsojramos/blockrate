@@ -1,14 +1,12 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import { Dogfood } from '../components/dogfood'
 import { Nav } from '../components/nav'
+import { getNavSession } from '../server/session'
 import appCss from '../styles/app.css?url'
 
-// Inline head script — runs before any CSS, before React, before paint.
-// Sets `.dark` on <html> from localStorage so SSR theme matches client.
-// Default: dark when no preference set (per docs/design.md).
 const THEME_INIT_SCRIPT = `(function(){try{var s=localStorage.getItem("theme");var m=window.matchMedia("(prefers-color-scheme: dark)").matches;var d=s==="dark"||(s!=="light"&&m);document.documentElement.classList.toggle("dark",d);document.documentElement.style.colorScheme=d?"dark":"light";}catch(e){}})();`
 
 export const Route = createRootRoute({
@@ -29,10 +27,13 @@ export const Route = createRootRoute({
       { rel: 'icon', href: '/favicon.ico' },
     ],
   }),
-  shellComponent: RootDocument,
+  loader: () => getNavSession(),
+  shellComponent: RootShell,
+  component: RootLayout,
 })
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+/** HTML shell — renders during SSR before any loader data is available. */
+function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -40,19 +41,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
-        <Nav />
-        <Dogfood />
         {children}
-        <footer className="mt-24 border-t border-border">
-          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-6 py-8 text-sm text-muted-foreground sm:flex-row">
-            <p>© 2026 blockrate</p>
-            <div className="flex gap-4">
-              <a href="https://github.com/afonsojramos/block-rate" className="hover:text-foreground">OSS</a>
-              <a href="https://github.com/afonsojramos/block-rate/tree/main/packages/server" className="hover:text-foreground">Self-host</a>
-              <a href="/privacy" className="hover:text-foreground">Privacy</a>
-            </div>
-          </div>
-        </footer>
         {import.meta.env.DEV && (
           <TanStackDevtools
             config={{ position: 'bottom-right' }}
@@ -67,3 +56,25 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   )
 }
 
+/** Root layout — has access to loader data (session). */
+function RootLayout() {
+  const session = Route.useLoaderData();
+
+  return (
+    <>
+      <Nav session={session} />
+      <Dogfood />
+      <Outlet />
+      <footer className="mt-24 border-t border-border">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-6 py-8 text-sm text-muted-foreground sm:flex-row">
+          <p>© 2026 blockrate</p>
+          <div className="flex gap-4">
+            <a href="https://github.com/afonsojramos/block-rate" className="hover:text-foreground">OSS</a>
+            <a href="https://github.com/afonsojramos/block-rate/tree/main/packages/server" className="hover:text-foreground">Self-host</a>
+            <a href="/privacy" className="hover:text-foreground">Privacy</a>
+          </div>
+        </div>
+      </footer>
+    </>
+  )
+}

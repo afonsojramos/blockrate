@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { ThemeToggle } from "./theme-toggle";
+import type { NavSession } from "@/server/session";
 
-export function Nav() {
+export function Nav({ session }: { session: NavSession }) {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
@@ -48,12 +49,28 @@ export function Nav() {
             GitHub
           </a>
           <ThemeToggle />
-          <Link
-            to="/login"
-            className="ml-1 inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out active:scale-[0.96]"
-          >
-            Sign in
-          </Link>
+          {session ? (
+            <Link
+              to="/app"
+              search={{ since: 7 }}
+              className="ml-1 inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out active:scale-[0.96]"
+            >
+              <span
+                className="flex size-6 items-center justify-center rounded-full bg-primary-foreground/20 text-xs font-semibold"
+                aria-hidden
+              >
+                {(session.name?.[0] ?? session.email[0]).toUpperCase()}
+              </span>
+              Dashboard
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="ml-1 inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out active:scale-[0.96]"
+            >
+              Sign in
+            </Link>
+          )}
         </div>
       </nav>
     </header>
