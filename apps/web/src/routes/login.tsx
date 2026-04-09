@@ -5,12 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { OAuthButtons } from "@/components/oauth-buttons";
+import { getAuthProviders } from "@/server/auth-providers";
 
-export const Route = createFileRoute("/login")({ component: Login });
+export const Route = createFileRoute("/login")({
+  loader: () => getAuthProviders(),
+  component: Login,
+});
 
 type FormState = "idle" | "submitting" | "sent" | "error";
 
 function Login() {
+  const providers = Route.useLoaderData();
   const [email, setEmail] = useState("");
   const [state, setState] = useState<FormState>("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -101,6 +107,7 @@ function Login() {
               >
                 {state === "submitting" ? "Sending…" : "Send magic link"}
               </Button>
+              <OAuthButtons providers={providers} />
               <p className="text-center text-sm text-muted-foreground">
                 Don't have an account?{" "}
                 <Link to="/signup" className="underline-offset-4 hover:underline">
