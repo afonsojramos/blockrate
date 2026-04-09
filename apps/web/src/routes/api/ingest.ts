@@ -64,8 +64,8 @@ export const Route = createFileRoute("/api/ingest")({
           import("@/lib/ingest-limiter.server"),
           import("@/lib/quota.server"),
           import("@/lib/plans"),
-          import("block-rate-server/validate"),
-          import("block-rate-server/ua"),
+          import("blockrate-server/validate"),
+          import("blockrate-server/ua"),
           import("drizzle-orm"),
         ]);
 
