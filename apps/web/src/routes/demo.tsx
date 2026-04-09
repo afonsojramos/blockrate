@@ -45,7 +45,7 @@ function Demo() {
     );
 
     // Dynamic import so the library only loads when the user visits /demo
-    const { BlockRate, serverReporter } = await import("block-rate");
+    const { BlockRate, serverReporter } = await import("blockrate");
 
     const apiKey = import.meta.env.VITE_BLOCKRATE_PUBLIC_KEY;
 
