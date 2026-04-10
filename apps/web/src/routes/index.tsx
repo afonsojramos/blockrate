@@ -13,41 +13,66 @@ function Landing() {
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-16">
-      <section className="space-y-6">
-        {/* Real data hero chart — hidden when no data exists */}
-        {heroStats && heroStats.providers.length > 0 && <HeroChart data={heroStats} />}
-
-        <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
-          early access
-        </p>
-        <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
-          Know what your ad blockers are hiding from your analytics.
-        </h1>
-        <p className="max-w-2xl text-lg text-muted-foreground">
-          A tiny client library that measures the per-provider block rate of the third-party tools
-          your app depends on. Drop it in, see exactly how much PostHog, Optimizely, GA4 and friends
-          are costing you.
-        </p>
-        <div className="flex flex-wrap gap-3 pt-2">
-          <Link
-            to="/demo"
-            className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out active:scale-[0.96]"
-          >
-            Try the live demo
-          </Link>
-          <Link
-            to="/signup"
-            className="inline-flex h-10 items-center justify-center rounded-md border border-border bg-transparent px-5 text-sm font-medium text-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-accent active:scale-[0.96]"
-          >
-            Get a hosted account
-          </Link>
-          <a
-            href="https://github.com/afonsojramos/blockrate"
-            className="inline-flex h-10 items-center justify-center rounded-md border border-border bg-transparent px-5 text-sm font-medium text-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-accent active:scale-[0.96]"
-          >
-            View on GitHub
-          </a>
+      <section className="flex flex-col items-start gap-10 lg:flex-row lg:items-center lg:gap-12">
+        <div className="space-y-6 lg:flex-1">
+          <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+            early access
+          </p>
+          <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
+            Know what your ad blockers are hiding from your analytics.
+          </h1>
+          <p className="max-w-2xl text-lg text-muted-foreground">
+            A tiny client library that measures the per-provider block rate of the third-party tools
+            your app depends on. Drop it in, see exactly how much PostHog, Optimizely, GA4 and
+            friends are costing you.
+          </p>
+          <div className="flex flex-wrap gap-3 pt-2">
+            <Link
+              to="/demo"
+              className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out active:scale-[0.96]"
+            >
+              Try the live demo
+            </Link>
+            <Link
+              to="/signup"
+              className="inline-flex h-10 items-center justify-center rounded-md border border-border bg-transparent px-5 text-sm font-medium text-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-accent active:scale-[0.96]"
+            >
+              Get a hosted account
+            </Link>
+            <a
+              href="https://github.com/afonsojramos/blockrate"
+              className="inline-flex h-10 items-center justify-center rounded-md border border-border bg-transparent px-5 text-sm font-medium text-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-accent active:scale-[0.96]"
+            >
+              View on GitHub
+            </a>
+          </div>
         </div>
+
+        {/* Real data: radar chart on large screens, summary sentence on small */}
+        {heroStats && heroStats.providers.length > 0 && (
+          <>
+            <div className="hidden lg:block lg:w-[400px] lg:flex-shrink-0">
+              <HeroChart data={heroStats} />
+            </div>
+            <p className="text-sm text-muted-foreground lg:hidden">
+              Right now,{" "}
+              <span className="font-semibold tabular-nums text-foreground">
+                {(
+                  (heroStats.providers.reduce((sum, p) => {
+                    const valid = p.rates.filter((r): r is number => r !== null);
+                    return (
+                      sum + (valid.length > 0 ? valid.reduce((a, b) => a + b, 0) / valid.length : 0)
+                    );
+                  }, 0) /
+                    heroStats.providers.length) *
+                  100
+                ).toFixed(1)}
+                %
+              </span>{" "}
+              of checks are blocked on average across {heroStats.providers.length} providers.
+            </p>
+          </>
+        )}
       </section>
 
       <section className="mt-16">
