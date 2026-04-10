@@ -43,6 +43,12 @@ COPY . .
 # Build packages/core first (apps/web imports from it at build time)
 RUN cd packages/core && bun run build
 
+# VITE_* env vars must be available at build time for Vite to bake them
+# into the client bundle. Railway passes service variables as Docker
+# build args automatically — we just need to declare + export them.
+ARG VITE_BLOCKRATE_PUBLIC_KEY
+ENV VITE_BLOCKRATE_PUBLIC_KEY=$VITE_BLOCKRATE_PUBLIC_KEY
+
 # Build apps/web — production Vite + Nitro bundle
 RUN cd apps/web && NODE_ENV=production bun run build
 
