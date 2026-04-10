@@ -29,16 +29,21 @@ export function DocsToc() {
           On this page
         </p>
         <ScrollProvider containerRef={containerRef}>
-          <ul className="space-y-0.5">
+          <ul className="relative">
+            {/* Vertical line */}
+            <div className="absolute left-[7px] top-0 bottom-0 w-px bg-border" aria-hidden />
+
             {items.map((item) => (
               <li key={item.url}>
                 <TOCItem
                   href={item.url}
-                  className="block border-l-2 border-transparent py-1 text-sm text-muted-foreground transition-[color,border-color] duration-150 ease-out hover:text-foreground data-[active=true]:border-primary data-[active=true]:font-medium data-[active=true]:text-foreground"
+                  className="group relative flex items-center py-1.5 text-sm text-muted-foreground transition-[color] duration-150 ease-out hover:text-foreground data-[active=true]:text-primary data-[active=true]:font-medium"
                   style={{
-                    paddingLeft: item.depth === 3 ? "1.25rem" : "0.75rem",
+                    paddingLeft: item.depth === 3 ? "2rem" : "1.25rem",
                   }}
                 >
+                  {/* Dot on the vertical line — visible when active */}
+                  <span className="absolute left-[4px] size-[7px] rounded-full bg-border transition-[background-color,transform] duration-150 ease-out group-data-[active=true]:scale-125 group-data-[active=true]:bg-primary" />
                   {item.title}
                 </TOCItem>
               </li>
