@@ -2,6 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { StatsTable } from "@/components/stats-table";
 import { getOverviewData } from "@/server/stats";
 
@@ -59,18 +66,24 @@ function Overview() {
         <div className="flex flex-wrap items-center gap-2">
           {/* Service filter */}
           {data.services.length > 0 && (
-            <select
-              value={data.service ?? ""}
-              onChange={(e) => setService(e.target.value || undefined)}
-              className="h-9 rounded-md border border-border bg-background px-3 text-sm transition-[background-color] duration-150 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            <Select
+              value={data.service ?? "all"}
+              onValueChange={(v: string | null) =>
+                setService(v === "all" || v === null ? undefined : v)
+              }
             >
-              <option value="">All services</option>
-              {data.services.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="h-9 w-[180px]">
+                <SelectValue placeholder="All services" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All services</SelectItem>
+                {data.services.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
 
           {/* Date range buttons */}
