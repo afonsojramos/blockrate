@@ -71,6 +71,10 @@ function Overview() {
               onValueChange={(v: string | null) =>
                 setService(v === "all" || v === null ? undefined : v)
               }
+              items={[
+                { value: "all", label: "All services" },
+                ...data.services.map((s) => ({ value: s, label: s })),
+              ]}
             >
               <SelectTrigger className="h-9 w-[180px]">
                 <SelectValue placeholder="All services" />
