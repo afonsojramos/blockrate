@@ -52,7 +52,7 @@ export function StatsTable({ stats }: { stats: StatsRow[] }) {
       <TableBody>
         {stats.map((s) => {
           const pct = (s.blockRate * 100).toFixed(1);
-          const widthCss = `${Math.max(2, s.blockRate * 100)}%`;
+          const widthCss = s.blockRate > 0 ? `${Math.max(2, s.blockRate * 100)}%` : "0%";
           // Pick a single colour stop based on the %, AND show the gradient
           // bar — the gradient gives quick visual ranking, the colour stop
           // gives a categorical signal at a glance.
