@@ -1,4 +1,4 @@
-import { HeadContent, Outlet, Scripts, createRootRoute, useRouterState } from '@tanstack/react-router'
+import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
@@ -59,15 +59,12 @@ function RootShell({ children }: { children: React.ReactNode }) {
 /** Root layout — has access to loader data (session). */
 function RootLayout() {
   const session = Route.useLoaderData();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
     <>
       <Nav session={session} />
       <Dogfood />
-      <div key={pathname} className="animate-page-enter">
-        <Outlet />
-      </div>
+      <Outlet />
       <footer className="mt-24 border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-6 py-8 text-sm text-muted-foreground sm:flex-row">
           <p>© 2026 blockrate</p>
