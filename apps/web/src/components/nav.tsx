@@ -37,7 +37,7 @@ export function Nav({ session }: { session: NavSession }) {
           className="flex items-center gap-2 text-lg font-semibold tracking-tight"
         >
           <span
-            className="size-2.5 rounded-full"
+            className="size-4 rounded-full"
             style={{
               background:
                 "linear-gradient(90deg, var(--rate-low), var(--rate-mid), var(--rate-high))",
