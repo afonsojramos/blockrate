@@ -1,8 +1,8 @@
-import type { TOCItemType } from "fumadocs-core/toc";
-import { TOCProvider } from "fumadocs-ui/components/toc";
-import { TOCItems, TOCItem } from "fumadocs-ui/components/toc/clerk";
+"use client";
 
-const items: TOCItemType[] = [
+import { useEffect, useState } from "react";
+
+const items = [
   { title: "Quick start", url: "#install", depth: 2 },
   { title: "Hosted", url: "#hosted", depth: 3 },
   { title: "Self-hosted", url: "#self-hosted", depth: 3 },
@@ -17,23 +17,51 @@ const items: TOCItemType[] = [
 ];
 
 export function DocsToc() {
+  const [activeId, setActiveId] = useState("");
+
+  useEffect(() => {
+    const ids = items.map((i) => i.url.slice(1));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveId(entry.target.id);
+          }
+        }
+      },
+      { rootMargin: "-80px 0px -60% 0px", threshold: 0 },
+    );
+    for (const id of ids) {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    }
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <TOCProvider toc={items} single>
-      <nav
-        className="sticky top-24 hidden max-h-[calc(100vh-8rem)] lg:block"
-        aria-label="Table of contents"
-      >
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          On this page
-        </p>
-        <TOCItems className="relative">
-          {items.map((item) => (
-            <TOCItem key={item.url} item={item}>
+    <nav
+      className="sticky top-24 hidden max-h-[calc(100vh-8rem)] lg:block"
+      aria-label="Table of contents"
+    >
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        On this page
+      </p>
+      <ul className="space-y-1.5 text-sm">
+        {items.map((item) => (
+          <li key={item.url}>
+            <a
+              href={item.url}
+              className={`block transition-colors ${item.depth === 3 ? "pl-3" : ""} ${
+                activeId === item.url.slice(1)
+                  ? "font-medium text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
               {item.title}
-            </TOCItem>
-          ))}
-        </TOCItems>
-      </nav>
-    </TOCProvider>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 }
