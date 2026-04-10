@@ -1,12 +1,7 @@
 #!/usr/bin/env bun
 import { createServer } from "./server";
 import { createStore } from "./stores";
-import {
-  createTenant,
-  listTenants,
-  deleteTenant,
-  rotateTenantKey,
-} from "./tenant";
+import { createTenant, listTenants, deleteTenant, rotateTenantKey } from "./tenant";
 import type { Dialect } from "./store";
 
 const dbPath = process.env.DB_PATH || "./blockrate.db";
@@ -120,7 +115,5 @@ const app = await createServer({ port, dbPath, dialect });
 
 Bun.serve({ port, fetch: app.fetch });
 
-console.log(
-  `[blockrate-server] listening on http://localhost:${port} (${dialect})`
-);
+console.log(`[blockrate-server] listening on http://localhost:${port} (${dialect})`);
 console.log(`[blockrate-server] dashboard: http://localhost:${port}/dashboard`);

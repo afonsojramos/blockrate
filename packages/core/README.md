@@ -47,13 +47,13 @@ new BlockRate({ providers: [mine], reporter: console.log }).check();
 
 ## Options
 
-| Option | Default | Description |
-| --- | --- | --- |
-| `providers` | _required_ | Built-in names or custom `Provider` objects |
-| `reporter` | _required_ | Called once with a `BlockRateResult` |
-| `sampleRate` | `1` | 0–1 fraction of sessions to check |
-| `delay` | `3000` | ms to wait before probing (let scripts initialise) |
-| `sessionKey` | `__block_rate` | sessionStorage dedup key |
+| Option       | Default        | Description                                        |
+| ------------ | -------------- | -------------------------------------------------- |
+| `providers`  | _required_     | Built-in names or custom `Provider` objects        |
+| `reporter`   | _required_     | Called once with a `BlockRateResult`               |
+| `sampleRate` | `1`            | 0–1 fraction of sessions to check                  |
+| `delay`      | `3000`         | ms to wait before probing (let scripts initialise) |
+| `sessionKey` | `__block_rate` | sessionStorage dedup key                           |
 
 ## React
 
@@ -62,8 +62,7 @@ import { useBlockRate } from "blockrate/react";
 
 useBlockRate({
   providers: ["optimizely", "posthog"],
-  reporter: (r) =>
-    fetch("/api/blockrate", { method: "POST", body: JSON.stringify(r) }),
+  reporter: (r) => fetch("/api/blockrate", { method: "POST", body: JSON.stringify(r) }),
 });
 ```
 
@@ -140,12 +139,12 @@ blockrate-server tenant delete web-app    # deletes tenant + all events
 
 **Environment variables:**
 
-| Variable | Default | Description |
-| --- | --- | --- |
-| `PORT` | `4318` | HTTP port |
-| `DB_PATH` | `./blockrate.db` | SQLite file path |
-| `BLOCK_RATE_BOOTSTRAP_KEY` | random | Pin the bootstrap tenant's API key |
-| `BLOCK_RATE_BOOTSTRAP_NAME` | `default` | Name of the bootstrap tenant |
+| Variable                    | Default          | Description                        |
+| --------------------------- | ---------------- | ---------------------------------- |
+| `PORT`                      | `4318`           | HTTP port                          |
+| `DB_PATH`                   | `./blockrate.db` | SQLite file path                   |
+| `BLOCK_RATE_BOOTSTRAP_KEY`  | random           | Pin the bootstrap tenant's API key |
+| `BLOCK_RATE_BOOTSTRAP_NAME` | `default`        | Name of the bootstrap tenant       |
 
 ## Querying your data
 

@@ -14,10 +14,7 @@ interface OAuthButtonsProps {
  * configured (dev mode), the entire component renders nothing — including
  * the "or continue with" divider.
  */
-export function OAuthButtons({
-  providers,
-  callbackURL = "/app",
-}: OAuthButtonsProps) {
+export function OAuthButtons({ providers, callbackURL = "/app" }: OAuthButtonsProps) {
   const [pending, setPending] = useState<"google" | "github" | null>(null);
   const anyEnabled = providers.google || providers.github;
 

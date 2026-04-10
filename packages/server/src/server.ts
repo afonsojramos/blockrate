@@ -24,8 +24,7 @@ export interface ServerOptions {
 const CORS_HEADERS = (origin: string) => ({
   "Access-Control-Allow-Origin": origin,
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "content-type, x-blockrate-key, authorization",
+  "Access-Control-Allow-Headers": "content-type, x-blockrate-key, authorization",
   "Access-Control-Max-Age": "86400",
 });
 
@@ -37,10 +36,7 @@ export async function createServer(options: ServerOptions = {}) {
       url: options.dbPath,
     }));
   const corsOrigin = options.corsOrigin ?? "*";
-  const limiter = new TokenBucketLimiter(
-    options.rateLimitBurst ?? 60,
-    options.rateLimit ?? 10
-  );
+  const limiter = new TokenBucketLimiter(options.rateLimitBurst ?? 60, options.rateLimit ?? 10);
 
   await ensureBootstrapTenant(store);
 
@@ -68,8 +64,7 @@ export async function createServer(options: ServerOptions = {}) {
         });
       }
 
-      const needsAuth =
-        url.pathname === "/ingest" || url.pathname === "/stats";
+      const needsAuth = url.pathname === "/ingest" || url.pathname === "/stats";
       if (!needsAuth) {
         return withCors(json({ error: "not found" }, 404));
       }
@@ -103,10 +98,6 @@ async function ensureBootstrapTenant(store: BlockRateStore): Promise<void> {
     name: process.env.BLOCK_RATE_BOOTSTRAP_NAME || "default",
     apiKey,
   });
-  console.log(
-    `[blockrate-server] Bootstrapped default tenant. API key: ${apiKey}`
-  );
-  console.log(
-    "[blockrate-server] Store this securely — it will not be shown again."
-  );
+  console.log(`[blockrate-server] Bootstrapped default tenant. API key: ${apiKey}`);
+  console.log("[blockrate-server] Store this securely — it will not be shown again.");
 }

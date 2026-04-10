@@ -7,14 +7,12 @@
 
 import { createServerFn } from "@tanstack/react-start";
 
-export const getAuthProviders = createServerFn({ method: "GET" }).handler(
-  async () => {
-    const { capabilities } = await import("@/lib/env.server");
-    return {
-      google: capabilities.google,
-      github: capabilities.github,
-    };
-  }
-);
+export const getAuthProviders = createServerFn({ method: "GET" }).handler(async () => {
+  const { capabilities } = await import("@/lib/env.server");
+  return {
+    google: capabilities.google,
+    github: capabilities.github,
+  };
+});
 
 export type AuthProviders = Awaited<ReturnType<typeof getAuthProviders>>;

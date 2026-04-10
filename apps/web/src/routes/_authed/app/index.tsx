@@ -1,13 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatsTable } from "@/components/stats-table";
 import { getOverviewData } from "@/server/stats";
 
@@ -55,9 +49,7 @@ function Overview() {
           <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
             overview
           </p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">
-            Block rate by provider
-          </h1>
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight">Block rate by provider</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Last {data.sinceDays} {data.sinceDays === 1 ? "day" : "days"}
             {data.service ? ` · service: ${data.service}` : ""}
@@ -83,23 +75,21 @@ function Overview() {
 
           {/* Date range buttons */}
           <div className="flex items-center rounded-md border border-border p-0.5">
-            {RANGES.filter((r) => r.days <= data.planDashboardHistoryDays).map(
-              (r) => (
-                <button
-                  key={r.days}
-                  type="button"
-                  onClick={() => setRange(r.days)}
-                  className={
-                    "h-8 rounded px-3 text-xs font-medium transition-[background-color,color] duration-150 ease-out " +
-                    (search.since === r.days
-                      ? "bg-accent text-foreground"
-                      : "text-muted-foreground hover:text-foreground")
-                  }
-                >
-                  {r.label}
-                </button>
-              )
-            )}
+            {RANGES.filter((r) => r.days <= data.planDashboardHistoryDays).map((r) => (
+              <button
+                key={r.days}
+                type="button"
+                onClick={() => setRange(r.days)}
+                className={
+                  "h-8 rounded px-3 text-xs font-medium transition-[background-color,color] duration-150 ease-out " +
+                  (search.since === r.days
+                    ? "bg-accent text-foreground"
+                    : "text-muted-foreground hover:text-foreground")
+                }
+              >
+                {r.label}
+              </button>
+            ))}
           </div>
         </div>
       </header>
@@ -107,12 +97,11 @@ function Overview() {
       <Card className="mt-8">
         <CardHeader>
           <CardTitle className="text-base">
-            {data.stats.length}{" "}
-            {data.stats.length === 1 ? "provider" : "providers"}
+            {data.stats.length} {data.stats.length === 1 ? "provider" : "providers"}
           </CardTitle>
           <CardDescription>
-            Sorted by block rate, worst first. Bars use the brand gradient
-            (green &lt; 5%, amber 5–15%, red &gt; 15%).
+            Sorted by block rate, worst first. Bars use the brand gradient (green &lt; 5%, amber
+            5–15%, red &gt; 15%).
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -20,13 +20,9 @@ import { z } from "zod";
  *   - EMAIL_FROM           defaults to "blockrate <magic@blockrate.app>"
  */
 const schema = z.object({
-  NODE_ENV: z
-    .enum(["development", "production", "test"])
-    .default("development"),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   DATABASE_URL: z.string().default("pglite://./.local/blockrate.db"),
-  BETTER_AUTH_SECRET: z
-    .string()
-    .min(32, "≥32 chars; generate via `openssl rand -base64 32`"),
+  BETTER_AUTH_SECRET: z.string().min(32, "≥32 chars; generate via `openssl rand -base64 32`"),
   BETTER_AUTH_URL: z.string().url().default("http://localhost:3000"),
 
   // Phase 4
@@ -34,9 +30,7 @@ const schema = z.object({
 
   // Phase 5 — all optional, providers/email enabled only when present
   RESEND_API_KEY: z.string().optional(),
-  EMAIL_FROM: z
-    .string()
-    .default("blockrate <noreply@blockrate.app>"),
+  EMAIL_FROM: z.string().default("blockrate <noreply@blockrate.app>"),
 
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
@@ -48,10 +42,7 @@ const schema = z.object({
 function loadEnv() {
   const parsed = schema.safeParse(process.env);
   if (!parsed.success) {
-    console.error(
-      "[env] invalid environment:",
-      parsed.error.flatten().fieldErrors
-    );
+    console.error("[env] invalid environment:", parsed.error.flatten().fieldErrors);
     throw new Error("env validation failed — see errors above");
   }
   return parsed.data;

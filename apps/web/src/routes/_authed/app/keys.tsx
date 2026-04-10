@@ -71,9 +71,7 @@ function KeysPage() {
       await refresh();
     } catch (err) {
       if (!ctrlRef.current.signal.aborted) {
-        setCreateError(
-          err instanceof Error ? err.message : "Failed to create key"
-        );
+        setCreateError(err instanceof Error ? err.message : "Failed to create key");
       }
     } finally {
       setCreating(false);
@@ -81,19 +79,13 @@ function KeysPage() {
   }
 
   async function onRevoke(id: number) {
-    if (!confirm("Revoke this key? Apps using it will start getting 401s."))
-      return;
+    if (!confirm("Revoke this key? Apps using it will start getting 401s.")) return;
     await revokeKey({ data: { id } });
     await refresh();
   }
 
   async function onDelete(id: number) {
-    if (
-      !confirm(
-        "Permanently delete this key and ALL its events? This cannot be undone."
-      )
-    )
-      return;
+    if (!confirm("Permanently delete this key and ALL its events? This cannot be undone.")) return;
     await deleteKey({ data: { id } });
     await refresh();
   }
@@ -112,13 +104,8 @@ function KeysPage() {
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">API keys</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Each key represents a service. Keys are shown once on creation and
-            stored hashed.{" "}
-            <Link
-              to="/app"
-              search={{ since: 7 }}
-              className="underline-offset-4 hover:underline"
-            >
+            Each key represents a service. Keys are shown once on creation and stored hashed.{" "}
+            <Link to="/app" search={{ since: 7 }} className="underline-offset-4 hover:underline">
               Back to dashboard
             </Link>
           </p>
@@ -158,16 +145,12 @@ function KeysPage() {
                 {keys.map((k) => (
                   <tr key={k.id} className="border-b border-border/60">
                     <td className="px-2 py-3 font-medium">{k.name}</td>
-                    <td className="px-2 py-3 text-muted-foreground">
-                      {k.service}
-                    </td>
+                    <td className="px-2 py-3 text-muted-foreground">{k.service}</td>
                     <td className="px-2 py-3 font-mono text-xs text-muted-foreground">
                       {k.keyPrefix}…
                     </td>
                     <td className="px-2 py-3 text-muted-foreground">
-                      {k.lastUsedAt
-                        ? new Date(k.lastUsedAt).toLocaleDateString()
-                        : "never"}
+                      {k.lastUsedAt ? new Date(k.lastUsedAt).toLocaleDateString() : "never"}
                     </td>
                     <td className="px-2 py-3">
                       {k.revokedAt ? (
@@ -216,8 +199,8 @@ function KeysPage() {
           <DialogHeader>
             <DialogTitle>Create an API key</DialogTitle>
             <DialogDescription>
-              Choose a memorable name and a service label. The plaintext key is
-              shown once — store it somewhere safe immediately.
+              Choose a memorable name and a service label. The plaintext key is shown once — store
+              it somewhere safe immediately.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={onCreate} className="space-y-4">
@@ -250,11 +233,7 @@ function KeysPage() {
               {createError}
             </div>
             <DialogFooter>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setCreateOpen(false)}
-              >
+              <Button type="button" variant="ghost" onClick={() => setCreateOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit" aria-disabled={creating}>
@@ -279,8 +258,8 @@ function KeysPage() {
           <DialogHeader>
             <DialogTitle>Save your API key</DialogTitle>
             <DialogDescription>
-              This is the only time we'll show this key. After you close this
-              dialog it's gone forever — only the hash stays in our database.
+              This is the only time we'll show this key. After you close this dialog it's gone
+              forever — only the hash stays in our database.
             </DialogDescription>
           </DialogHeader>
           {revealed && (
@@ -290,25 +269,14 @@ function KeysPage() {
                 <p className="text-sm font-medium">{revealed.name}</p>
               </div>
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">
-                  API key
-                </Label>
+                <Label className="text-xs text-muted-foreground">API key</Label>
                 <div className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-2">
-                  <code className="flex-1 break-all font-mono text-xs">
-                    {revealed.plaintext}
-                  </code>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={copyPlaintext}
-                  >
+                  <code className="flex-1 break-all font-mono text-xs">{revealed.plaintext}</code>
+                  <Button type="button" size="sm" variant="ghost" onClick={copyPlaintext}>
                     <Copy className="size-4" />
                   </Button>
                 </div>
-                {copied && (
-                  <p className="text-xs text-rate-low">Copied to clipboard</p>
-                )}
+                {copied && <p className="text-xs text-rate-low">Copied to clipboard</p>}
               </div>
             </div>
           )}

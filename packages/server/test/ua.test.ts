@@ -68,9 +68,7 @@ describe("truncateUserAgent", () => {
   });
 
   it("caps output at 64 chars", () => {
-    const result = truncateUserAgent(
-      "Mozilla/5.0 Chrome/999999999999999999999999999999999999999"
-    );
+    const result = truncateUserAgent("Mozilla/5.0 Chrome/999999999999999999999999999999999999999");
     expect(result.length).toBeLessThanOrEqual(64);
   });
 });

@@ -32,10 +32,7 @@ export function Nav({ session }: { session: NavSession }) {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <Link
-          to="/"
-          className="flex items-center gap-2 text-lg font-semibold tracking-tight"
-        >
+        <Link to="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
           <span
             className="size-4 rounded-full"
             style={{
@@ -102,25 +99,17 @@ export function Nav({ session }: { session: NavSession }) {
                   <p className="text-xs text-muted-foreground">{session.email}</p>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => navigate({ to: "/app", search: { since: 7 } })}
-                >
+                <DropdownMenuItem onClick={() => navigate({ to: "/app", search: { since: 7 } })}>
                   Dashboard
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => navigate({ to: "/app/keys" })}
-                >
+                <DropdownMenuItem onClick={() => navigate({ to: "/app/keys" })}>
                   API keys
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => navigate({ to: "/app/settings" })}
-                >
+                <DropdownMenuItem onClick={() => navigate({ to: "/app/settings" })}>
                   Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onSignOut}>
-                  Sign out
-                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onSignOut}>Sign out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (

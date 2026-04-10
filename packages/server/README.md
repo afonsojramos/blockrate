@@ -25,22 +25,22 @@ That's the entire setup. Open the printed dashboard URL, paste the API key, poin
 
 ## Storage backends
 
-| Backend | When to use | Default |
-| --- | --- | --- |
-| **SQLite** | Single-instance self-host. Zero setup. Persistent file. | ✓ |
-| **Postgres** | Existing Postgres infra, multi-instance, larger scale. | optional |
+| Backend      | When to use                                             | Default  |
+| ------------ | ------------------------------------------------------- | -------- |
+| **SQLite**   | Single-instance self-host. Zero setup. Persistent file. | ✓        |
+| **Postgres** | Existing Postgres infra, multi-instance, larger scale.  | optional |
 
 Both are first-class — same `BlockRateStore` interface, same migrations, same query shapes. Switch via `DB_DIALECT=postgres DATABASE_URL=postgres://...`.
 
 ## Configuration
 
-| Env var | Default | Description |
-| --- | --- | --- |
-| `PORT` | `4318` | HTTP port |
-| `DB_DIALECT` | `sqlite` | `sqlite` or `postgres` |
-| `DB_PATH` | `./blockrate.db` | SQLite file path or Postgres connection URL |
-| `BLOCK_RATE_BOOTSTRAP_KEY` | random | Pin the bootstrap tenant's API key (otherwise generated and printed once) |
-| `BLOCK_RATE_BOOTSTRAP_NAME` | `default` | Name of the bootstrap tenant |
+| Env var                     | Default          | Description                                                               |
+| --------------------------- | ---------------- | ------------------------------------------------------------------------- |
+| `PORT`                      | `4318`           | HTTP port                                                                 |
+| `DB_DIALECT`                | `sqlite`         | `sqlite` or `postgres`                                                    |
+| `DB_PATH`                   | `./blockrate.db` | SQLite file path or Postgres connection URL                               |
+| `BLOCK_RATE_BOOTSTRAP_KEY`  | random           | Pin the bootstrap tenant's API key (otherwise generated and printed once) |
+| `BLOCK_RATE_BOOTSTRAP_NAME` | `default`        | Name of the bootstrap tenant                                              |
 
 The server has **no other env vars** by design — everything else is wired through `blockrate-server tenant *` commands.
 

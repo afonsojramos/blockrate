@@ -23,32 +23,47 @@ function Docs() {
         <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
           documentation
         </p>
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          blockrate docs
-        </h1>
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">blockrate docs</h1>
         <p className="text-lg text-muted-foreground">
-          A 1.6 KB client library that measures per-provider block rate. Drop
-          it in, point it at any reporter, see exactly how much each
-          third-party tool is being blocked.
+          A 1.6 KB client library that measures per-provider block rate. Drop it in, point it at any
+          reporter, see exactly how much each third-party tool is being blocked.
         </p>
       </header>
 
       <nav className="mt-10 grid gap-3 sm:grid-cols-2">
-        <a href="#install" className="rounded-md border border-border bg-card p-4 transition-[background-color] duration-150 hover:bg-accent">
+        <a
+          href="#install"
+          className="rounded-md border border-border bg-card p-4 transition-[background-color] duration-150 hover:bg-accent"
+        >
           <div className="font-medium">Quick start</div>
           <div className="mt-1 text-sm text-muted-foreground">Install + 5-line setup</div>
         </a>
-        <a href="#providers" className="rounded-md border border-border bg-card p-4 transition-[background-color] duration-150 hover:bg-accent">
+        <a
+          href="#providers"
+          className="rounded-md border border-border bg-card p-4 transition-[background-color] duration-150 hover:bg-accent"
+        >
           <div className="font-medium">Built-in providers</div>
-          <div className="mt-1 text-sm text-muted-foreground">10 providers ship with the library</div>
+          <div className="mt-1 text-sm text-muted-foreground">
+            10 providers ship with the library
+          </div>
         </a>
-        <a href="#frameworks" className="rounded-md border border-border bg-card p-4 transition-[background-color] duration-150 hover:bg-accent">
+        <a
+          href="#frameworks"
+          className="rounded-md border border-border bg-card p-4 transition-[background-color] duration-150 hover:bg-accent"
+        >
           <div className="font-medium">Framework integrations</div>
-          <div className="mt-1 text-sm text-muted-foreground">React, Next, SvelteKit, TanStack Start</div>
+          <div className="mt-1 text-sm text-muted-foreground">
+            React, Next, SvelteKit, TanStack Start
+          </div>
         </a>
-        <Link to="/docs/api" className="rounded-md border border-border bg-card p-4 transition-[background-color] duration-150 hover:bg-accent">
+        <Link
+          to="/docs/api"
+          className="rounded-md border border-border bg-card p-4 transition-[background-color] duration-150 hover:bg-accent"
+        >
           <div className="font-medium">Hosted API reference</div>
-          <div className="mt-1 text-sm text-muted-foreground">POST /api/ingest, headers, payload shape</div>
+          <div className="mt-1 text-sm text-muted-foreground">
+            POST /api/ingest, headers, payload shape
+          </div>
         </Link>
       </nav>
 
@@ -97,8 +112,8 @@ new BlockRate({
 }),`}</CodeBlock>
 
         <p className="text-sm text-muted-foreground">
-          Or with any custom reporter (e.g. PostHog server-side, BigQuery,
-          Datadog, your own webhook):
+          Or with any custom reporter (e.g. PostHog server-side, BigQuery, Datadog, your own
+          webhook):
         </p>
 
         <CodeBlock>{`new BlockRate({
@@ -112,15 +127,13 @@ new BlockRate({
 
       {/* ─── Providers ─────────────────────────────────────────────── */}
       <section id="providers" className="mt-16 space-y-4 scroll-mt-20">
-        <h2 className="text-2xl font-semibold tracking-tight">
-          Built-in providers
-        </h2>
+        <h2 className="text-2xl font-semibold tracking-tight">Built-in providers</h2>
         <p className="text-sm text-muted-foreground">
           Each provider is checked first via a <code className="font-mono text-xs">window</code>{" "}
           global, then via a HEAD probe to its CDN. The probe uses{" "}
-          <code className="font-mono text-xs">mode: "no-cors"</code> so a
-          successful opaque response counts as "loaded" and a{" "}
-          <code className="font-mono text-xs">TypeError</code> counts as "blocked."
+          <code className="font-mono text-xs">mode: "no-cors"</code> so a successful opaque response
+          counts as "loaded" and a <code className="font-mono text-xs">TypeError</code> counts as
+          "blocked."
         </p>
 
         <div className="overflow-hidden rounded-md border border-border">
@@ -135,18 +148,14 @@ new BlockRate({
               {PROVIDERS.map(([name, detection]) => (
                 <tr key={name} className="border-t border-border">
                   <td className="px-3 py-2 font-mono text-xs">{name}</td>
-                  <td className="px-3 py-2 text-xs text-muted-foreground">
-                    {detection}
-                  </td>
+                  <td className="px-3 py-2 text-xs text-muted-foreground">{detection}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
 
-        <p className="text-sm text-muted-foreground">
-          Custom providers are a single function:
-        </p>
+        <p className="text-sm text-muted-foreground">Custom providers are a single function:</p>
 
         <CodeBlock>{`import { BlockRate, createProvider } from "blockrate";
 
@@ -160,9 +169,7 @@ new BlockRate({ providers: [myProvider], reporter: console.log }).check();`}</Co
 
       {/* ─── Frameworks ────────────────────────────────────────────── */}
       <section id="frameworks" className="mt-16 space-y-4 scroll-mt-20">
-        <h2 className="text-2xl font-semibold tracking-tight">
-          Framework integrations
-        </h2>
+        <h2 className="text-2xl font-semibold tracking-tight">Framework integrations</h2>
 
         <h3 className="mt-4 text-base font-medium">React</h3>
         <CodeBlock>{`import { useBlockRate } from "blockrate/react";

@@ -65,8 +65,8 @@ function Signup() {
               <h2 className="text-lg font-semibold">Almost there</h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 We sent a sign-in link to{" "}
-                <span className="font-medium text-foreground">{email}</span>.
-                Click it to finish creating your account.
+                <span className="font-medium text-foreground">{email}</span>. Click it to finish
+                creating your account.
               </p>
             </div>
           ) : (
@@ -88,11 +88,7 @@ function Signup() {
               <div className="min-h-5 text-sm text-destructive" role="alert">
                 {state === "error" ? errorMsg : ""}
               </div>
-              <Button
-                type="submit"
-                aria-disabled={state === "submitting"}
-                className="w-full"
-              >
+              <Button type="submit" aria-disabled={state === "submitting"} className="w-full">
                 {state === "submitting" ? "Sending…" : "Create account"}
               </Button>
               <OAuthButtons providers={providers} />

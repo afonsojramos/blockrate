@@ -43,7 +43,7 @@ export function Dogfood() {
           reporter: () => {},
           sampleRate: 0,
           delay: 0,
-        }
+        },
   );
 
   return null;

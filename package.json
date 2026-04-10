@@ -1,21 +1,34 @@
 {
-  "name": "block-rate-monorepo",
-  "private": true,
+  "name": "blockrate-monorepo",
   "version": "0.1.0",
-  "workspaces": ["packages/*", "apps/*", "examples/*"],
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "examples/*"
+  ],
   "scripts": {
     "build": "bun run --filter '*' build",
-    "test": "bun test"
+    "test": "bun test",
+    "lint": "oxlint .",
+    "fmt": "oxfmt .",
+    "fmt:check": "oxfmt --check .",
+    "typecheck": "cd apps/web && bun run typecheck",
+    "check": "bun run fmt:check && bun run lint && bun run typecheck",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "nitro": "npm:nitro-nightly@latest",
+    "postgres": "^3.4.9"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.4.4",
     "@types/bun": "latest",
     "@types/react": "^19.2.14",
+    "husky": "^9.1.7",
+    "oxfmt": "^0.44.0",
+    "oxlint": "^1.59.0",
     "react": "^19.2.5",
     "typescript": "^6.0.2"
-  },
-  "dependencies": {
-    "nitro": "npm:nitro-nightly@latest",
-    "postgres": "^3.4.9"
   }
 }

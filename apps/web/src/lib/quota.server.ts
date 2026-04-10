@@ -21,20 +21,12 @@ export interface UsageSnapshot {
   yearMonth: string;
 }
 
-export async function getUsage(
-  accountId: number,
-  limit: number
-): Promise<UsageSnapshot> {
+export async function getUsage(accountId: number, limit: number): Promise<UsageSnapshot> {
   const ym = currentYearMonth();
   const rows = await db
     .select()
     .from(usageCounters)
-    .where(
-      and(
-        eq(usageCounters.accountId, accountId),
-        eq(usageCounters.yearMonth, ym)
-      )
-    )
+    .where(and(eq(usageCounters.accountId, accountId), eq(usageCounters.yearMonth, ym)))
     .limit(1);
   const used = rows[0]?.eventCount ?? 0;
   return { used, limit, remaining: Math.max(0, limit - used), yearMonth: ym };
@@ -44,10 +36,7 @@ export async function getUsage(
  * Atomically increment the current month's counter by `delta` and return
  * the new total. Uses Postgres ON CONFLICT to upsert in one round trip.
  */
-export async function incrementUsage(
-  accountId: number,
-  delta: number
-): Promise<number> {
+export async function incrementUsage(accountId: number, delta: number): Promise<number> {
   const ym = currentYearMonth();
   const rows = await db
     .insert(usageCounters)

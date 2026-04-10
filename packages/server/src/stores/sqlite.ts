@@ -5,13 +5,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { tenants, events } from "../schema.sqlite";
-import type {
-  BlockRateStore,
-  NewStoredEvent,
-  StatsQuery,
-  StatsRow,
-  StoredTenant,
-} from "../store";
+import type { BlockRateStore, NewStoredEvent, StatsQuery, StatsRow, StoredTenant } from "../store";
 
 export class SqliteStore implements BlockRateStore {
   private sqlite: Database;
@@ -37,13 +31,13 @@ export class SqliteStore implements BlockRateStore {
       return;
     }
     this.sqlite.exec(
-      "CREATE TABLE IF NOT EXISTS __migrations (name TEXT PRIMARY KEY, applied_at INTEGER NOT NULL);"
+      "CREATE TABLE IF NOT EXISTS __migrations (name TEXT PRIMARY KEY, applied_at INTEGER NOT NULL);",
     );
     const applied = new Set(
       this.sqlite
         .query("SELECT name FROM __migrations")
         .all()
-        .map((r: any) => r.name as string)
+        .map((r: any) => r.name as string),
     );
     for (const file of files) {
       if (applied.has(file)) continue;
@@ -61,27 +55,16 @@ export class SqliteStore implements BlockRateStore {
   }
 
   async findTenantByApiKey(apiKey: string): Promise<StoredTenant | null> {
-    const row = this.db
-      .select()
-      .from(tenants)
-      .where(eq(tenants.apiKey, apiKey))
-      .get();
+    const row = this.db.select().from(tenants).where(eq(tenants.apiKey, apiKey)).get();
     return row ?? null;
   }
 
   async findTenantByName(name: string): Promise<StoredTenant | null> {
-    const row = this.db
-      .select()
-      .from(tenants)
-      .where(eq(tenants.name, name))
-      .get();
+    const row = this.db.select().from(tenants).where(eq(tenants.name, name)).get();
     return row ?? null;
   }
 
-  async createTenant(input: {
-    name: string;
-    apiKey: string;
-  }): Promise<StoredTenant> {
+  async createTenant(input: { name: string; apiKey: string }): Promise<StoredTenant> {
     this.db.insert(tenants).values(input).run();
     return (await this.findTenantByApiKey(input.apiKey))!;
   }
@@ -115,19 +98,16 @@ export class SqliteStore implements BlockRateStore {
       ? and(
           eq(events.tenantId, query.tenantId),
           eq(events.service, query.service),
-          gte(events.timestamp, query.since)
+          gte(events.timestamp, query.since),
         )
-      : and(
-          eq(events.tenantId, query.tenantId),
-          gte(events.timestamp, query.since)
-        );
+      : and(eq(events.tenantId, query.tenantId), gte(events.timestamp, query.since));
 
     const rows = this.db
       .select({
         provider: events.provider,
         total: sql<number>`COUNT(*)`.as("total"),
         blocked: sql<number>`SUM(CASE WHEN ${events.status} = 'blocked' THEN 1 ELSE 0 END)`.as(
-          "blocked"
+          "blocked",
         ),
         avgLatency: sql<number>`AVG(${events.latency})`.as("avg_latency"),
       })
@@ -140,8 +120,7 @@ export class SqliteStore implements BlockRateStore {
       provider: r.provider,
       total: Number(r.total),
       blocked: Number(r.blocked),
-      blockRate:
-        Number(r.total) > 0 ? Number(r.blocked) / Number(r.total) : 0,
+      blockRate: Number(r.total) > 0 ? Number(r.blocked) / Number(r.total) : 0,
       avgLatency: Math.round(Number(r.avgLatency) || 0),
     }));
   }

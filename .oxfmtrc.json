@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [
+    "*.gen.ts",
+    "dist",
+    ".output",
+    ".local",
+    ".nitro",
+    ".tanstack",
+    ".vinxi",
+    "bun.lock"
+  ]
+}

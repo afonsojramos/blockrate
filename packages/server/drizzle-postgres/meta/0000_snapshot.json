@@ -114,12 +114,8 @@
           "name": "events_tenant_id_tenants_id_fk",
           "tableFrom": "events",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -167,9 +163,7 @@
         "tenants_api_key_unique": {
           "name": "tenants_api_key_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "api_key"
-          ]
+          "columns": ["api_key"]
         }
       },
       "policies": {},
@@ -181,10 +175,7 @@
     "public.block_rate_status": {
       "name": "block_rate_status",
       "schema": "public",
-      "values": [
-        "loaded",
-        "blocked"
-      ]
+      "values": ["loaded", "blocked"]
     }
   },
   "schemas": {},

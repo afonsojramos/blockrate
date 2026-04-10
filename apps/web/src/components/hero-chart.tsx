@@ -28,9 +28,7 @@ function avgRate(rates: (number | null)[]): number {
 export function HeroChart({ data }: { data: HeroStats }) {
   const maxRate = Math.max(
     0.1,
-    ...data.providers.flatMap((p) =>
-      p.rates.filter((r): r is number => r !== null)
-    )
+    ...data.providers.flatMap((p) => p.rates.filter((r): r is number => r !== null)),
   );
   // Round up to nice number for y-axis
   const yMax = Math.ceil(maxRate * 10) / 10;
@@ -51,10 +49,7 @@ export function HeroChart({ data }: { data: HeroStats }) {
       {data.worstProvider && (
         <p className="mb-4 text-sm text-muted-foreground">
           Last {data.days.length} days:{" "}
-          <span
-            className="font-semibold tabular-nums"
-            style={{ color: rateColor(data.worstRate) }}
-          >
+          <span className="font-semibold tabular-nums" style={{ color: rateColor(data.worstRate) }}>
             {(data.worstRate * 100).toFixed(1)}%
           </span>{" "}
           of {data.worstProvider} checks blocked
@@ -139,43 +134,32 @@ export function HeroChart({ data }: { data: HeroStats }) {
               {/* Dot on the last data point */}
               {provider.rates[provider.rates.length - 1] !== null && (
                 <circle
-                  cx={
-                    PAD_X +
-                    (provider.rates.length - 1) * xStep
-                  }
+                  cx={PAD_X + (provider.rates.length - 1) * xStep}
                   cy={
-                    PAD_Y +
-                    INNER_H -
-                    (provider.rates[provider.rates.length - 1]! / yMax) *
-                      INNER_H
+                    PAD_Y + INNER_H - (provider.rates[provider.rates.length - 1]! / yMax) * INNER_H
                   }
                   r={isWorst ? 4 : 3}
                   fill={color}
                 />
               )}
               {/* Label on the last point for the worst provider */}
-              {isWorst &&
-                provider.rates[provider.rates.length - 1] !== null && (
-                  <text
-                    x={
-                      PAD_X +
-                      (provider.rates.length - 1) * xStep + 8
-                    }
-                    y={
-                      PAD_Y +
-                      INNER_H -
-                      (provider.rates[provider.rates.length - 1]! / yMax) *
-                        INNER_H +
-                      4
-                    }
-                    fill={color}
-                    fontSize={12}
-                    fontWeight={600}
-                    fontFamily="var(--font-sans)"
-                  >
-                    {provider.name}
-                  </text>
-                )}
+              {isWorst && provider.rates[provider.rates.length - 1] !== null && (
+                <text
+                  x={PAD_X + (provider.rates.length - 1) * xStep + 8}
+                  y={
+                    PAD_Y +
+                    INNER_H -
+                    (provider.rates[provider.rates.length - 1]! / yMax) * INNER_H +
+                    4
+                  }
+                  fill={color}
+                  fontSize={12}
+                  fontWeight={600}
+                  fontFamily="var(--font-sans)"
+                >
+                  {provider.name}
+                </text>
+              )}
             </g>
           );
         })}

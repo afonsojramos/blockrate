@@ -30,11 +30,7 @@ async function main() {
 
   // 2. Upsert app_account (1:1 with user)
   let account = (
-    await db
-      .select()
-      .from(appAccounts)
-      .where(eq(appAccounts.userId, TEST_USER_ID))
-      .limit(1)
+    await db.select().from(appAccounts).where(eq(appAccounts.userId, TEST_USER_ID)).limit(1)
   )[0];
   if (!account) {
     const inserted = await db
@@ -60,7 +56,7 @@ async function main() {
   console.log("");
   console.log("test with:");
   console.log(
-    `curl -X POST http://localhost:3001/api/ingest \\\n  -H "Content-Type: application/json" \\\n  -H "x-block-rate-key: ${generated.plaintext}" \\\n  -d '{"timestamp":"${new Date().toISOString()}","url":"/test","userAgent":"Mozilla/5.0 Chrome/131","providers":[{"name":"posthog","status":"blocked","latency":12},{"name":"ga4","status":"loaded","latency":5}]}'`
+    `curl -X POST http://localhost:3001/api/ingest \\\n  -H "Content-Type: application/json" \\\n  -H "x-block-rate-key: ${generated.plaintext}" \\\n  -d '{"timestamp":"${new Date().toISOString()}","url":"/test","userAgent":"Mozilla/5.0 Chrome/131","providers":[{"name":"posthog","status":"blocked","latency":12},{"name":"ga4","status":"loaded","latency":5}]}'`,
   );
   process.exit(0);
 }

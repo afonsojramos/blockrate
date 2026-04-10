@@ -22,7 +22,7 @@ export const getHeroStats = createServerFn({ method: "GET" }).handler(
   async (): Promise<HeroStats | null> => {
     const { db } = await import("@/lib/db/index.server");
     const { dailyProviderStats } = await import("@/lib/db/schema");
-    const { gte, desc } = await import("drizzle-orm");
+    const { gte } = await import("drizzle-orm");
 
     const since = new Date(Date.now() - 7 * 86_400_000);
     const sinceStr = since.toISOString().slice(0, 10);
@@ -50,10 +50,7 @@ export const getHeroStats = createServerFn({ method: "GET" }).handler(
     });
 
     // Group by provider
-    const byProvider = new Map<
-      string,
-      Map<string, { total: number; blocked: number }>
-    >();
+    const byProvider = new Map<string, Map<string, { total: number; blocked: number }>>();
     for (const r of rows) {
       if (!byProvider.has(r.provider)) byProvider.set(r.provider, new Map());
       byProvider.get(r.provider)!.set(r.date, {
@@ -77,9 +74,7 @@ export const getHeroStats = createServerFn({ method: "GET" }).handler(
       // Average rate for ranking
       const validRates = rates.filter((r): r is number => r !== null);
       const avgRate =
-        validRates.length > 0
-          ? validRates.reduce((a, b) => a + b, 0) / validRates.length
-          : 0;
+        validRates.length > 0 ? validRates.reduce((a, b) => a + b, 0) / validRates.length : 0;
 
       if (avgRate > worstRate) {
         worstRate = avgRate;
@@ -101,5 +96,5 @@ export const getHeroStats = createServerFn({ method: "GET" }).handler(
     });
 
     return { days, providers, worstProvider, worstRate };
-  }
+  },
 );

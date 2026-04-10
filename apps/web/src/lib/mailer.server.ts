@@ -27,9 +27,7 @@ export async function sendEmail({ to, subject, text }: SendArgs): Promise<void> 
     // Log the email to stdout — in production this shows up in Railway logs
     // so you can copy-paste the magic link URL to sign in. Once RESEND_API_KEY
     // is set, this code path is never taken.
-    console.log(
-      `[mailer] to=${to} subject="${subject}"\n${text.replace(/^/gm, "  ")}`
-    );
+    console.log(`[mailer] to=${to} subject="${subject}"\n${text.replace(/^/gm, "  ")}`);
     return;
   }
 

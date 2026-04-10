@@ -41,9 +41,7 @@ export function CodeBlock({
             <span className="size-2 rounded-full bg-[#22c55e]" />
           </div>
           {/* Filename tab */}
-          <span className="text-xs font-medium text-muted-foreground">
-            {filename}
-          </span>
+          <span className="text-xs font-medium text-muted-foreground">{filename}</span>
         </div>
         {/* Copy button */}
         <button

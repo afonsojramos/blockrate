@@ -9,10 +9,7 @@ const TABS = [
 export function AppSubnav() {
   return (
     <div className="border-b border-border bg-background">
-      <nav
-        className="mx-auto flex max-w-5xl gap-1 px-6"
-        aria-label="Dashboard sections"
-      >
+      <nav className="mx-auto flex max-w-5xl gap-1 px-6" aria-label="Dashboard sections">
         {TABS.map((tab) => (
           <Link
             key={tab.to}
@@ -28,10 +25,7 @@ export function AppSubnav() {
               <>
                 {tab.label}
                 {isActive && (
-                  <span
-                    aria-hidden
-                    className="absolute inset-x-3 -bottom-px h-0.5 bg-primary"
-                  />
+                  <span aria-hidden className="absolute inset-x-3 -bottom-px h-0.5 bg-primary" />
                 )}
               </>
             )}

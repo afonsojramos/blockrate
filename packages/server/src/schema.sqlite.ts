@@ -1,10 +1,5 @@
 import { sql } from "drizzle-orm";
-import {
-  sqliteTable,
-  text,
-  integer,
-  index,
-} from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
 
 export const tenants = sqliteTable("tenants", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -31,13 +26,9 @@ export const events = sqliteTable(
     latency: integer("latency").notNull(),
   },
   (t) => ({
-    byTenantService: index("idx_events_tenant_service").on(
-      t.tenantId,
-      t.service,
-      t.timestamp
-    ),
+    byTenantService: index("idx_events_tenant_service").on(t.tenantId, t.service, t.timestamp),
     byProvider: index("idx_events_provider").on(t.provider),
-  })
+  }),
 );
 
 export type Tenant = typeof tenants.$inferSelect;

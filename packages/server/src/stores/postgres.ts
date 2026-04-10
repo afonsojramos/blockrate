@@ -7,13 +7,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { tenants, events } from "../schema.postgres";
-import type {
-  BlockRateStore,
-  NewStoredEvent,
-  StatsQuery,
-  StatsRow,
-  StoredTenant,
-} from "../store";
+import type { BlockRateStore, NewStoredEvent, StatsQuery, StatsRow, StoredTenant } from "../store";
 
 /**
  * Supports both production postgres-js connections and in-process PGlite
@@ -24,7 +18,7 @@ export class PostgresStore implements BlockRateStore {
   constructor(
     private db: any,
     private execRaw: (sql: string) => Promise<void>,
-    private closeFn: () => void | Promise<void>
+    private closeFn: () => void | Promise<void>,
   ) {}
 
   static async fromUrl(url: string): Promise<PostgresStore> {
@@ -72,15 +66,13 @@ export class PostgresStore implements BlockRateStore {
       `CREATE TABLE IF NOT EXISTS __migrations (
          name TEXT PRIMARY KEY,
          applied_at TIMESTAMPTZ NOT NULL DEFAULT now()
-       );`
+       );`,
     );
-    const appliedRows = await this.db.execute(
-      sql`SELECT name FROM __migrations`
-    );
+    const appliedRows = await this.db.execute(sql`SELECT name FROM __migrations`);
     const applied = new Set(
       (appliedRows as any).rows
         ? (appliedRows as any).rows.map((r: any) => r.name as string)
-        : (appliedRows as any).map((r: any) => r.name as string)
+        : (appliedRows as any).map((r: any) => r.name as string),
     );
 
     for (const file of files) {
@@ -90,38 +82,22 @@ export class PostgresStore implements BlockRateStore {
         const trimmed = stmt.trim();
         if (trimmed) await this.execRaw(trimmed);
       }
-      await this.db.execute(
-        sql`INSERT INTO __migrations (name) VALUES (${file})`
-      );
+      await this.db.execute(sql`INSERT INTO __migrations (name) VALUES (${file})`);
     }
   }
 
   async findTenantByApiKey(apiKey: string): Promise<StoredTenant | null> {
-    const rows = await this.db
-      .select()
-      .from(tenants)
-      .where(eq(tenants.apiKey, apiKey))
-      .limit(1);
+    const rows = await this.db.select().from(tenants).where(eq(tenants.apiKey, apiKey)).limit(1);
     return rows[0] ?? null;
   }
 
   async findTenantByName(name: string): Promise<StoredTenant | null> {
-    const rows = await this.db
-      .select()
-      .from(tenants)
-      .where(eq(tenants.name, name))
-      .limit(1);
+    const rows = await this.db.select().from(tenants).where(eq(tenants.name, name)).limit(1);
     return rows[0] ?? null;
   }
 
-  async createTenant(input: {
-    name: string;
-    apiKey: string;
-  }): Promise<StoredTenant> {
-    const rows = await this.db
-      .insert(tenants)
-      .values(input)
-      .returning();
+  async createTenant(input: { name: string; apiKey: string }): Promise<StoredTenant> {
+    const rows = await this.db.insert(tenants).values(input).returning();
     return rows[0];
   }
 
@@ -140,10 +116,7 @@ export class PostgresStore implements BlockRateStore {
   async updateTenantApiKey(name: string, apiKey: string): Promise<boolean> {
     const row = await this.findTenantByName(name);
     if (!row) return false;
-    await this.db
-      .update(tenants)
-      .set({ apiKey })
-      .where(eq(tenants.id, row.id));
+    await this.db.update(tenants).set({ apiKey }).where(eq(tenants.id, row.id));
     return true;
   }
 
@@ -157,19 +130,16 @@ export class PostgresStore implements BlockRateStore {
       ? and(
           eq(events.tenantId, query.tenantId),
           eq(events.service, query.service),
-          gte(events.timestamp, query.since)
+          gte(events.timestamp, query.since),
         )
-      : and(
-          eq(events.tenantId, query.tenantId),
-          gte(events.timestamp, query.since)
-        );
+      : and(eq(events.tenantId, query.tenantId), gte(events.timestamp, query.since));
 
     const rows = await this.db
       .select({
         provider: events.provider,
         total: sql<number>`COUNT(*)`.as("total"),
         blocked: sql<number>`SUM(CASE WHEN ${events.status} = 'blocked' THEN 1 ELSE 0 END)`.as(
-          "blocked"
+          "blocked",
         ),
         avgLatency: sql<number>`AVG(${events.latency})`.as("avg_latency"),
       })
@@ -181,8 +151,7 @@ export class PostgresStore implements BlockRateStore {
       provider: r.provider,
       total: Number(r.total),
       blocked: Number(r.blocked),
-      blockRate:
-        Number(r.total) > 0 ? Number(r.blocked) / Number(r.total) : 0,
+      blockRate: Number(r.total) > 0 ? Number(r.blocked) / Number(r.total) : 0,
       avgLatency: Math.round(Number(r.avgLatency) || 0),
     }));
   }

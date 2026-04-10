@@ -16,15 +16,9 @@ import type { ProviderStatus } from "./types";
  * though the real CDN was never reached. `cors` mode catches this because
  * the redirect target has no CORS headers → TypeError.
  */
-export async function probe(
-  url: string,
-  timeoutMs = 3000
-): Promise<ProviderStatus> {
-  const controller =
-    typeof AbortController !== "undefined" ? new AbortController() : null;
-  const timer = controller
-    ? setTimeout(() => controller.abort(), timeoutMs)
-    : null;
+export async function probe(url: string, timeoutMs = 3000): Promise<ProviderStatus> {
+  const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+  const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
   try {
     await fetch(url, {
       method: "HEAD",

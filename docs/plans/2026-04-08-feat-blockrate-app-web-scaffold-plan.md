@@ -23,20 +23,21 @@ This plan operationalises **Phase 1** of `~/.claude/plans/fizzy-gliding-pike.md`
 
 **Revision 3** integrates a deepen-plan pass with six more agents/skills (tailwind-v4-shadcn, better-auth-best-practices, make-interfaces-feel-better, performance-oracle, security-sentinel, julik-frontend-races-reviewer). Convergent findings:
 
-| Issue | Flagged by |
-| --- | --- |
-| Magic link defaults need explicit hardening (`expiresIn`, `disableSignUp`, `storeToken: "hashed"`, rate limit) | better-auth, security-sentinel |
-| `trustedOrigins` missing → cross-origin POSTs blocked or accepted depending on version | better-auth, security-sentinel |
-| Unguarded `console.log` of magic-link URL → prod log access = account takeover | security-sentinel, better-auth |
-| `postgres-js` SSL + pool config missing | performance-oracle, security-sentinel |
-| Theme flash triple-source-of-truth (SSR class, inline script, React state) | julik-races, make-interfaces-feel-better |
-| Session cookie cache absent → `_authed` `beforeLoad` hits DB on every navigation | performance-oracle, better-auth |
-| `--accent` token missing from charter — shadcn components hard-reference `bg-accent` | tailwind-v4-shadcn |
-| 200 KB landing budget at risk; defer TanStack Query install to Phase 3 | performance-oracle |
-| Open redirect on Better Auth's `callbackURL` query parameter | security-sentinel |
-| Magic link form double-submit + setState on unmounted component | julik-races |
+| Issue                                                                                                          | Flagged by                               |
+| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| Magic link defaults need explicit hardening (`expiresIn`, `disableSignUp`, `storeToken: "hashed"`, rate limit) | better-auth, security-sentinel           |
+| `trustedOrigins` missing → cross-origin POSTs blocked or accepted depending on version                         | better-auth, security-sentinel           |
+| Unguarded `console.log` of magic-link URL → prod log access = account takeover                                 | security-sentinel, better-auth           |
+| `postgres-js` SSL + pool config missing                                                                        | performance-oracle, security-sentinel    |
+| Theme flash triple-source-of-truth (SSR class, inline script, React state)                                     | julik-races, make-interfaces-feel-better |
+| Session cookie cache absent → `_authed` `beforeLoad` hits DB on every navigation                               | performance-oracle, better-auth          |
+| `--accent` token missing from charter — shadcn components hard-reference `bg-accent`                           | tailwind-v4-shadcn                       |
+| 200 KB landing budget at risk; defer TanStack Query install to Phase 3                                         | performance-oracle                       |
+| Open redirect on Better Auth's `callbackURL` query parameter                                                   | security-sentinel                        |
+| Magic link form double-submit + setState on unmounted component                                                | julik-races                              |
 
 **What changed in revision 3:**
+
 - `auth.ts` config block now includes `trustedOrigins`, `rateLimit`, `cookieCache`, hardened `magicLink({})` options, fail-closed `sendMagicLink` callback
 - `env.server.ts` zod schema enforces `BETTER_AUTH_SECRET: z.string().min(32)`
 - `db/index.ts` postgres client gets explicit `ssl`, `prepare: false`, `max` config tuned for Railway
@@ -51,22 +52,22 @@ This plan operationalises **Phase 1** of `~/.claude/plans/fizzy-gliding-pike.md`
 
 **What changed in revision 2:**
 
-| Change | Driven by |
-| --- | --- |
-| Schema ownership: `apps/web` owns ALL hosted Postgres tables (no split with `packages/server`) | architecture-strategist (blocker), kieran-typescript (workspace TS resolution risk) |
-| Cut speculative tables: `app_accounts`, `api_keys`, `usage_counters` deferred to Phase 2 | code-simplicity (YAGNI), architecture-strategist ("decisions made too early") |
-| Cut OAuth providers (Google, GitHub) and their env vars from Phase 1; magic-link only | code-simplicity (Phase 1 stops at "auth works" — pick the cheapest auth) |
-| Cut bulk shadcn import (50 → ~10 components actually used in Phase 1) | code-simplicity |
-| design.md scope: from "600+ lines, 10 sections" to "v0 charter, ~150 lines, grows with real screens" | code-simplicity (premature spec) |
-| Inline marketing/auth components instead of pre-extracting three files each | code-simplicity (YAGNI) |
-| One placeholder dashboard route instead of three | code-simplicity (one is enough to prove the guard) |
-| Wrap `getHeaders()` in `new Headers(...)` before `auth.api.getSession` | kieran-typescript (critical type error) |
-| Use TanStack Start's generated route types for the catch-all (not a hand-written `createFileRoute` snippet) | kieran-typescript (critical) |
-| Use `serverOnly()` from `@tanstack/react-start` instead of the npm `server-only` package | kieran-typescript (Next.js convention, not idiomatic in Start) |
-| Generate Better Auth schema FIRST, then layer app tables on top — no placeholder `users` table | kieran-typescript (avoids migration churn) |
-| Cut CI typecheck job + actions/cache step from Phase 1 (deferred to Phase 5/6 polish) | code-simplicity |
-| Cut `env.server.ts` validation for OAuth/Resend secrets that Phase 1 doesn't use | code-simplicity (env validation should match what's actually consumed) |
-| Resolve framework-version uncertainties in 10 minutes at the top of Phase 1.1 (not as a separate Phase 1.0 task) | code-simplicity (ceremony reduction) |
+| Change                                                                                                           | Driven by                                                                           |
+| ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Schema ownership: `apps/web` owns ALL hosted Postgres tables (no split with `packages/server`)                   | architecture-strategist (blocker), kieran-typescript (workspace TS resolution risk) |
+| Cut speculative tables: `app_accounts`, `api_keys`, `usage_counters` deferred to Phase 2                         | code-simplicity (YAGNI), architecture-strategist ("decisions made too early")       |
+| Cut OAuth providers (Google, GitHub) and their env vars from Phase 1; magic-link only                            | code-simplicity (Phase 1 stops at "auth works" — pick the cheapest auth)            |
+| Cut bulk shadcn import (50 → ~10 components actually used in Phase 1)                                            | code-simplicity                                                                     |
+| design.md scope: from "600+ lines, 10 sections" to "v0 charter, ~150 lines, grows with real screens"             | code-simplicity (premature spec)                                                    |
+| Inline marketing/auth components instead of pre-extracting three files each                                      | code-simplicity (YAGNI)                                                             |
+| One placeholder dashboard route instead of three                                                                 | code-simplicity (one is enough to prove the guard)                                  |
+| Wrap `getHeaders()` in `new Headers(...)` before `auth.api.getSession`                                           | kieran-typescript (critical type error)                                             |
+| Use TanStack Start's generated route types for the catch-all (not a hand-written `createFileRoute` snippet)      | kieran-typescript (critical)                                                        |
+| Use `serverOnly()` from `@tanstack/react-start` instead of the npm `server-only` package                         | kieran-typescript (Next.js convention, not idiomatic in Start)                      |
+| Generate Better Auth schema FIRST, then layer app tables on top — no placeholder `users` table                   | kieran-typescript (avoids migration churn)                                          |
+| Cut CI typecheck job + actions/cache step from Phase 1 (deferred to Phase 5/6 polish)                            | code-simplicity                                                                     |
+| Cut `env.server.ts` validation for OAuth/Resend secrets that Phase 1 doesn't use                                 | code-simplicity (env validation should match what's actually consumed)              |
+| Resolve framework-version uncertainties in 10 minutes at the top of Phase 1.1 (not as a separate Phase 1.0 task) | code-simplicity (ceremony reduction)                                                |
 
 **What was kept against simplicity pressure** (and why):
 
@@ -79,32 +80,32 @@ This plan operationalises **Phase 1** of `~/.claude/plans/fizzy-gliding-pike.md`
 
 ## Locked-in decisions
 
-| Decision | Source |
-| --- | --- |
-| Stack: TanStack Start + Better Auth (magic link only) + Drizzle/Postgres + Tailwind v4 + Base UI + shadcn | parent plan + this conversation |
-| **Schema ownership: `apps/web` owns all hosted Postgres tables.** `packages/server` keeps SQLite as its self-host default. Web app declares its own `events` and `tenants` (or whatever they're renamed to) Drizzle definitions — ~30 lines duplicated, but each deployment has unambiguous ownership. | architecture-strategist review (revision 2) |
-| Auth providers Phase 1: **magic link only** (console-logged in dev). Google + GitHub move to Phase 5 alongside Resend integration. | code-simplicity review (revision 2) |
-| `--base base` flag for shadcn — verified live by framework-docs researcher 2026-04-08 | https://ui.shadcn.com/docs/cli |
-| Postgres driver: `postgres-js` | https://orm.drizzle.team/docs/get-started/postgresql-new |
-| Migrations: committed via `drizzle-kit generate`, applied via `drizzle-kit migrate` in the **start** script (NOT build) | https://orm.drizzle.team/docs/migrations + Railway constraint |
-| Better Auth schema generated by `bunx @better-auth/cli@latest generate` | https://www.better-auth.com/docs/adapters/drizzle |
-| Better Auth Drizzle adapter `experimental: { joins: true }` enabled (2–3× faster session endpoints) | https://www.better-auth.com/docs/adapters/drizzle |
-| `serverOnly()` from `@tanstack/react-start` for server-only module guards (NOT the npm `server-only` package — that's a Next.js convention) | kieran-typescript review |
-| Better Auth UI: hand-built with shadcn `Form`+`Input`+`Button`. **Do NOT** install `@daveyplate/better-auth-ui` for v1 | researcher recommendation |
-| Design language: single repo-level `docs/design.md`, **v0 charter** (principles + tokens + voice in ~150 lines), grows with real screens | code-simplicity review |
-| Default theme: dark | parent plan / design language |
-| Reuse from `packages/server`: `truncateUserAgent`, `TokenBucketLimiter`, `blockRatePayloadSchema` (and their types). **NOT** the schema files. | revision 2 |
-| Better Auth `session.cookieCache` enabled — `_authed.tsx beforeLoad` becomes a signed-cookie verify, not a DB hit | revision 3 (performance-oracle, better-auth) |
-| `postgres-js` client config: `ssl: "require"` in prod, `prepare: false`, `max: 5` (Phase 1) / `max: 8` (Phase 5 multi-instance) | revision 3 (performance-oracle, security-sentinel) |
-| Magic link config: `expiresIn: 600`, `disableSignUp: false`, `storeToken: "hashed"`, hardcoded `callbackURL: "/app"`, fail-closed `sendMagicLink` in prod | revision 3 (security-sentinel, better-auth) |
-| `trustedOrigins: [env.BETTER_AUTH_URL]` and built-in `rateLimit` enabled on `/api/auth/*` | revision 3 (security-sentinel, better-auth) |
-| TanStack Query install **deferred to Phase 3** (was Phase 1) — saves ~13 KB on the landing | revision 3 (performance-oracle) |
-| `lucide-react` per-icon subpath imports mandatory (`import { Sun } from "lucide-react/icons/sun"`) | revision 3 (performance-oracle) |
-| Inline `<head>` theme script + `useLayoutEffect` hook + `suppressHydrationWarning` on toggle | revision 3 (julik-races, make-interfaces-feel-better) |
-| Magic-link form uses explicit state machine (`idle`/`submitting`/`sent`/`error`) + `AbortController` | revision 3 (julik-races) |
-| `_authed.tsx` ships an explicit `errorComponent: () => <Navigate to="/login" />` for fail-closed DB outage | revision 3 (security-sentinel) |
-| `apps/web/.env.example` ships in Phase 1 with placeholder values | revision 3 (security-sentinel) |
-| `/api/health` returns static `200 OK`, never touches the DB | revision 3 (security-sentinel) |
+| Decision                                                                                                                                                                                                                                                                                               | Source                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| Stack: TanStack Start + Better Auth (magic link only) + Drizzle/Postgres + Tailwind v4 + Base UI + shadcn                                                                                                                                                                                              | parent plan + this conversation                               |
+| **Schema ownership: `apps/web` owns all hosted Postgres tables.** `packages/server` keeps SQLite as its self-host default. Web app declares its own `events` and `tenants` (or whatever they're renamed to) Drizzle definitions — ~30 lines duplicated, but each deployment has unambiguous ownership. | architecture-strategist review (revision 2)                   |
+| Auth providers Phase 1: **magic link only** (console-logged in dev). Google + GitHub move to Phase 5 alongside Resend integration.                                                                                                                                                                     | code-simplicity review (revision 2)                           |
+| `--base base` flag for shadcn — verified live by framework-docs researcher 2026-04-08                                                                                                                                                                                                                  | https://ui.shadcn.com/docs/cli                                |
+| Postgres driver: `postgres-js`                                                                                                                                                                                                                                                                         | https://orm.drizzle.team/docs/get-started/postgresql-new      |
+| Migrations: committed via `drizzle-kit generate`, applied via `drizzle-kit migrate` in the **start** script (NOT build)                                                                                                                                                                                | https://orm.drizzle.team/docs/migrations + Railway constraint |
+| Better Auth schema generated by `bunx @better-auth/cli@latest generate`                                                                                                                                                                                                                                | https://www.better-auth.com/docs/adapters/drizzle             |
+| Better Auth Drizzle adapter `experimental: { joins: true }` enabled (2–3× faster session endpoints)                                                                                                                                                                                                    | https://www.better-auth.com/docs/adapters/drizzle             |
+| `serverOnly()` from `@tanstack/react-start` for server-only module guards (NOT the npm `server-only` package — that's a Next.js convention)                                                                                                                                                            | kieran-typescript review                                      |
+| Better Auth UI: hand-built with shadcn `Form`+`Input`+`Button`. **Do NOT** install `@daveyplate/better-auth-ui` for v1                                                                                                                                                                                 | researcher recommendation                                     |
+| Design language: single repo-level `docs/design.md`, **v0 charter** (principles + tokens + voice in ~150 lines), grows with real screens                                                                                                                                                               | code-simplicity review                                        |
+| Default theme: dark                                                                                                                                                                                                                                                                                    | parent plan / design language                                 |
+| Reuse from `packages/server`: `truncateUserAgent`, `TokenBucketLimiter`, `blockRatePayloadSchema` (and their types). **NOT** the schema files.                                                                                                                                                         | revision 2                                                    |
+| Better Auth `session.cookieCache` enabled — `_authed.tsx beforeLoad` becomes a signed-cookie verify, not a DB hit                                                                                                                                                                                      | revision 3 (performance-oracle, better-auth)                  |
+| `postgres-js` client config: `ssl: "require"` in prod, `prepare: false`, `max: 5` (Phase 1) / `max: 8` (Phase 5 multi-instance)                                                                                                                                                                        | revision 3 (performance-oracle, security-sentinel)            |
+| Magic link config: `expiresIn: 600`, `disableSignUp: false`, `storeToken: "hashed"`, hardcoded `callbackURL: "/app"`, fail-closed `sendMagicLink` in prod                                                                                                                                              | revision 3 (security-sentinel, better-auth)                   |
+| `trustedOrigins: [env.BETTER_AUTH_URL]` and built-in `rateLimit` enabled on `/api/auth/*`                                                                                                                                                                                                              | revision 3 (security-sentinel, better-auth)                   |
+| TanStack Query install **deferred to Phase 3** (was Phase 1) — saves ~13 KB on the landing                                                                                                                                                                                                             | revision 3 (performance-oracle)                               |
+| `lucide-react` per-icon subpath imports mandatory (`import { Sun } from "lucide-react/icons/sun"`)                                                                                                                                                                                                     | revision 3 (performance-oracle)                               |
+| Inline `<head>` theme script + `useLayoutEffect` hook + `suppressHydrationWarning` on toggle                                                                                                                                                                                                           | revision 3 (julik-races, make-interfaces-feel-better)         |
+| Magic-link form uses explicit state machine (`idle`/`submitting`/`sent`/`error`) + `AbortController`                                                                                                                                                                                                   | revision 3 (julik-races)                                      |
+| `_authed.tsx` ships an explicit `errorComponent: () => <Navigate to="/login" />` for fail-closed DB outage                                                                                                                                                                                             | revision 3 (security-sentinel)                                |
+| `apps/web/.env.example` ships in Phase 1 with placeholder values                                                                                                                                                                                                                                       | revision 3 (security-sentinel)                                |
+| `/api/health` returns static `200 OK`, never touches the DB                                                                                                                                                                                                                                            | revision 3 (security-sentinel)                                |
 
 ## Open uncertainties (resolve at top of Phase 1.1, ~10 minutes)
 
@@ -135,22 +136,23 @@ If `--base base` is missing in the deployed CLI version: fall back to `bunx shad
 
 ## Stack inventory (versions to pin)
 
-| Package | Why | Verify |
-| --- | --- | --- |
-| `@tanstack/react-start` | full-stack framework | `bun pm view @tanstack/react-start version`, pin exact |
-| `@tanstack/react-router` | routing primitives | match Start peer, pin exact |
-| ~~`@tanstack/react-query`~~ **DEFERRED TO PHASE 3** | performance-oracle: ~13 KB gzipped that the Phase 1 landing never uses; install when actual consumers land |
-| `react`, `react-dom` | already at 19.2.x in workspace root | reuse |
-| `tailwindcss`, `@tailwindcss/vite` | v4 | `^4.0.0` |
-| `tailwind-merge`, `class-variance-authority`, `clsx` | shadcn deps | latest |
-| `@base-ui/react` **or** `@base-ui-components/react` | primitives layer | resolve via uncertainty check |
-| `lucide-react` | icons | latest |
-| `better-auth` | auth core | latest |
-| `drizzle-orm`, `drizzle-kit`, `postgres`, `zod` | already in workspace via `packages/server` | reuse |
-| `block-rate` | workspace link (used in Phase 5 for dogfooding, but install now) | `workspace:*` |
-| `block-rate-server` | workspace link — for `truncateUserAgent`, `TokenBucketLimiter`, `blockRatePayloadSchema` only | `workspace:*` |
+| Package                                              | Why                                                                                                        | Verify                                                 |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `@tanstack/react-start`                              | full-stack framework                                                                                       | `bun pm view @tanstack/react-start version`, pin exact |
+| `@tanstack/react-router`                             | routing primitives                                                                                         | match Start peer, pin exact                            |
+| ~~`@tanstack/react-query`~~ **DEFERRED TO PHASE 3**  | performance-oracle: ~13 KB gzipped that the Phase 1 landing never uses; install when actual consumers land |
+| `react`, `react-dom`                                 | already at 19.2.x in workspace root                                                                        | reuse                                                  |
+| `tailwindcss`, `@tailwindcss/vite`                   | v4                                                                                                         | `^4.0.0`                                               |
+| `tailwind-merge`, `class-variance-authority`, `clsx` | shadcn deps                                                                                                | latest                                                 |
+| `@base-ui/react` **or** `@base-ui-components/react`  | primitives layer                                                                                           | resolve via uncertainty check                          |
+| `lucide-react`                                       | icons                                                                                                      | latest                                                 |
+| `better-auth`                                        | auth core                                                                                                  | latest                                                 |
+| `drizzle-orm`, `drizzle-kit`, `postgres`, `zod`      | already in workspace via `packages/server`                                                                 | reuse                                                  |
+| `block-rate`                                         | workspace link (used in Phase 5 for dogfooding, but install now)                                           | `workspace:*`                                          |
+| `block-rate-server`                                  | workspace link — for `truncateUserAgent`, `TokenBucketLimiter`, `blockRatePayloadSchema` only              | `workspace:*`                                          |
 
 **Dev:**
+
 - `@better-auth/cli` — generate Better Auth Drizzle schema
 - `vite` — ships via Start scaffold
 - `typescript`, `@types/react`, `@types/react-dom` — already at workspace root
@@ -260,58 +262,58 @@ apps/web/
 
 /* ---------- Step 1: Light tokens (oklch) ---------- */
 :root {
-  --background:         oklch(1.000 0.000 0);
-  --foreground:         oklch(0.150 0.020 240);
-  --card:               var(--background);
-  --card-foreground:    var(--foreground);
-  --popover:            oklch(0.990 0.005 240);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.15 0.02 240);
+  --card: var(--background);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.99 0.005 240);
   --popover-foreground: var(--foreground);
-  --primary:            oklch(0.450 0.180 250);
+  --primary: oklch(0.45 0.18 250);
   --primary-foreground: oklch(0.985 0.005 240);
-  --secondary:          oklch(0.960 0.010 240);
-  --secondary-foreground: oklch(0.250 0.020 240);
-  --muted:              oklch(0.965 0.010 240);
-  --muted-foreground:   oklch(0.500 0.020 240);
-  --accent:             var(--secondary);
-  --accent-foreground:  var(--secondary-foreground);
-  --border:             oklch(0.920 0.010 240);
-  --input:              var(--border);
-  --ring:               var(--primary);
-  --destructive:        oklch(0.580 0.220 25);
+  --secondary: oklch(0.96 0.01 240);
+  --secondary-foreground: oklch(0.25 0.02 240);
+  --muted: oklch(0.965 0.01 240);
+  --muted-foreground: oklch(0.5 0.02 240);
+  --accent: var(--secondary);
+  --accent-foreground: var(--secondary-foreground);
+  --border: oklch(0.92 0.01 240);
+  --input: var(--border);
+  --ring: var(--primary);
+  --destructive: oklch(0.58 0.22 25);
   --destructive-foreground: oklch(0.985 0.005 240);
 
-  --rate-low:  oklch(0.700 0.150 145);
-  --rate-mid:  oklch(0.720 0.180 75);
-  --rate-high: oklch(0.620 0.220 25);
+  --rate-low: oklch(0.7 0.15 145);
+  --rate-mid: oklch(0.72 0.18 75);
+  --rate-high: oklch(0.62 0.22 25);
 
   --radius: 0.5rem;
 }
 
 /* ---------- Step 1: Dark tokens (the default surface) ---------- */
 .dark {
-  --background:         oklch(0.100 0.010 240);
-  --foreground:         oklch(0.970 0.005 240);
-  --card:               oklch(0.130 0.010 240);
-  --card-foreground:    var(--foreground);
-  --popover:            oklch(0.150 0.012 240);
+  --background: oklch(0.1 0.01 240);
+  --foreground: oklch(0.97 0.005 240);
+  --card: oklch(0.13 0.01 240);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.15 0.012 240);
   --popover-foreground: var(--foreground);
-  --primary:            oklch(0.700 0.200 250);
-  --primary-foreground: oklch(0.100 0.010 240);
-  --secondary:          oklch(0.180 0.010 240);
-  --secondary-foreground: oklch(0.970 0.005 240);
-  --muted:              oklch(0.180 0.010 240);
-  --muted-foreground:   oklch(0.620 0.015 240);
-  --accent:             var(--secondary);
-  --accent-foreground:  var(--secondary-foreground);
-  --border:             oklch(0.220 0.010 240);
-  --input:              var(--border);
-  --ring:               var(--primary);
-  --destructive:        oklch(0.660 0.230 25);
-  --destructive-foreground: oklch(0.970 0.005 240);
+  --primary: oklch(0.7 0.2 250);
+  --primary-foreground: oklch(0.1 0.01 240);
+  --secondary: oklch(0.18 0.01 240);
+  --secondary-foreground: oklch(0.97 0.005 240);
+  --muted: oklch(0.18 0.01 240);
+  --muted-foreground: oklch(0.62 0.015 240);
+  --accent: var(--secondary);
+  --accent-foreground: var(--secondary-foreground);
+  --border: oklch(0.22 0.01 240);
+  --input: var(--border);
+  --ring: var(--primary);
+  --destructive: oklch(0.66 0.23 25);
+  --destructive-foreground: oklch(0.97 0.005 240);
 
-  --rate-low:  oklch(0.700 0.180 145);
-  --rate-mid:  oklch(0.770 0.200 75);
-  --rate-high: oklch(0.700 0.240 25);
+  --rate-low: oklch(0.7 0.18 145);
+  --rate-mid: oklch(0.77 0.2 75);
+  --rate-high: oklch(0.7 0.24 25);
 }
 
 /* ---------- Step 2: Map tokens → Tailwind utilities ---------- */
@@ -345,8 +347,12 @@ apps/web/
 }
 
 /* ---------- Step 3: Base styles at root (NOT @layer base) ---------- */
-* { border-color: var(--border); }
-:root { color-scheme: light dark; }
+* {
+  border-color: var(--border);
+}
+:root {
+  color-scheme: light dark;
+}
 
 html {
   -webkit-font-smoothing: antialiased;
@@ -358,16 +364,32 @@ body {
   margin: 0;
   background-color: var(--background);
   color: var(--foreground);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
 }
 
-h1, h2, h3 { text-wrap: balance; }
-p          { text-wrap: pretty; }
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+p {
+  text-wrap: pretty;
+}
 
-.tabular { font-variant-numeric: tabular-nums slashed-zero; }
+.tabular {
+  font-variant-numeric: tabular-nums slashed-zero;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
@@ -391,6 +413,7 @@ p          { text-wrap: pretty; }
 
 1. `bun add postgres` (already have `drizzle-orm`, `drizzle-kit`, `zod` via workspace).
 2. Create `src/lib/env.server.ts` — zod schema for **only** what Phase 1 consumes, with hard constraints (security-sentinel: don't ship `min(1)` on a secret):
+
    ```ts
    import { serverOnly } from "@tanstack/react-start";
    import { z } from "zod";
@@ -411,8 +434,11 @@ p          { text-wrap: pretty; }
      return parsed.data;
    })();
    ```
+
    No Resend, no Google, no GitHub — those land in Phase 5.
+
 3. Create `src/lib/db/index.ts` with **explicit** postgres-js options (security-sentinel + performance-oracle):
+
    ```ts
    import { serverOnly } from "@tanstack/react-start";
    import { drizzle } from "drizzle-orm/postgres-js";
@@ -420,39 +446,41 @@ p          { text-wrap: pretty; }
    import { env } from "../env.server";
    import * as schema from "./schema";
 
-   const client = serverOnly(() => postgres(env.DATABASE_URL, {
-     ssl: env.NODE_ENV === "production" ? "require" : false,
-     prepare: false,           // PgBouncer/Railway-pooler safe
-     max: 5,                   // Phase 1 single instance; Phase 5 multi-instance: 8 per instance
-     idle_timeout: 20,
-     connect_timeout: 10,
-   }))();
+   const client = serverOnly(() =>
+     postgres(env.DATABASE_URL, {
+       ssl: env.NODE_ENV === "production" ? "require" : false,
+       prepare: false, // PgBouncer/Railway-pooler safe
+       max: 5, // Phase 1 single instance; Phase 5 multi-instance: 8 per instance
+       idle_timeout: 20,
+       connect_timeout: 10,
+     }),
+   )();
 
    export const db = drizzle(client, { schema });
    ```
+
    Phase 5 deploy notes (do NOT do these in Phase 1, but document them so Phase 5 doesn't forget):
    - Multi-instance: `max: 8` per instance, ≤2 instances under Railway's 20-conn cap
    - 3+ instances: switch to PgBouncer or Railway's pooled URL
 
 3a. **Create `apps/web/.env.example`** with placeholder values + the exact secret-generation command:
-   ```
-   NODE_ENV=development
-   DATABASE_URL=postgres://postgres:postgres@localhost:5432/blockrate_dev
-   # generate with: openssl rand -base64 32
-   BETTER_AUTH_SECRET=replace-me-with-≥32-char-secret
-   BETTER_AUTH_URL=http://localhost:3000
-   ```
-   This ships in the Phase 1.7 commit list. Prevents the first contributor from pasting a weak secret.
-4. Create a minimal `src/lib/db/schema.ts` containing just the `tenants` and `events` table definitions (port the shape from `packages/server/src/schema.postgres.ts` — duplicated, by explicit decision). Add the indexes.
-5. Create `drizzle.config.ts` pointing at `src/lib/db/schema.ts`, dialect `postgresql`, out `./drizzle`.
-6. **Now** run `bunx @better-auth/cli@latest generate --output src/lib/db/auth-schema.ts`. This needs the Better Auth instance to exist — so first create a stub `src/lib/auth.ts` with **just** `betterAuth({ database: drizzleAdapter(db, { provider: "pg" }) })` so the CLI can introspect.
-7. Re-export everything from `auth-schema.ts` in `schema.ts` so a single Drizzle config sees all tables.
-8. Add `package.json` scripts:
-   ```json
-   "db:generate": "drizzle-kit generate",
-   "db:migrate":  "drizzle-kit migrate",
-   "start":       "bun run db:migrate && node .output/server/index.mjs"
-   ```
+
+```
+NODE_ENV=development
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/blockrate_dev
+# generate with: openssl rand -base64 32
+BETTER_AUTH_SECRET=replace-me-with-≥32-char-secret
+BETTER_AUTH_URL=http://localhost:3000
+```
+
+This ships in the Phase 1.7 commit list. Prevents the first contributor from pasting a weak secret. 4. Create a minimal `src/lib/db/schema.ts` containing just the `tenants` and `events` table definitions (port the shape from `packages/server/src/schema.postgres.ts` — duplicated, by explicit decision). Add the indexes. 5. Create `drizzle.config.ts` pointing at `src/lib/db/schema.ts`, dialect `postgresql`, out `./drizzle`. 6. **Now** run `bunx @better-auth/cli@latest generate --output src/lib/db/auth-schema.ts`. This needs the Better Auth instance to exist — so first create a stub `src/lib/auth.ts` with **just** `betterAuth({ database: drizzleAdapter(db, { provider: "pg" }) })` so the CLI can introspect. 7. Re-export everything from `auth-schema.ts` in `schema.ts` so a single Drizzle config sees all tables. 8. Add `package.json` scripts:
+
+```json
+"db:generate": "drizzle-kit generate",
+"db:migrate":  "drizzle-kit migrate",
+"start":       "bun run db:migrate && node .output/server/index.mjs"
+```
+
 9. Run `bun run db:generate` → one combined migration with `users`, `sessions`, `accounts` (Better Auth's), `verification`, `tenants`, `events`.
 10. Apply against a local Postgres: `DATABASE_URL=postgres://localhost/blockrate_dev bun run db:migrate`.
 
@@ -461,6 +489,7 @@ p          { text-wrap: pretty; }
 ### Phase 1.4 — Better Auth wiring (magic link only)
 
 1. Flesh out `src/lib/auth.ts` (replacing the stub from 1.3 step 6) with all hardening from the deepen pass baked in:
+
    ```ts
    import { serverOnly } from "@tanstack/react-start";
    import { betterAuth } from "better-auth";
@@ -470,56 +499,59 @@ p          { text-wrap: pretty; }
    import { db } from "./db";
    import { env } from "./env.server";
 
-   export const auth = serverOnly(() => betterAuth({
-     appName: "blockrate",
-     baseURL: env.BETTER_AUTH_URL,
-     secret: env.BETTER_AUTH_SECRET,
-     database: drizzleAdapter(db, { provider: "pg" }),
-     experimental: { joins: true }, // 2–3× faster session reads
+   export const auth = serverOnly(() =>
+     betterAuth({
+       appName: "blockrate",
+       baseURL: env.BETTER_AUTH_URL,
+       secret: env.BETTER_AUTH_SECRET,
+       database: drizzleAdapter(db, { provider: "pg" }),
+       experimental: { joins: true }, // 2–3× faster session reads
 
-     // security-sentinel + better-auth: explicit, not implicit
-     trustedOrigins: [env.BETTER_AUTH_URL],
+       // security-sentinel + better-auth: explicit, not implicit
+       trustedOrigins: [env.BETTER_AUTH_URL],
 
-     // performance-oracle: cookieCache turns _authed beforeLoad from a DB hit
-     // into a signed-cookie verify. The single biggest perf win in Phase 1.
-     session: {
-       expiresIn: 60 * 60 * 24 * 7,        // 7 days
-       updateAge: 60 * 60 * 24,             // refresh once per day
-       cookieCache: { enabled: true, maxAge: 60 * 5 },
-     },
+       // performance-oracle: cookieCache turns _authed beforeLoad from a DB hit
+       // into a signed-cookie verify. The single biggest perf win in Phase 1.
+       session: {
+         expiresIn: 60 * 60 * 24 * 7, // 7 days
+         updateAge: 60 * 60 * 24, // refresh once per day
+         cookieCache: { enabled: true, maxAge: 60 * 5 },
+       },
 
-     advanced: {
-       useSecureCookies: env.NODE_ENV === "production",
-       defaultCookieAttributes: { sameSite: "lax", httpOnly: true },
-     },
+       advanced: {
+         useSecureCookies: env.NODE_ENV === "production",
+         defaultCookieAttributes: { sameSite: "lax", httpOnly: true },
+       },
 
-     // built-in rate limit on /api/auth/* — covers magic-link send + verify
-     rateLimit: {
-       enabled: true,
-       window: 60,   // 60s window
-       max: 10,      // 10 requests per IP per window
-       storage: "memory",
-     },
+       // built-in rate limit on /api/auth/* — covers magic-link send + verify
+       rateLimit: {
+         enabled: true,
+         window: 60, // 60s window
+         max: 10, // 10 requests per IP per window
+         storage: "memory",
+       },
 
-     plugins: [
-       magicLink({
-         expiresIn: 60 * 10,           // 10 min, one-time use
-         disableSignUp: false,          // Phase 1: open signup. Flip to true if invite-only.
-         storeToken: "hashed",          // never store raw tokens in DB
-         callbackURL: "/app",           // hardcoded — closes the open-redirect gap
-         sendMagicLink: async ({ email, url }) => {
-           // security-sentinel: fail-closed in production so a missed Phase 5
-           // wiring can never accidentally leak tokens to Railway logs.
-           if (env.NODE_ENV === "production") {
-             throw new Error("magic-link delivery not configured (Phase 5: Resend)");
-           }
-           console.log(`[magic-link:dev] ${email}: ${url}`);
-         },
-       }),
-       tanstackStartCookies(), // MUST be last
-     ],
-   }))();
+       plugins: [
+         magicLink({
+           expiresIn: 60 * 10, // 10 min, one-time use
+           disableSignUp: false, // Phase 1: open signup. Flip to true if invite-only.
+           storeToken: "hashed", // never store raw tokens in DB
+           callbackURL: "/app", // hardcoded — closes the open-redirect gap
+           sendMagicLink: async ({ email, url }) => {
+             // security-sentinel: fail-closed in production so a missed Phase 5
+             // wiring can never accidentally leak tokens to Railway logs.
+             if (env.NODE_ENV === "production") {
+               throw new Error("magic-link delivery not configured (Phase 5: Resend)");
+             }
+             console.log(`[magic-link:dev] ${email}: ${url}`);
+           },
+         }),
+         tanstackStartCookies(), // MUST be last
+       ],
+     }),
+   )();
    ```
+
    Notes on this config (each line answers to a specific reviewer finding):
    - `serverOnly()` from `@tanstack/react-start` — NOT the npm `server-only` package (kieran-typescript)
    - `experimental: { joins: true }` — 2–3× faster session endpoints (better-auth docs, framework-docs researcher)
@@ -533,6 +565,7 @@ p          { text-wrap: pretty; }
 **Confirm** when running `bunx @better-auth/cli@latest generate` (in Phase 1.3 step 6) that the generated `verification` table schema stores tokens hashed (Better Auth handles the hashing because we set `storeToken: "hashed"`). Smoke-test by inserting a token and `SELECT`ing the row — the value should not equal the URL-embedded token.
 
 2. Create `src/lib/auth-client.ts`:
+
    ```ts
    import { createAuthClient } from "better-auth/react";
    import { magicLinkClient } from "better-auth/client/plugins";
@@ -541,23 +574,32 @@ p          { text-wrap: pretty; }
      plugins: [magicLinkClient()],
    });
    ```
+
    Add `vite-env.d.ts` augmentation so `import.meta.env.VITE_BETTER_AUTH_URL` is typed `string`, not `string | undefined`:
+
    ```ts
    /// <reference types="vite/client" />
-   interface ImportMetaEnv { readonly VITE_BETTER_AUTH_URL: string; }
-   interface ImportMeta { readonly env: ImportMetaEnv; }
+   interface ImportMetaEnv {
+     readonly VITE_BETTER_AUTH_URL: string;
+   }
+   interface ImportMeta {
+     readonly env: ImportMetaEnv;
+   }
    ```
 
 3. Create the catch-all API route at `src/routes/api/auth.$.ts`. **Use the route file the scaffold generates** — Kieran's review flagged that hand-writing `createFileRoute` snippets risks fighting the generated route types. The shape inside is:
+
    ```ts
    export const ServerRoute = createServerFileRoute().methods({
-     GET:  ({ request }) => auth.handler(request),
+     GET: ({ request }) => auth.handler(request),
      POST: ({ request }) => auth.handler(request),
    });
    ```
+
    The exact import (`createServerFileRoute` vs `createFileRoute` from generated routeTree) depends on the Start version pinned in 1.1 — verify against the scaffold's example file before writing this.
 
 4. Create `_authed.tsx` layout route with `beforeLoad` guard, **Headers wrap fix**, and **fail-closed errorComponent**:
+
    ```ts
    import { createFileRoute, redirect, Navigate, Outlet } from "@tanstack/react-router";
    import { getHeaders } from "@tanstack/react-start/server";
@@ -582,6 +624,7 @@ p          { text-wrap: pretty; }
      component: () => <Outlet />,
    });
    ```
+
    **Performance note** (performance-oracle): with the `cookieCache` setting in `auth.ts`, this `beforeLoad` does NOT hit the DB on every navigation — it verifies a signed cookie. The DB is only touched when the cache is stale (every 5 min) or the cookie is missing. Without this, dashboard navigation would feel laggy at 20–60 ms per nav against Railway Postgres.
 
 5. Create `_authed/app.index.tsx` as a single placeholder route: "Welcome, $email. Phase 2 will put real stats here." Use `Route.useRouteContext()` to read `user` from the parent's beforeLoad return. **Only one** placeholder — Simplicity flagged three as ceremony.
@@ -594,6 +637,7 @@ p          { text-wrap: pretty; }
 2. **`src/routes/login.tsx`** — single file. Header, magic-link form (shadcn `Form` + `Input` + `Button`, zod resolver, calls `authClient.signIn.magicLink()`). No OAuth buttons. Inline error display. Submit shows "Check your email" message.
 
    **Use an explicit state machine** (julik-races: `useState<boolean>` is a footgun for double-submit + unmount races):
+
    ```ts
    type FormState = "idle" | "submitting" | "sent" | "error";
    const [state, setState] = useState<FormState>("idle");
@@ -608,7 +652,7 @@ p          { text-wrap: pretty; }
      try {
        await authClient.signIn.magicLink(
          { email, callbackURL: "/app" },
-         { signal: ctrlRef.current.signal }
+         { signal: ctrlRef.current.signal },
        );
        if (!ctrlRef.current.signal.aborted) setState("sent");
      } catch (err) {
@@ -616,12 +660,14 @@ p          { text-wrap: pretty; }
      }
    }
    ```
+
    - `aria-disabled={state === "submitting"}` (NOT `disabled` — keeps focus reachable per make-interfaces-feel-better)
    - Button visual: spinner overlay, text fades to opacity-0 (the "alive frozen button" anti-pattern fix)
    - On `sent`: cross-fade to "Check your email" message with `animate-in fade-in slide-in-from-bottom-1 duration-300`
    - Move focus to the success heading (`tabIndex={-1}` + ref)
    - Reserve error-slot space with `min-h-5` so layout doesn't shift
    - Inline error uses `role="alert"` for screen readers
+
 3. **`src/routes/signup.tsx`** — imports the magic-link form component from `login.tsx` (or duplicate the 15 lines, that's also fine for two callers). Different heading/subhead.
 4. **`src/routes/pricing.tsx`** — placeholder card listing three tiers, "Free" enabled, "Pro/Team" with "coming soon" badges. Real copy in Phase 5.
 5. **`src/routes/docs.tsx`** — one paragraph linking to the GitHub README. Real MDX in Phase 6.
@@ -633,6 +679,7 @@ p          { text-wrap: pretty; }
 1. **`src/routes/__root.tsx`**: HTML shell with `app.css` link, **the exact inline `<head>` theme script below** (prevents the SSR theme flash — must run before any CSS, before any React, blocking, no imports), `<meta name="color-scheme" content="light dark">`, sticky nav, `<Outlet />`, footer.
 
    **Inline `<head>` script** (place as the **first** child of `<head>`, before any `<link>`):
+
    ```html
    <script>
      (function () {
@@ -646,6 +693,7 @@ p          { text-wrap: pretty; }
      })();
    </script>
    ```
+
    This script is ≤500 bytes, fully synchronous, never throws (try/catch around `localStorage` for private browsing). The default fallback is **dark** when no preference is set (per the design charter: "if no preference, fall through to dark"). The `style.colorScheme` line ensures native form controls match the chosen theme.
 
 2. **`src/components/nav.tsx`**: logo, primary nav (Pricing, Docs, GitHub external), right side: "Sign in" button if logged out, "Sign out" button if logged in. **No** avatar dropdown in Phase 1.
@@ -653,6 +701,7 @@ p          { text-wrap: pretty; }
 3. **`src/components/theme-toggle.tsx`**: single 40×40 button cycling Light → Dark → System (one button, not a dropdown). All three icons (sun/moon/monitor) live in the DOM, absolutely positioned, cross-faded by `data-active` (per make-interfaces-feel-better polish principles — opacity 0→1, scale 0.25→1, blur 4px→0, 200ms `cubic-bezier(0.2, 0, 0, 1)`). `aria-label` includes both current state and next action: `"Theme: dark. Click to switch to system."`.
 
    **Theme React hook** (julik-races: do NOT let React own the initial value — three sources of truth = guaranteed hydration mismatch):
+
    ```ts
    import { useState, useEffect, useLayoutEffect } from "react";
 
@@ -685,6 +734,7 @@ p          { text-wrap: pretty; }
      return { theme, setTheme };
    }
    ```
+
    The toggle button renders a placeholder icon while `theme === null` (SSR + first frame), then transitions to the real icon after mount. Add `suppressHydrationWarning` on the button itself because the `aria-label` differs between SSR and client. Without this discipline you get React hydration warnings on every theme toggle render.
 
 4. Footer: OSS link, privacy placeholder (route not built yet, link to `#`), self-host link.
@@ -715,6 +765,7 @@ p          { text-wrap: pretty; }
 4. Tag `v0.6.0`.
 
 **Bundle-import check** (performance-oracle blocker): before tagging, run `bun run build` and grep the landing chunk manifest. The landing page chunk MUST NOT contain references to:
+
 - `auth-client` / `better-auth/client`
 - `_authed/*` route modules
 - `@tanstack/react-query` (it's deferred to Phase 3 anyway, but fail loudly if it sneaks in)
@@ -751,30 +802,30 @@ Mandate `lucide-react` per-icon subpath imports (`import { Sun } from "lucide-re
 
 ```css
 :root {
-  --background:        oklch(1.000 0.000 0);
-  --foreground:        oklch(0.150 0.020 240);
-  --card:              var(--background);
-  --card-foreground:   var(--foreground);
-  --popover:           oklch(0.990 0.005 240);
-  --popover-foreground:var(--foreground);
-  --primary:           oklch(0.450 0.180 250);
-  --primary-foreground:oklch(0.985 0.005 240);
-  --secondary:         oklch(0.960 0.010 240);
-  --secondary-foreground:oklch(0.250 0.020 240);
-  --muted:             oklch(0.965 0.010 240);
-  --muted-foreground:  oklch(0.500 0.020 240);
-  --accent:            var(--secondary);             /* shadcn components hard-reference --accent */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.15 0.02 240);
+  --card: var(--background);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.99 0.005 240);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.45 0.18 250);
+  --primary-foreground: oklch(0.985 0.005 240);
+  --secondary: oklch(0.96 0.01 240);
+  --secondary-foreground: oklch(0.25 0.02 240);
+  --muted: oklch(0.965 0.01 240);
+  --muted-foreground: oklch(0.5 0.02 240);
+  --accent: var(--secondary); /* shadcn components hard-reference --accent */
   --accent-foreground: var(--secondary-foreground);
-  --border:            oklch(0.920 0.010 240);
-  --input:             var(--border);
-  --ring:              var(--primary);
-  --destructive:       oklch(0.580 0.220 25);
+  --border: oklch(0.92 0.01 240);
+  --input: var(--border);
+  --ring: var(--primary);
+  --destructive: oklch(0.58 0.22 25);
   --destructive-foreground: oklch(0.985 0.005 240);
 
   /* The block-rate gradient — the only place colour is loud */
-  --rate-low:  oklch(0.700 0.150 145);  /* < 5% */
-  --rate-mid:  oklch(0.720 0.180 75);   /* 5–15% */
-  --rate-high: oklch(0.620 0.220 25);   /* > 15% */
+  --rate-low: oklch(0.7 0.15 145); /* < 5% */
+  --rate-mid: oklch(0.72 0.18 75); /* 5–15% */
+  --rate-high: oklch(0.62 0.22 25); /* > 15% */
 
   --radius: 0.5rem;
 }
@@ -784,29 +835,29 @@ Mandate `lucide-react` per-icon subpath imports (`import { Sun } from "lucide-re
 
 ```css
 .dark {
-  --background:        oklch(0.100 0.010 240);
-  --foreground:        oklch(0.970 0.005 240);
-  --card:              oklch(0.130 0.010 240);
-  --card-foreground:   var(--foreground);
-  --popover:           oklch(0.150 0.012 240);
-  --popover-foreground:var(--foreground);
-  --primary:           oklch(0.700 0.200 250);
-  --primary-foreground:oklch(0.100 0.010 240);
-  --secondary:         oklch(0.180 0.010 240);
-  --secondary-foreground:oklch(0.970 0.005 240);
-  --muted:             oklch(0.180 0.010 240);
-  --muted-foreground:  oklch(0.620 0.015 240);
-  --accent:            var(--secondary);
+  --background: oklch(0.1 0.01 240);
+  --foreground: oklch(0.97 0.005 240);
+  --card: oklch(0.13 0.01 240);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.15 0.012 240);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.7 0.2 250);
+  --primary-foreground: oklch(0.1 0.01 240);
+  --secondary: oklch(0.18 0.01 240);
+  --secondary-foreground: oklch(0.97 0.005 240);
+  --muted: oklch(0.18 0.01 240);
+  --muted-foreground: oklch(0.62 0.015 240);
+  --accent: var(--secondary);
   --accent-foreground: var(--secondary-foreground);
-  --border:            oklch(0.220 0.010 240);
-  --input:             var(--border);
-  --ring:              var(--primary);
-  --destructive:       oklch(0.660 0.230 25);
-  --destructive-foreground: oklch(0.970 0.005 240);
+  --border: oklch(0.22 0.01 240);
+  --input: var(--border);
+  --ring: var(--primary);
+  --destructive: oklch(0.66 0.23 25);
+  --destructive-foreground: oklch(0.97 0.005 240);
 
-  --rate-low:  oklch(0.700 0.180 145);
-  --rate-mid:  oklch(0.770 0.200 75);
-  --rate-high: oklch(0.700 0.240 25);
+  --rate-low: oklch(0.7 0.18 145);
+  --rate-mid: oklch(0.77 0.2 75);
+  --rate-high: oklch(0.7 0.24 25);
 }
 ```
 
@@ -847,10 +898,8 @@ Mandate `lucide-react` per-icon subpath imports (`import { Sun } from "lucide-re
 - Subset to Latin range for Phase 1; ext-Latin/Cyrillic/etc. when content demands.
 - Preload pattern (in `__root.tsx` `<head>`):
   ```html
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-        href="/fonts/inter-400.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-        href="/fonts/inter-600.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/inter-400.woff2" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/inter-600.woff2" />
   ```
 
 ### Theme flash mitigation (non-negotiable)
@@ -887,6 +936,7 @@ These are the operational rules every interactive component answers to. Cite by 
 ## Critical files
 
 **Created:**
+
 - `docs/design.md` (v0 charter)
 - `docs/plans/2026-04-08-feat-blockrate-app-web-scaffold-plan.md` (this file)
 - `apps/web/package.json`, `tsconfig.json`, `vite.config.ts`, `components.json`, `drizzle.config.ts`, `drizzle/0000_*.sql`, `README.md`
@@ -898,6 +948,7 @@ These are the operational rules every interactive component answers to. Cite by 
 - `apps/web/public/favicon.svg`
 
 **Modified:**
+
 - `package.json` (workspace glob)
 - `README.md` (hosted callout)
 - `.github/workflows/ci.yml` (single `web-build` job, no typecheck/cache)
@@ -907,6 +958,7 @@ These are the operational rules every interactive component answers to. Cite by 
 ## Acceptance criteria
 
 **Functional:**
+
 - [ ] `bun install` at root succeeds with new workspace glob
 - [ ] `cd apps/web && bun run dev` boots without errors
 - [ ] `bun run build && bun run start` boots a production server (migrations run on start)
@@ -919,6 +971,7 @@ These are the operational rules every interactive component answers to. Cite by 
 - [ ] No FOUC theme flash on hard reload
 
 **Non-functional (concrete budgets per performance-oracle):**
+
 - [ ] Landing **JS ≤ 200 KB gzipped** AND **≤ 80 KB per route chunk** (verify in Vite build output)
 - [ ] Landing chunk does NOT import `auth-client`, `better-auth/client`, `@tanstack/react-query`, or `_authed/*` (grep the manifest)
 - [ ] Landing **FCP < 1.2 s**, **LCP < 1.8 s**, **TTI < 2.5 s** on Railway cold (manual Lighthouse run, not CI)
@@ -931,6 +984,7 @@ These are the operational rules every interactive component answers to. Cite by 
 - [ ] All `lucide-react` imports use the per-icon subpath form
 
 **Quality gates:**
+
 - [ ] CI green (web-build job + existing tests)
 - [ ] All commits atomic and conventional
 - [ ] `docs/design.md` exists, referenced from apps/web README and root README
@@ -982,30 +1036,30 @@ These are the verification flows (manual in Phase 1, Playwright candidates for P
 
 ## Risks & mitigations
 
-| Risk | L | I | Mitigation |
-| --- | --- | --- | --- |
-| TanStack Start RC breaking changes between Phase 1 and Phase 5 | M | M | Pin exact versions; budget 1h per minor bump |
-| `--base base` flag missing in deployed shadcn CLI | L | M | Verify in Phase 1.1; fall back path documented in Phase 1.2 step 5 |
-| Base UI package name divergence | M | L | Verify in Phase 1.1; document choice in design.md |
-| Better Auth schema generation drift from expectations | L | M | Generate first, inspect, then layer |
-| Theme flash on hard reload | H if not fixed | M | Inline head script in Phase 1.6 step 1 |
-| Workspace TS resolution from web app to `block-rate-server` | M | H | **Kieran preflight in Phase 1.0 step 3** — verify `packages/server/package.json` exports/main/types |
-| `_authed.tsx` `beforeLoad` slow per navigation | L (Phase 1) | M (Phase 3+) | Defer — no perf to measure until real loaders exist. Architecture-strategist agreed. |
-| In-process rate limiter doesn't survive multi-instance Railway | L (Phase 1) | M (Phase 5) | Architecture-strategist flagged for Phase 5 deploy decision (Postgres-backed or Redis) |
-| Drizzle migration runs on Railway build (where DB is unreachable) | L | H | `start` script includes `db:migrate`, **not** `build` |
-| Schema definitions duplicated between `apps/web` and `packages/server` | M | L | Explicit decision (revision 2). Drift caught by review. ~30 lines, low cost. |
-| design.md becomes a graveyard nobody updates | M | M | v0 charter is small enough to actually maintain; PR reviewers cite sections; revisit at v0.7.0 |
-| Magic-link `console.log` callback ships to production unguarded → Railway logs leak tokens | L (with fail-closed) / **H** (without) | **Critical** | **Phase 1.4 step 1: callback throws in `NODE_ENV === "production"`.** Cannot be deployed accidentally. |
-| Open redirect via Better Auth `callbackURL` query parameter | M | H | **Hardcode `callbackURL: "/app"`** in `magicLink({})` config — client cannot pass arbitrary URLs |
-| Bundle size blows past 200 KB on landing | H without discipline | M | Defer TanStack Query to Phase 3. Mandate `lucide-react` per-icon subpath. Bundle-import grep check before tag. |
-| Theme flash on hard reload (FOUC) | H without inline script | M | Inline `<head>` script in Phase 1.6 step 1 + React `useLayoutEffect` hook + `suppressHydrationWarning` on the toggle (julik-races) |
-| `_authed` `beforeLoad` DB hit on every navigation feels laggy | H without `cookieCache` | M | Better Auth `session.cookieCache` enabled in Phase 1.4 — verifies signed cookie instead of DB round-trip |
-| Postgres connection without TLS in production → MITM | L (Railway internal) / H (public URL) | H | `ssl: "require"` in production via `env.NODE_ENV` check in `db/index.ts` |
-| `BETTER_AUTH_SECRET` shipped weak (< 32 chars) | M | Critical | `z.string().min(32)` enforced in `env.server.ts` zod schema; `.env.example` shows `openssl rand -base64 32` |
-| Magic-link form double-submit / setState on unmounted component | M | L | State machine + `AbortController` pattern in Phase 1.5 step 2 |
-| Better Auth `verification` table stores plaintext tokens | L | Critical | `storeToken: "hashed"` in `magicLink({})` config; verify post-generation via SELECT |
-| Auth bypass on DB partial failure / read replica drift | L (Phase 1) | H | `errorComponent: () => <Navigate to="/login" />` on `_authed` — fails closed |
-| Health endpoint leaks DB connection details on error | L | M | `/api/health` returns static `200 OK` body, never touches DB |
+| Risk                                                                                       | L                                      | I            | Mitigation                                                                                                                         |
+| ------------------------------------------------------------------------------------------ | -------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| TanStack Start RC breaking changes between Phase 1 and Phase 5                             | M                                      | M            | Pin exact versions; budget 1h per minor bump                                                                                       |
+| `--base base` flag missing in deployed shadcn CLI                                          | L                                      | M            | Verify in Phase 1.1; fall back path documented in Phase 1.2 step 5                                                                 |
+| Base UI package name divergence                                                            | M                                      | L            | Verify in Phase 1.1; document choice in design.md                                                                                  |
+| Better Auth schema generation drift from expectations                                      | L                                      | M            | Generate first, inspect, then layer                                                                                                |
+| Theme flash on hard reload                                                                 | H if not fixed                         | M            | Inline head script in Phase 1.6 step 1                                                                                             |
+| Workspace TS resolution from web app to `block-rate-server`                                | M                                      | H            | **Kieran preflight in Phase 1.0 step 3** — verify `packages/server/package.json` exports/main/types                                |
+| `_authed.tsx` `beforeLoad` slow per navigation                                             | L (Phase 1)                            | M (Phase 3+) | Defer — no perf to measure until real loaders exist. Architecture-strategist agreed.                                               |
+| In-process rate limiter doesn't survive multi-instance Railway                             | L (Phase 1)                            | M (Phase 5)  | Architecture-strategist flagged for Phase 5 deploy decision (Postgres-backed or Redis)                                             |
+| Drizzle migration runs on Railway build (where DB is unreachable)                          | L                                      | H            | `start` script includes `db:migrate`, **not** `build`                                                                              |
+| Schema definitions duplicated between `apps/web` and `packages/server`                     | M                                      | L            | Explicit decision (revision 2). Drift caught by review. ~30 lines, low cost.                                                       |
+| design.md becomes a graveyard nobody updates                                               | M                                      | M            | v0 charter is small enough to actually maintain; PR reviewers cite sections; revisit at v0.7.0                                     |
+| Magic-link `console.log` callback ships to production unguarded → Railway logs leak tokens | L (with fail-closed) / **H** (without) | **Critical** | **Phase 1.4 step 1: callback throws in `NODE_ENV === "production"`.** Cannot be deployed accidentally.                             |
+| Open redirect via Better Auth `callbackURL` query parameter                                | M                                      | H            | **Hardcode `callbackURL: "/app"`** in `magicLink({})` config — client cannot pass arbitrary URLs                                   |
+| Bundle size blows past 200 KB on landing                                                   | H without discipline                   | M            | Defer TanStack Query to Phase 3. Mandate `lucide-react` per-icon subpath. Bundle-import grep check before tag.                     |
+| Theme flash on hard reload (FOUC)                                                          | H without inline script                | M            | Inline `<head>` script in Phase 1.6 step 1 + React `useLayoutEffect` hook + `suppressHydrationWarning` on the toggle (julik-races) |
+| `_authed` `beforeLoad` DB hit on every navigation feels laggy                              | H without `cookieCache`                | M            | Better Auth `session.cookieCache` enabled in Phase 1.4 — verifies signed cookie instead of DB round-trip                           |
+| Postgres connection without TLS in production → MITM                                       | L (Railway internal) / H (public URL)  | H            | `ssl: "require"` in production via `env.NODE_ENV` check in `db/index.ts`                                                           |
+| `BETTER_AUTH_SECRET` shipped weak (< 32 chars)                                             | M                                      | Critical     | `z.string().min(32)` enforced in `env.server.ts` zod schema; `.env.example` shows `openssl rand -base64 32`                        |
+| Magic-link form double-submit / setState on unmounted component                            | M                                      | L            | State machine + `AbortController` pattern in Phase 1.5 step 2                                                                      |
+| Better Auth `verification` table stores plaintext tokens                                   | L                                      | Critical     | `storeToken: "hashed"` in `magicLink({})` config; verify post-generation via SELECT                                                |
+| Auth bypass on DB partial failure / read replica drift                                     | L (Phase 1)                            | H            | `errorComponent: () => <Navigate to="/login" />` on `_authed` — fails closed                                                       |
+| Health endpoint leaks DB connection details on error                                       | L                                      | M            | `/api/health` returns static `200 OK` body, never touches DB                                                                       |
 
 ## Sources & references
 
@@ -1045,5 +1099,5 @@ These are the verification flows (manual in Phase 1, Playwright candidates for P
 - **Revision 2**: integrated three independent reviews — kieran-typescript (3 critical type issues, 5 majors, 4 nits), architecture-strategist (3 blockers, 3 coupling concerns), code-simplicity (cut 11 things, deferred 2). Convergent finding: Phase 1 was wearing Phase 2/3's clothes. Cut speculative scope, fixed type-safety errors, resolved schema-ownership ambiguity (`apps/web` owns all hosted Postgres).
 - **Revision 3** (this version): integrated `/deepen-plan` pass with six more agents/skills (tailwind-v4-shadcn skill, better-auth-best-practices skill, make-interfaces-feel-better skill, performance-oracle, security-sentinel, julik-frontend-races-reviewer). Six issues were flagged by 2+ independent agents (see the "Origin & review history" section's table) — those are the production-hardening additions. All concrete artifacts the agents produced (full `app.css`, hardened `auth.ts`, inline head theme script, theme React hook, form state machine, polish principles) are baked inline rather than appended as a "Research insights" section, to keep the plan readable as a single coherent spec.
 - **SpecFlow analyzer skipped intentionally** in all three revisions — feature is a scaffold + library install, not a branching user journey. The verification scenarios in System-Wide Impact + the explicit perf budgets in Acceptance Criteria serve the same purpose.
-- **Decisions held against simplicity pressure**: see the "What was kept against simplicity pressure" subsection above. Revision 3 added one more category — the *performance hardening* items (cookieCache, postgres-js pool config, font preload) all looked like premature optimization until the deepen pass justified each with concrete numbers.
+- **Decisions held against simplicity pressure**: see the "What was kept against simplicity pressure" subsection above. Revision 3 added one more category — the _performance hardening_ items (cookieCache, postgres-js pool config, font preload) all looked like premature optimization until the deepen pass justified each with concrete numbers.
 - **Sub-agent token cost discipline**: the deepen pass ran 6 focused agents instead of the 30+ the workflow allows, because category-error agents (Rails/Python/etc on a TypeScript plan) produce noise that drowns signal. Quality > quantity.

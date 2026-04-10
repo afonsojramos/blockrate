@@ -2,6 +2,17 @@
   "name": "blockrate",
   "version": "0.1.0",
   "description": "Measure the actual block rate of third-party services caused by ad blockers and privacy tools.",
+  "keywords": [
+    "ad-block",
+    "analytics",
+    "blockrate",
+    "privacy"
+  ],
+  "license": "MIT",
+  "files": [
+    "dist",
+    "src"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -29,7 +40,6 @@
       "import": "./dist/tanstack-start/index.js"
     }
   },
-  "files": ["dist", "src"],
   "scripts": {
     "build": "bun build ./src/index.ts --outdir ./dist --target browser --format esm --minify && bun build ./src/index.ts --outfile ./dist/index.cjs --target browser --format cjs --minify && bun build ./src/react/index.ts --outdir ./dist/react --target browser --format esm --external react --minify && bun build ./src/next/index.ts --outdir ./dist/next --target browser --format esm --external react --minify && bun build ./src/sveltekit/index.ts --outdir ./dist/sveltekit --target node --format esm --minify && bun build ./src/tanstack-start/index.ts --outdir ./dist/tanstack-start --target node --format esm --minify",
     "test": "bun test"
@@ -38,8 +48,8 @@
     "react": ">=17"
   },
   "peerDependenciesMeta": {
-    "react": { "optional": true }
-  },
-  "keywords": ["ad-block", "analytics", "blockrate", "privacy"],
-  "license": "MIT"
+    "react": {
+      "optional": true
+    }
+  }
 }

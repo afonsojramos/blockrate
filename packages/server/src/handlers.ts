@@ -4,7 +4,7 @@ import type { BlockRateStore, StoredTenant } from "./store";
 
 export async function authenticate(
   store: BlockRateStore,
-  request: Request
+  request: Request,
 ): Promise<StoredTenant | null> {
   const key =
     request.headers.get("x-blockrate-key") ||
@@ -17,7 +17,7 @@ export async function authenticate(
 export async function handleIngest(
   store: BlockRateStore,
   request: Request,
-  tenant: StoredTenant
+  tenant: StoredTenant,
 ): Promise<Response> {
   let body: unknown;
   try {
@@ -42,7 +42,7 @@ export async function handleIngest(
       provider: p.name,
       status: p.status,
       latency: p.latency,
-    }))
+    })),
   );
   return new Response(null, { status: 204 });
 }
@@ -50,7 +50,7 @@ export async function handleIngest(
 export async function handleStats(
   store: BlockRateStore,
   request: Request,
-  tenant: StoredTenant
+  tenant: StoredTenant,
 ): Promise<Response> {
   const url = new URL(request.url);
   const service = url.searchParams.get("service") ?? undefined;

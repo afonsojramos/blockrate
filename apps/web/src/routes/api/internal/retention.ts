@@ -32,21 +32,17 @@ export const Route = createFileRoute("/api/internal/retention")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const [{ env }, { db }, { events, appAccounts }, { PLANS }, drizzle] =
-          await Promise.all([
-            import("@/lib/env.server"),
-            import("@/lib/db/index.server"),
-            import("@/lib/db/schema"),
-            import("@/lib/plans"),
-            import("drizzle-orm"),
-          ]);
+        const [{ env }, { db }, { events, appAccounts }, { PLANS }, drizzle] = await Promise.all([
+          import("@/lib/env.server"),
+          import("@/lib/db/index.server"),
+          import("@/lib/db/schema"),
+          import("@/lib/plans"),
+          import("drizzle-orm"),
+        ]);
         const { and, inArray, lt } = drizzle;
 
         if (!env.CRON_SECRET) {
-          return jsonError(
-            "CRON_SECRET not configured on this deployment",
-            503
-          );
+          return jsonError("CRON_SECRET not configured on this deployment", 503);
         }
 
         const auth = request.headers.get("authorization") ?? "";
@@ -58,7 +54,7 @@ export const Route = createFileRoute("/api/internal/retention")({
         // ─── Step 1: Rollup daily stats BEFORE deleting ─────────────
         // Aggregate all events by day + provider into daily_provider_stats.
         // ON CONFLICT upsert makes this idempotent — safe to re-run.
-        const { dailyProviderStats } = await import("@/lib/db/schema");
+
         await db.execute(drizzle.sql`
           INSERT INTO daily_provider_stats (date, provider, total_checks, blocked)
           SELECT
@@ -87,27 +83,18 @@ export const Route = createFileRoute("/api/internal/retention")({
           byPlan.set(a.plan, list);
         }
 
-        const summary: Record<
-          string,
-          { accounts: number; eventsDeleted: number; cutoff: string }
-        > = {};
+        const summary: Record<string, { accounts: number; eventsDeleted: number; cutoff: string }> =
+          {};
         let totalDeleted = 0;
 
         for (const [planName, accountIds] of byPlan) {
           if (accountIds.length === 0) continue;
           const plan = PLANS[planName as keyof typeof PLANS] ?? PLANS.free;
-          const cutoff = new Date(
-            Date.now() - plan.retentionDays * 86_400_000
-          );
+          const cutoff = new Date(Date.now() - plan.retentionDays * 86_400_000);
 
           const deleted = await db
             .delete(events)
-            .where(
-              and(
-                inArray(events.accountId, accountIds),
-                lt(events.timestamp, cutoff)
-              )
-            )
+            .where(and(inArray(events.accountId, accountIds), lt(events.timestamp, cutoff)))
             .returning({ id: events.id });
 
           summary[planName] = {
@@ -129,7 +116,7 @@ export const Route = createFileRoute("/api/internal/retention")({
           {
             status: 200,
             headers: { "Content-Type": "application/json" },
-          }
+          },
         );
       },
     },

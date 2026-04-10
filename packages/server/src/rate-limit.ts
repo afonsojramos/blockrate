@@ -7,7 +7,7 @@ export class TokenBucketLimiter {
   private buckets = new Map<string, Bucket>();
   constructor(
     private capacity: number,
-    private refillPerSecond: number
+    private refillPerSecond: number,
   ) {}
 
   take(key: string): boolean {

@@ -58,7 +58,7 @@ export const getOverviewData = createServerFn({ method: "GET" })
       ? and(
           eq(events.accountId, account.id),
           eq(events.service, data.service),
-          gte(events.timestamp, since)
+          gte(events.timestamp, since),
         )
       : and(eq(events.accountId, account.id), gte(events.timestamp, since));
 
@@ -67,10 +67,9 @@ export const getOverviewData = createServerFn({ method: "GET" })
       .select({
         provider: events.provider,
         total: sql<number>`COUNT(*)`.as("total"),
-        blocked:
-          sql<number>`SUM(CASE WHEN ${events.status} = 'blocked' THEN 1 ELSE 0 END)`.as(
-            "blocked"
-          ),
+        blocked: sql<number>`SUM(CASE WHEN ${events.status} = 'blocked' THEN 1 ELSE 0 END)`.as(
+          "blocked",
+        ),
         avgLatency: sql<number>`AVG(${events.latency})`.as("avg_latency"),
       })
       .from(events)
@@ -82,8 +81,7 @@ export const getOverviewData = createServerFn({ method: "GET" })
         provider: r.provider,
         total: Number(r.total),
         blocked: Number(r.blocked),
-        blockRate:
-          Number(r.total) > 0 ? Number(r.blocked) / Number(r.total) : 0,
+        blockRate: Number(r.total) > 0 ? Number(r.blocked) / Number(r.total) : 0,
         avgLatency: Math.round(Number(r.avgLatency) || 0),
       }))
       .sort((a, b) => b.blockRate - a.blockRate);
@@ -107,65 +105,60 @@ export const getOverviewData = createServerFn({ method: "GET" })
 
 // ─── getUsageSnapshot ───────────────────────────────────────────────────
 
-export const getUsageSnapshot = createServerFn({ method: "GET" }).handler(
-  async () => {
-    const { account, session } = await requireAccount();
-    const { getUsage } = await import("@/lib/quota.server");
-    const { getPlan } = await import("@/lib/plans");
+export const getUsageSnapshot = createServerFn({ method: "GET" }).handler(async () => {
+  const { account, session } = await requireAccount();
+  const { getUsage } = await import("@/lib/quota.server");
+  const { getPlan } = await import("@/lib/plans");
 
-    const plan = getPlan(account.plan);
-    const usage = await getUsage(account.id, plan.eventsPerMonth);
-    return {
-      email: session.user.email,
-      plan,
-      usage,
-    };
-  }
-);
+  const plan = getPlan(account.plan);
+  const usage = await getUsage(account.id, plan.eventsPerMonth);
+  return {
+    email: session.user.email,
+    plan,
+    usage,
+  };
+});
 
 // ─── exportEventsCsv ────────────────────────────────────────────────────
 
-export const exportEventsCsv = createServerFn({ method: "GET" }).handler(
-  async () => {
-    const { account } = await requireAccount();
-    const { db } = await import("@/lib/db/index.server");
-    const { events } = await import("@/lib/db/schema");
-    const { eq } = await import("drizzle-orm");
+export const exportEventsCsv = createServerFn({ method: "GET" }).handler(async () => {
+  const { account } = await requireAccount();
+  const { db } = await import("@/lib/db/index.server");
+  const { events } = await import("@/lib/db/schema");
+  const { eq } = await import("drizzle-orm");
 
-    const rows = await db
-      .select({
-        timestamp: events.timestamp,
-        service: events.service,
-        provider: events.provider,
-        status: events.status,
-        latency: events.latency,
-        url: events.url,
-        userAgent: events.userAgent,
-      })
-      .from(events)
-      .where(eq(events.accountId, account.id))
-      .orderBy(events.timestamp);
+  const rows = await db
+    .select({
+      timestamp: events.timestamp,
+      service: events.service,
+      provider: events.provider,
+      status: events.status,
+      latency: events.latency,
+      url: events.url,
+      userAgent: events.userAgent,
+    })
+    .from(events)
+    .where(eq(events.accountId, account.id))
+    .orderBy(events.timestamp);
 
-    const header =
-      "timestamp,service,provider,status,latency_ms,url,browser\n";
-    const escape = (s: string) => `"${s.replace(/"/g, '""')}"`;
-    const body = rows
-      .map((r) =>
-        [
-          r.timestamp.toISOString(),
-          escape(r.service),
-          escape(r.provider),
-          r.status,
-          r.latency,
-          escape(r.url),
-          escape(r.userAgent),
-        ].join(",")
-      )
-      .join("\n");
+  const header = "timestamp,service,provider,status,latency_ms,url,browser\n";
+  const escape = (s: string) => `"${s.replace(/"/g, '""')}"`;
+  const body = rows
+    .map((r) =>
+      [
+        r.timestamp.toISOString(),
+        escape(r.service),
+        escape(r.provider),
+        r.status,
+        r.latency,
+        escape(r.url),
+        escape(r.userAgent),
+      ].join(","),
+    )
+    .join("\n");
 
-    return { csv: header + body, count: rows.length };
-  }
-);
+  return { csv: header + body, count: rows.length };
+});
 
 // ─── deleteAccount ──────────────────────────────────────────────────────
 
@@ -178,13 +171,11 @@ export const exportEventsCsv = createServerFn({ method: "GET" }).handler(
  * schema. Our `app_accounts.user_id` also cascades, which fans out to
  * api_keys / events / usage_counters via their own FKs.
  */
-export const deleteAccount = createServerFn({ method: "POST" }).handler(
-  async () => {
-    const { session, db } = await requireAccount();
-    const { user: userTable } = await import("@/lib/db/auth-schema");
-    const { eq } = await import("drizzle-orm");
+export const deleteAccount = createServerFn({ method: "POST" }).handler(async () => {
+  const { session, db } = await requireAccount();
+  const { user: userTable } = await import("@/lib/db/auth-schema");
+  const { eq } = await import("drizzle-orm");
 
-    await db.delete(userTable).where(eq(userTable.id, session.user.id));
-    return { ok: true };
-  }
-);
+  await db.delete(userTable).where(eq(userTable.id, session.user.id));
+  return { ok: true };
+});

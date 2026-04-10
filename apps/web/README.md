@@ -28,33 +28,33 @@ Open `http://localhost:3000`. Sign in via `/login` — the magic link URL prints
 
 ## Scripts
 
-| Script | What it does |
-| --- | --- |
-| `bun run dev` | Vite dev server on port 3000 |
-| `bun run build` | Production build via Vite + Nitro |
-| `bun run start` | Run migrations, then serve `.output/server/index.mjs` |
-| `bun run typecheck` | `tsc --noEmit` |
-| `bun run db:generate` | `drizzle-kit generate` — produces SQL migration files |
-| `bun run db:migrate` | Custom runner that handles both PGlite (dev) and postgres-js (prod) |
-| `bun run auth:generate` | Regenerate `src/lib/db/auth-schema.ts` from `auth.server.ts` |
+| Script                  | What it does                                                        |
+| ----------------------- | ------------------------------------------------------------------- |
+| `bun run dev`           | Vite dev server on port 3000                                        |
+| `bun run build`         | Production build via Vite + Nitro                                   |
+| `bun run start`         | Run migrations, then serve `.output/server/index.mjs`               |
+| `bun run typecheck`     | `tsc --noEmit`                                                      |
+| `bun run db:generate`   | `drizzle-kit generate` — produces SQL migration files               |
+| `bun run db:migrate`    | Custom runner that handles both PGlite (dev) and postgres-js (prod) |
+| `bun run auth:generate` | Regenerate `src/lib/db/auth-schema.ts` from `auth.server.ts`        |
 
 ## Environment variables
 
 **Do not set `NODE_ENV` in `.env`.** Vite reads `.env` at build time, and a hardcoded `NODE_ENV=development` causes `vite build` to bundle a dev-mode build. Mode is determined by the script you run (`bun run dev` vs `bun run start`, the latter sets `NODE_ENV=production`).
 
-| Variable | Required | Default | Notes |
-| --- | --- | --- | --- |
-| `DATABASE_URL` | no | `pglite://./.local/blockrate.db` | Either `pglite://...` (dev) or `postgres://...` (prod) |
-| `BETTER_AUTH_SECRET` | **yes** | — | ≥32 chars; `openssl rand -base64 32` |
-| `BETTER_AUTH_URL` | no | `http://localhost:3000` | Set to `https://blockrate.app` in prod |
-| `CRON_SECRET` | prod only | — | ≥32 chars; bearer for `/api/internal/retention` |
-| `RESEND_API_KEY` | prod only | — | sendMagicLink falls back to console.log when unset (dev only) |
-| `EMAIL_FROM` | no | `blockrate <magic@blockrate.app>` | From address for transactional email |
-| `GOOGLE_CLIENT_ID` | optional | — | Enables Google OAuth button when set with secret |
-| `GOOGLE_CLIENT_SECRET` | optional | — | |
-| `GITHUB_CLIENT_ID` | optional | — | Enables GitHub OAuth button when set with secret |
-| `GITHUB_CLIENT_SECRET` | optional | — | Required scope: `user:email` |
-| `VITE_BLOCKRATE_PUBLIC_KEY` | optional | — | Dogfood key — exposed to the browser. No-op when unset |
+| Variable                    | Required  | Default                           | Notes                                                         |
+| --------------------------- | --------- | --------------------------------- | ------------------------------------------------------------- |
+| `DATABASE_URL`              | no        | `pglite://./.local/blockrate.db`  | Either `pglite://...` (dev) or `postgres://...` (prod)        |
+| `BETTER_AUTH_SECRET`        | **yes**   | —                                 | ≥32 chars; `openssl rand -base64 32`                          |
+| `BETTER_AUTH_URL`           | no        | `http://localhost:3000`           | Set to `https://blockrate.app` in prod                        |
+| `CRON_SECRET`               | prod only | —                                 | ≥32 chars; bearer for `/api/internal/retention`               |
+| `RESEND_API_KEY`            | prod only | —                                 | sendMagicLink falls back to console.log when unset (dev only) |
+| `EMAIL_FROM`                | no        | `blockrate <magic@blockrate.app>` | From address for transactional email                          |
+| `GOOGLE_CLIENT_ID`          | optional  | —                                 | Enables Google OAuth button when set with secret              |
+| `GOOGLE_CLIENT_SECRET`      | optional  | —                                 |                                                               |
+| `GITHUB_CLIENT_ID`          | optional  | —                                 | Enables GitHub OAuth button when set with secret              |
+| `GITHUB_CLIENT_SECRET`      | optional  | —                                 | Required scope: `user:email`                                  |
+| `VITE_BLOCKRATE_PUBLIC_KEY` | optional  | —                                 | Dogfood key — exposed to the browser. No-op when unset        |
 
 ## Retention sweep (Phase 4)
 
@@ -123,12 +123,12 @@ Google and GitHub providers are wired in `lib/auth.server.ts` and **conditionall
 
 `lib/mailer.server.ts` chooses dev console-log vs real Resend send via this matrix:
 
-| `NODE_ENV` | `RESEND_API_KEY` | Behaviour |
-| --- | --- | --- |
-| development | unset | `console.log` (dev convenience) |
-| development | set | real Resend send (handy for QA) |
-| **production** | unset | **throws** — fail-closed against deployment bugs |
-| production | set | real Resend send |
+| `NODE_ENV`     | `RESEND_API_KEY` | Behaviour                                        |
+| -------------- | ---------------- | ------------------------------------------------ |
+| development    | unset            | `console.log` (dev convenience)                  |
+| development    | set              | real Resend send (handy for QA)                  |
+| **production** | unset            | **throws** — fail-closed against deployment bugs |
+| production     | set              | real Resend send                                 |
 
 Setup:
 

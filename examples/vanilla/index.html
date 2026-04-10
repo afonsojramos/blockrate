@@ -15,11 +15,7 @@
         providers: ["optimizely", "posthog", "ga4"],
         delay: 1000,
         reporter: (result) => {
-          document.getElementById("out").textContent = JSON.stringify(
-            result,
-            null,
-            2
-          );
+          document.getElementById("out").textContent = JSON.stringify(result, null, 2);
           console.log("block-rate result", result);
         },
       });

@@ -1,11 +1,6 @@
 import { builtInProviders } from "./providers";
 import { hasCheckedThisSession, markChecked, shouldSample } from "./session";
-import type {
-  BlockRateOptions,
-  BlockRateResult,
-  Provider,
-  ProviderResult,
-} from "./types";
+import type { BlockRateOptions, BlockRateResult, Provider, ProviderResult } from "./types";
 
 export * from "./types";
 export { beaconReporter, serverReporter } from "./reporter";
@@ -63,13 +58,11 @@ export class BlockRate {
 
     const providerResults = await Promise.all(
       this.providers.map(async (p): Promise<ProviderResult> => {
-        const start =
-          typeof performance !== "undefined" ? performance.now() : Date.now();
+        const start = typeof performance !== "undefined" ? performance.now() : Date.now();
         const status = await p.detect().catch((): "blocked" => "blocked");
-        const end =
-          typeof performance !== "undefined" ? performance.now() : Date.now();
+        const end = typeof performance !== "undefined" ? performance.now() : Date.now();
         return { name: p.name, status, latency: Math.round(end - start) };
-      })
+      }),
     );
 
     const result: BlockRateResult = {

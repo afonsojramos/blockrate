@@ -35,15 +35,14 @@ function jsonError(message: string, status: number): Response {
     new Response(JSON.stringify({ error: message }), {
       status,
       headers: { "Content-Type": "application/json" },
-    })
+    }),
   );
 }
 
 export const Route = createFileRoute("/api/ingest")({
   server: {
     handlers: {
-      OPTIONS: () =>
-        new Response(null, { status: 204, headers: CORS_HEADERS }),
+      OPTIONS: () => new Response(null, { status: 204, headers: CORS_HEADERS }),
 
       POST: async ({ request }) => {
         // Defer all server-only imports so they never hit the client bundle
@@ -87,13 +86,9 @@ export const Route = createFileRoute("/api/ingest")({
             revokedAt: apiKeys.revokedAt,
           })
           .from(apiKeys)
-          .where(
-            and(eq(apiKeys.keyPrefix, prefix), isNull(apiKeys.revokedAt))
-          );
+          .where(and(eq(apiKeys.keyPrefix, prefix), isNull(apiKeys.revokedAt)));
 
-        const matched = candidates.find((c) =>
-          compareHashes(c.keyHash, expectedHash)
-        );
+        const matched = candidates.find((c) => compareHashes(c.keyHash, expectedHash));
         if (!matched) {
           return jsonError("invalid api key", 401);
         }
@@ -126,8 +121,8 @@ export const Route = createFileRoute("/api/ingest")({
                   "X-BlockRate-Quota-Limit": String(plan.eventsPerMonth),
                   "X-BlockRate-Quota-Used": String(usage.used),
                 },
-              }
-            )
+              },
+            ),
           );
         }
 
@@ -149,8 +144,8 @@ export const Route = createFileRoute("/api/ingest")({
               {
                 status: 400,
                 headers: { "Content-Type": "application/json" },
-              }
-            )
+              },
+            ),
           );
         }
 

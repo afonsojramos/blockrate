@@ -1,16 +1,16 @@
 # blockrate
 
-> **Know what your ad blockers are hiding from your analytics.** Measure the *per-provider* block rate of the third-party tools your app depends on — Optimizely, PostHog, GA4, Segment, and the rest. Tiny, zero-dependency, first-party.
+> **Know what your ad blockers are hiding from your analytics.** Measure the _per-provider_ block rate of the third-party tools your app depends on — Optimizely, PostHog, GA4, Segment, and the rest. Tiny, zero-dependency, first-party.
 
-Existing "ad block detectors" tell you whether *a* blocker exists. `blockrate` tells you **which specific tools are blocked**, so you can decide whether to reverse-proxy Optimizely, migrate PostHog server-side, or just accept the gap.
+Existing "ad block detectors" tell you whether _a_ blocker exists. `blockrate` tells you **which specific tools are blocked**, so you can decide whether to reverse-proxy Optimizely, migrate PostHog server-side, or just accept the gap.
 
 ## Three ways to use it
 
-| | What | Where to start |
-| --- | --- | --- |
-| 🪶 **OSS library** | The 1.6 KB client. Drop into any web app, point at any reporter. | [`packages/core`](packages/core/README.md) |
-| 🏠 **Self-hosted server** | Drop-in ingestion server with SQLite or Postgres + a built-in dashboard. One binary, one command. | [`packages/server`](packages/server/README.md) |
-| ☁️ **Hosted (blockrate.app)** | Sign up, get an API key, see per-provider block rates. No infrastructure. | [blockrate.app](https://blockrate.app) *(in development)* |
+|                               | What                                                                                              | Where to start                                            |
+| ----------------------------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| 🪶 **OSS library**            | The 1.6 KB client. Drop into any web app, point at any reporter.                                  | [`packages/core`](packages/core/README.md)                |
+| 🏠 **Self-hosted server**     | Drop-in ingestion server with SQLite or Postgres + a built-in dashboard. One binary, one command. | [`packages/server`](packages/server/README.md)            |
+| ☁️ **Hosted (blockrate.app)** | Sign up, get an API key, see per-provider block rates. No infrastructure.                         | [blockrate.app](https://blockrate.app) _(in development)_ |
 
 ## Repository layout
 
@@ -71,15 +71,15 @@ If you don't want to operate any infrastructure, [blockrate.app](https://blockra
 
 ## Project status
 
-| Tag | Phase | What |
-| --- | --- | --- |
-| `v0.5.0` | 0 | `packages/server` SQLite ↔ Postgres parity |
-| `v0.6.0` | 1 | `apps/web` scaffold + auth + design charter |
-| `v0.7.0` | 2 | ingest endpoint + key management + quota |
-| `v0.8.0` | 3 | dashboard with stats query + settings |
-| `v0.9.0` | 4 | retention sweep + cron |
-| `v0.10.0` | 5 | OAuth + Resend + dogfooding + production smoke |
-| `v0.11.0` | 6 | Documentation polish (this) |
+| Tag       | Phase | What                                           |
+| --------- | ----- | ---------------------------------------------- |
+| `v0.5.0`  | 0     | `packages/server` SQLite ↔ Postgres parity     |
+| `v0.6.0`  | 1     | `apps/web` scaffold + auth + design charter    |
+| `v0.7.0`  | 2     | ingest endpoint + key management + quota       |
+| `v0.8.0`  | 3     | dashboard with stats query + settings          |
+| `v0.9.0`  | 4     | retention sweep + cron                         |
+| `v0.10.0` | 5     | OAuth + Resend + dogfooding + production smoke |
+| `v0.11.0` | 6     | Documentation polish (this)                    |
 
 The hosted service code is feature-complete; production deployment is gated on OAuth client provisioning + a Railway project. See [`docs/plans/`](docs/plans/) for the full build plans.
 

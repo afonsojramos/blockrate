@@ -26,13 +26,7 @@ export type { BlockRatePayload } from "./validate";
 export { truncateUserAgent } from "./ua";
 
 // Tenant management
-export {
-  createTenant,
-  listTenants,
-  deleteTenant,
-  rotateTenantKey,
-  generateApiKey,
-} from "./tenant";
+export { createTenant, listTenants, deleteTenant, rotateTenantKey, generateApiKey } from "./tenant";
 
 // Rate limiter (reusable in other contexts like blockrate.app)
 export { TokenBucketLimiter } from "./rate-limit";

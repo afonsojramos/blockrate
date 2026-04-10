@@ -9,10 +9,7 @@
  * Production deploys (Railway) MUST use a postgres:// URL. PGlite is dev-only.
  */
 
-import {
-  drizzle as drizzlePostgres,
-  type PostgresJsDatabase,
-} from "drizzle-orm/postgres-js";
+import { drizzle as drizzlePostgres, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
 import postgres from "postgres";
 import { PGlite } from "@electric-sql/pglite";

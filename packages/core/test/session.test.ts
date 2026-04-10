@@ -1,9 +1,5 @@
 import { describe, it, expect, beforeEach, beforeAll, afterAll } from "bun:test";
-import {
-  hasCheckedThisSession,
-  markChecked,
-  shouldSample,
-} from "../src/session";
+import { hasCheckedThisSession, markChecked, shouldSample } from "../src/session";
 
 const storage: Record<string, string> = {};
 

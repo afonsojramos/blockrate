@@ -75,18 +75,12 @@
       "indexes": {
         "idx_events_tenant_service": {
           "name": "idx_events_tenant_service",
-          "columns": [
-            "tenant_id",
-            "service",
-            "timestamp"
-          ],
+          "columns": ["tenant_id", "service", "timestamp"],
           "isUnique": false
         },
         "idx_events_provider": {
           "name": "idx_events_provider",
-          "columns": [
-            "provider"
-          ],
+          "columns": ["provider"],
           "isUnique": false
         }
       },
@@ -95,12 +89,8 @@
           "name": "events_tenant_id_tenants_id_fk",
           "tableFrom": "events",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -145,9 +135,7 @@
       "indexes": {
         "tenants_api_key_unique": {
           "name": "tenants_api_key_unique",
-          "columns": [
-            "api_key"
-          ],
+          "columns": ["api_key"],
           "isUnique": true
         }
       },

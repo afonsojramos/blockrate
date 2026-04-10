@@ -35,10 +35,7 @@ export function beaconReporter(endpoint: string): Reporter {
     const body = JSON.stringify(result);
     try {
       if (typeof navigator !== "undefined" && navigator.sendBeacon) {
-        const ok = navigator.sendBeacon(
-          endpoint,
-          new Blob([body], { type: "application/json" })
-        );
+        const ok = navigator.sendBeacon(endpoint, new Blob([body], { type: "application/json" }));
         if (ok) return;
       }
     } catch {

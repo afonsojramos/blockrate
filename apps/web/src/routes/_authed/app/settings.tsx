@@ -2,19 +2,9 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import {
-  deleteAccount,
-  exportEventsCsv,
-  getUsageSnapshot,
-} from "@/server/stats";
+import { deleteAccount, exportEventsCsv, getUsageSnapshot } from "@/server/stats";
 
 export const Route = createFileRoute("/_authed/app/settings")({
   loader: () => getUsageSnapshot(),
@@ -27,10 +17,7 @@ function Settings() {
   const [exporting, setExporting] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const usagePct = Math.min(
-    100,
-    (data.usage.used / data.plan.eventsPerMonth) * 100
-  );
+  const usagePct = Math.min(100, (data.usage.used / data.plan.eventsPerMonth) * 100);
 
   async function onExport() {
     if (exporting) return;
@@ -41,9 +28,7 @@ function Settings() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `blockrate-events-${new Date()
-        .toISOString()
-        .slice(0, 10)}.csv`;
+      a.download = `blockrate-events-${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
       URL.revokeObjectURL(url);
     } finally {
@@ -54,12 +39,13 @@ function Settings() {
   async function onDelete() {
     if (deleting) return;
     const confirmed = confirm(
-      "PERMANENTLY delete your account, all API keys, and all event history?\n\nThis cannot be undone."
+      "PERMANENTLY delete your account, all API keys, and all event history?\n\nThis cannot be undone.",
     );
     if (!confirmed) return;
     setDeleting(true);
     try {
       await deleteAccount();
+      const { authClient } = await import("@/lib/auth-client");
       await authClient.signOut().catch(() => {});
       navigate({ to: "/" });
     } catch (err) {
@@ -104,8 +90,8 @@ function Settings() {
           <Progress value={usagePct} />
           <div className="flex items-baseline justify-between text-sm">
             <span className="tabular-nums text-muted-foreground">
-              {data.usage.used.toLocaleString()} /{" "}
-              {data.plan.eventsPerMonth.toLocaleString()} events
+              {data.usage.used.toLocaleString()} / {data.plan.eventsPerMonth.toLocaleString()}{" "}
+              events
             </span>
             <span className="tabular-nums">
               {usagePct.toFixed(1)}% of {data.plan.label}
@@ -118,17 +104,12 @@ function Settings() {
         <CardHeader>
           <CardTitle className="text-base">Data</CardTitle>
           <CardDescription>
-            Download a CSV of every event we've stored for your account.
-            We never store raw user agents — only browser family + major
-            version.
+            Download a CSV of every event we've stored for your account. We never store raw user
+            agents — only browser family + major version.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button
-            variant="outline"
-            onClick={onExport}
-            aria-disabled={exporting}
-          >
+          <Button variant="outline" onClick={onExport} aria-disabled={exporting}>
             {exporting ? "Generating…" : "Export events as CSV"}
           </Button>
         </CardContent>
@@ -136,20 +117,13 @@ function Settings() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base text-destructive">
-            Danger zone
-          </CardTitle>
+          <CardTitle className="text-base text-destructive">Danger zone</CardTitle>
           <CardDescription>
-            Permanently delete your account, API keys, and all event history.
-            This cannot be undone.
+            Permanently delete your account, API keys, and all event history. This cannot be undone.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button
-            variant="destructive"
-            onClick={onDelete}
-            aria-disabled={deleting}
-          >
+          <Button variant="destructive" onClick={onDelete} aria-disabled={deleting}>
             {deleting ? "Deleting…" : "Delete account"}
           </Button>
         </CardContent>

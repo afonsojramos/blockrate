@@ -4,8 +4,7 @@ import { useEffect, useRef } from "react";
 import { BlockRate } from "../index";
 import type { BlockRateOptions } from "../types";
 
-export interface BlockRateScriptProps
-  extends Omit<BlockRateOptions, "reporter"> {
+export interface BlockRateScriptProps extends Omit<BlockRateOptions, "reporter"> {
   endpoint: string;
 }
 
@@ -22,10 +21,7 @@ export function BlockRateScript({ endpoint, ...rest }: BlockRateScriptProps) {
         const body = JSON.stringify(result);
         try {
           if (navigator.sendBeacon) {
-            navigator.sendBeacon(
-              endpoint,
-              new Blob([body], { type: "application/json" })
-            );
+            navigator.sendBeacon(endpoint, new Blob([body], { type: "application/json" }));
             return;
           }
         } catch {

@@ -74,14 +74,10 @@ export const createKey = createServerFn({ method: "POST" })
     const existing = await db
       .select({ id: apiKeys.id })
       .from(apiKeys)
-      .where(
-        and(eq(apiKeys.accountId, account.id), isNull(apiKeys.revokedAt))
-      );
+      .where(and(eq(apiKeys.accountId, account.id), isNull(apiKeys.revokedAt)));
     const plan = getPlan(account.plan);
     if (existing.length >= plan.maxKeys) {
-      throw new Error(
-        `key limit reached (${plan.maxKeys} on the ${plan.label} plan)`
-      );
+      throw new Error(`key limit reached (${plan.maxKeys} on the ${plan.label} plan)`);
     }
 
     const generated = generateApiKey();

@@ -1,12 +1,12 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { CodeBlock } from '@/components/code-block'
-import { HeroChart } from '@/components/hero-chart'
-import { getHeroStats } from '@/server/hero-stats'
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { CodeBlock } from "@/components/code-block";
+import { HeroChart } from "@/components/hero-chart";
+import { getHeroStats } from "@/server/hero-stats";
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute("/")({
   loader: () => getHeroStats(),
   component: Landing,
-})
+});
 
 function Landing() {
   const heroStats = Route.useLoaderData();
@@ -15,9 +15,7 @@ function Landing() {
     <main className="mx-auto max-w-6xl px-6 py-16">
       <section className="space-y-6">
         {/* Real data hero chart — hidden when no data exists */}
-        {heroStats && heroStats.providers.length > 0 && (
-          <HeroChart data={heroStats} />
-        )}
+        {heroStats && heroStats.providers.length > 0 && <HeroChart data={heroStats} />}
 
         <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
           early access
@@ -26,9 +24,9 @@ function Landing() {
           Know what your ad blockers are hiding from your analytics.
         </h1>
         <p className="max-w-2xl text-lg text-muted-foreground">
-          A tiny client library that measures the per-provider block rate of
-          the third-party tools your app depends on. Drop it in, see exactly
-          how much PostHog, Optimizely, GA4 and friends are costing you.
+          A tiny client library that measures the per-provider block rate of the third-party tools
+          your app depends on. Drop it in, see exactly how much PostHog, Optimizely, GA4 and friends
+          are costing you.
         </p>
         <div className="flex flex-wrap gap-3 pt-2">
           <Link
@@ -69,18 +67,15 @@ new BlockRate({
         {[
           {
             title: 'Per-provider, not "is there a blocker"',
-            body:
-              'Block rate is checked per service. Optimizely might be blocked while PostHog gets through. Other libraries only tell you whether ANY blocker exists.',
+            body: "Block rate is checked per service. Optimizely might be blocked while PostHog gets through. Other libraries only tell you whether ANY blocker exists.",
           },
           {
-            title: 'First-party, not third-party',
-            body:
-              'Bundles into your own code. Under 2 KB gzipped. The detection script itself can\u2019t be blocked because it isn\u2019t served from a third-party CDN.',
+            title: "First-party, not third-party",
+            body: "Bundles into your own code. Under 2 KB gzipped. The detection script itself can\u2019t be blocked because it isn\u2019t served from a third-party CDN.",
           },
           {
-            title: 'Honest about the gap',
-            body:
-              'See the exact percentage of users who can\u2019t reach each tool, sliced by browser family. No fingerprinting, no personal data.',
+            title: "Honest about the gap",
+            body: "See the exact percentage of users who can\u2019t reach each tool, sliced by browser family. No fingerprinting, no personal data.",
           },
         ].map((card) => (
           <article
@@ -93,5 +88,5 @@ new BlockRate({
         ))}
       </section>
     </main>
-  )
+  );
 }

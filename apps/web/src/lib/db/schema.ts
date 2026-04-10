@@ -77,7 +77,7 @@ export const apiKeys = pgTable(
   (t) => ({
     byAccount: index("idx_api_keys_account").on(t.accountId),
     byPrefix: index("idx_api_keys_prefix").on(t.keyPrefix),
-  })
+  }),
 );
 
 // ─── Events ──────────────────────────────────────────────────────────────
@@ -104,14 +104,10 @@ export const events = pgTable(
     latency: integer("latency").notNull(),
   },
   (t) => ({
-    byAccountService: index("idx_events_account_service").on(
-      t.accountId,
-      t.service,
-      t.timestamp
-    ),
+    byAccountService: index("idx_events_account_service").on(t.accountId, t.service, t.timestamp),
     byApiKey: index("idx_events_api_key").on(t.apiKeyId),
     byProvider: index("idx_events_provider").on(t.provider),
-  })
+  }),
 );
 
 // ─── Usage counters ──────────────────────────────────────────────────────
@@ -128,7 +124,7 @@ export const usageCounters = pgTable(
   },
   (t) => ({
     pk: primaryKey({ columns: [t.accountId, t.yearMonth] }),
-  })
+  }),
 );
 
 // ─── Daily provider stats (rollup for hero chart) ───────────────────────
@@ -149,11 +145,8 @@ export const dailyProviderStats = pgTable(
     blocked: integer("blocked").notNull().default(0),
   },
   (t) => ({
-    byDateProvider: uniqueIndex("idx_daily_stats_date_provider").on(
-      t.date,
-      t.provider
-    ),
-  })
+    byDateProvider: uniqueIndex("idx_daily_stats_date_provider").on(t.date, t.provider),
+  }),
 );
 
 export type AppAccount = typeof appAccounts.$inferSelect;

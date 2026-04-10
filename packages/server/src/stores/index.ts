@@ -9,9 +9,7 @@ import { PostgresStore } from "./postgres";
  *   createStore({ dialect: "sqlite", url: "./blockrate.db" })
  *   createStore({ dialect: "postgres", url: "postgres://..." })
  */
-export async function createStore(
-  options: CreateStoreOptions = {}
-): Promise<BlockRateStore> {
+export async function createStore(options: CreateStoreOptions = {}): Promise<BlockRateStore> {
   const dialect = options.dialect ?? "sqlite";
   if (dialect === "sqlite") {
     return new SqliteStore(options.url ?? "./blockrate.db");

@@ -8,7 +8,7 @@ export function generateApiKey(): string {
 export async function createTenant(
   store: BlockRateStore,
   name: string,
-  apiKey: string = generateApiKey()
+  apiKey: string = generateApiKey(),
 ): Promise<StoredTenant> {
   const existing = await store.findTenantByName(name);
   if (existing) {
@@ -21,17 +21,11 @@ export async function listTenants(store: BlockRateStore): Promise<StoredTenant[]
   return store.listTenants();
 }
 
-export async function deleteTenant(
-  store: BlockRateStore,
-  name: string
-): Promise<boolean> {
+export async function deleteTenant(store: BlockRateStore, name: string): Promise<boolean> {
   return store.deleteTenant(name);
 }
 
-export async function rotateTenantKey(
-  store: BlockRateStore,
-  name: string
-): Promise<string | null> {
+export async function rotateTenantKey(store: BlockRateStore, name: string): Promise<string | null> {
   const existing = await store.findTenantByName(name);
   if (!existing) return null;
   const newKey = generateApiKey();

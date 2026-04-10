@@ -13,59 +13,59 @@
 
 /* ---------- Step 1: Light tokens (cool-tinted neutrals + brand blue primary) ---------- */
 :root {
-  --background:         oklch(1.000 0.000 0);
-  --foreground:         oklch(0.150 0.020 240);
-  --card:               var(--background);
-  --card-foreground:    var(--foreground);
-  --popover:            oklch(0.990 0.005 240);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.15 0.02 240);
+  --card: var(--background);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.99 0.005 240);
   --popover-foreground: var(--foreground);
-  --primary:            oklch(0.450 0.180 250);
+  --primary: oklch(0.45 0.18 250);
   --primary-foreground: oklch(0.985 0.005 240);
-  --secondary:          oklch(0.960 0.010 240);
-  --secondary-foreground: oklch(0.250 0.020 240);
-  --muted:              oklch(0.965 0.010 240);
-  --muted-foreground:   oklch(0.500 0.020 240);
-  --accent:             var(--secondary);
-  --accent-foreground:  var(--secondary-foreground);
-  --border:             oklch(0.920 0.010 240);
-  --input:              var(--border);
-  --ring:               var(--primary);
-  --destructive:        oklch(0.580 0.220 25);
+  --secondary: oklch(0.96 0.01 240);
+  --secondary-foreground: oklch(0.25 0.02 240);
+  --muted: oklch(0.965 0.01 240);
+  --muted-foreground: oklch(0.5 0.02 240);
+  --accent: var(--secondary);
+  --accent-foreground: var(--secondary-foreground);
+  --border: oklch(0.92 0.01 240);
+  --input: var(--border);
+  --ring: var(--primary);
+  --destructive: oklch(0.58 0.22 25);
   --destructive-foreground: oklch(0.985 0.005 240);
 
   /* The block-rate gradient — only place colour is allowed to be loud */
-  --rate-low:  oklch(0.700 0.150 145);
-  --rate-mid:  oklch(0.720 0.180 75);
-  --rate-high: oklch(0.620 0.220 25);
+  --rate-low: oklch(0.7 0.15 145);
+  --rate-mid: oklch(0.72 0.18 75);
+  --rate-high: oklch(0.62 0.22 25);
 
   --radius: 0.5rem;
 }
 
 /* ---------- Step 1: Dark tokens (the default surface) ---------- */
 .dark {
-  --background:         oklch(0.100 0.010 240);
-  --foreground:         oklch(0.970 0.005 240);
-  --card:               oklch(0.130 0.010 240);
-  --card-foreground:    var(--foreground);
-  --popover:            oklch(0.150 0.012 240);
+  --background: oklch(0.1 0.01 240);
+  --foreground: oklch(0.97 0.005 240);
+  --card: oklch(0.13 0.01 240);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.15 0.012 240);
   --popover-foreground: var(--foreground);
-  --primary:            oklch(0.700 0.200 250);
-  --primary-foreground: oklch(0.100 0.010 240);
-  --secondary:          oklch(0.180 0.010 240);
-  --secondary-foreground: oklch(0.970 0.005 240);
-  --muted:              oklch(0.180 0.010 240);
-  --muted-foreground:   oklch(0.620 0.015 240);
-  --accent:             var(--secondary);
-  --accent-foreground:  var(--secondary-foreground);
-  --border:             oklch(0.220 0.010 240);
-  --input:              var(--border);
-  --ring:               var(--primary);
-  --destructive:        oklch(0.660 0.230 25);
-  --destructive-foreground: oklch(0.970 0.005 240);
+  --primary: oklch(0.7 0.2 250);
+  --primary-foreground: oklch(0.1 0.01 240);
+  --secondary: oklch(0.18 0.01 240);
+  --secondary-foreground: oklch(0.97 0.005 240);
+  --muted: oklch(0.18 0.01 240);
+  --muted-foreground: oklch(0.62 0.015 240);
+  --accent: var(--secondary);
+  --accent-foreground: var(--secondary-foreground);
+  --border: oklch(0.22 0.01 240);
+  --input: var(--border);
+  --ring: var(--primary);
+  --destructive: oklch(0.66 0.23 25);
+  --destructive-foreground: oklch(0.97 0.005 240);
 
-  --rate-low:  oklch(0.700 0.180 145);
-  --rate-mid:  oklch(0.770 0.200 75);
-  --rate-high: oklch(0.700 0.240 25);
+  --rate-low: oklch(0.7 0.18 145);
+  --rate-mid: oklch(0.77 0.2 75);
+  --rate-high: oklch(0.7 0.24 25);
 }
 
 /* ---------- Step 2: Map tokens → Tailwind utilities ---------- */
@@ -102,31 +102,31 @@
   --radius-3xl: calc(var(--radius) * 2.2);
 
   --font-heading: var(--font-sans);
-  --font-sans: 'Geist Variable', sans-serif;
+  --font-sans: "Geist Variable", sans-serif;
 }
 
 /* ---------- sugar-high syntax highlighting tokens ---------- */
 :root {
   --sh-class: oklch(0.55 0.15 250);
   --sh-identifier: oklch(0.35 0.05 240);
-  --sh-keyword: oklch(0.50 0.18 300);
-  --sh-string: oklch(0.50 0.15 145);
+  --sh-keyword: oklch(0.5 0.18 300);
+  --sh-string: oklch(0.5 0.15 145);
   --sh-property: oklch(0.45 0.12 250);
   --sh-entity: oklch(0.55 0.15 75);
-  --sh-jsxliterals: oklch(0.50 0.18 300);
-  --sh-sign: oklch(0.50 0.02 240);
-  --sh-comment: oklch(0.60 0.01 240);
+  --sh-jsxliterals: oklch(0.5 0.18 300);
+  --sh-sign: oklch(0.5 0.02 240);
+  --sh-comment: oklch(0.6 0.01 240);
 }
 .dark {
   --sh-class: oklch(0.78 0.12 250);
   --sh-identifier: oklch(0.85 0.03 240);
   --sh-keyword: oklch(0.75 0.15 300);
   --sh-string: oklch(0.72 0.14 145);
-  --sh-property: oklch(0.78 0.10 250);
-  --sh-entity: oklch(0.80 0.12 75);
+  --sh-property: oklch(0.78 0.1 250);
+  --sh-entity: oklch(0.8 0.12 75);
   --sh-jsxliterals: oklch(0.75 0.15 300);
   --sh-sign: oklch(0.65 0.02 240);
-  --sh-comment: oklch(0.50 0.01 240);
+  --sh-comment: oklch(0.5 0.01 240);
 }
 
 /* ---------- Step 3: Base styles ---------- */
@@ -148,10 +148,19 @@ body {
   margin: 0;
   background-color: var(--background);
   color: var(--foreground);
-  font-family: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family:
+    "Geist Variable",
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   text-wrap: balance;
 }
 
@@ -165,14 +174,24 @@ p {
 
 /* ---------- Hero bar animation ---------- */
 @keyframes hero-bar-fill {
-  from { width: 0%; }
-  to   { width: 23.4%; }
+  from {
+    width: 0%;
+  }
+  to {
+    width: 23.4%;
+  }
 }
 
 /* ---------- Page transition ---------- */
 @keyframes page-enter {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .animate-page-enter {
   animation: page-enter 150ms cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -180,15 +199,23 @@ p {
 
 /* ---------- Feature card entrance ---------- */
 @keyframes card-enter {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .animate-card-enter {
   animation: card-enter 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }

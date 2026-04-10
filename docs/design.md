@@ -24,30 +24,30 @@
 
 ```css
 :root {
-  --background:        oklch(1.000 0.000 0);
-  --foreground:        oklch(0.150 0.020 240);
-  --card:              var(--background);
-  --card-foreground:   var(--foreground);
-  --popover:           oklch(0.990 0.005 240);
-  --popover-foreground:var(--foreground);
-  --primary:           oklch(0.450 0.180 250);
-  --primary-foreground:oklch(0.985 0.005 240);
-  --secondary:         oklch(0.960 0.010 240);
-  --secondary-foreground:oklch(0.250 0.020 240);
-  --muted:             oklch(0.965 0.010 240);
-  --muted-foreground:  oklch(0.500 0.020 240);
-  --accent:            var(--secondary);   /* shadcn components hard-reference --accent */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.15 0.02 240);
+  --card: var(--background);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.99 0.005 240);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.45 0.18 250);
+  --primary-foreground: oklch(0.985 0.005 240);
+  --secondary: oklch(0.96 0.01 240);
+  --secondary-foreground: oklch(0.25 0.02 240);
+  --muted: oklch(0.965 0.01 240);
+  --muted-foreground: oklch(0.5 0.02 240);
+  --accent: var(--secondary); /* shadcn components hard-reference --accent */
   --accent-foreground: var(--secondary-foreground);
-  --border:            oklch(0.920 0.010 240);
-  --input:             var(--border);
-  --ring:              var(--primary);
-  --destructive:       oklch(0.580 0.220 25);
+  --border: oklch(0.92 0.01 240);
+  --input: var(--border);
+  --ring: var(--primary);
+  --destructive: oklch(0.58 0.22 25);
   --destructive-foreground: oklch(0.985 0.005 240);
 
   /* The block-rate gradient — the only place colour is loud */
-  --rate-low:  oklch(0.700 0.150 145);  /* < 5% */
-  --rate-mid:  oklch(0.720 0.180 75);   /* 5–15% */
-  --rate-high: oklch(0.620 0.220 25);   /* > 15% */
+  --rate-low: oklch(0.7 0.15 145); /* < 5% */
+  --rate-mid: oklch(0.72 0.18 75); /* 5–15% */
+  --rate-high: oklch(0.62 0.22 25); /* > 15% */
 
   --radius: 0.5rem;
 }
@@ -57,29 +57,29 @@
 
 ```css
 .dark {
-  --background:        oklch(0.100 0.010 240);
-  --foreground:        oklch(0.970 0.005 240);
-  --card:              oklch(0.130 0.010 240);
-  --card-foreground:   var(--foreground);
-  --popover:           oklch(0.150 0.012 240);
-  --popover-foreground:var(--foreground);
-  --primary:           oklch(0.700 0.200 250);
-  --primary-foreground:oklch(0.100 0.010 240);
-  --secondary:         oklch(0.180 0.010 240);
-  --secondary-foreground:oklch(0.970 0.005 240);
-  --muted:             oklch(0.180 0.010 240);
-  --muted-foreground:  oklch(0.620 0.015 240);
-  --accent:            var(--secondary);
+  --background: oklch(0.1 0.01 240);
+  --foreground: oklch(0.97 0.005 240);
+  --card: oklch(0.13 0.01 240);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.15 0.012 240);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.7 0.2 250);
+  --primary-foreground: oklch(0.1 0.01 240);
+  --secondary: oklch(0.18 0.01 240);
+  --secondary-foreground: oklch(0.97 0.005 240);
+  --muted: oklch(0.18 0.01 240);
+  --muted-foreground: oklch(0.62 0.015 240);
+  --accent: var(--secondary);
   --accent-foreground: var(--secondary-foreground);
-  --border:            oklch(0.220 0.010 240);
-  --input:             var(--border);
-  --ring:               var(--primary);
-  --destructive:       oklch(0.660 0.230 25);
-  --destructive-foreground: oklch(0.970 0.005 240);
+  --border: oklch(0.22 0.01 240);
+  --input: var(--border);
+  --ring: var(--primary);
+  --destructive: oklch(0.66 0.23 25);
+  --destructive-foreground: oklch(0.97 0.005 240);
 
-  --rate-low:  oklch(0.700 0.180 145);
-  --rate-mid:  oklch(0.770 0.200 75);
-  --rate-high: oklch(0.700 0.240 25);
+  --rate-low: oklch(0.7 0.18 145);
+  --rate-mid: oklch(0.77 0.2 75);
+  --rate-high: oklch(0.7 0.24 25);
 }
 ```
 
@@ -99,17 +99,17 @@
 
 ### Scale
 
-| Token | Size | Use |
-| --- | --- | --- |
-| `text-xs`   | 12px | metadata, captions |
+| Token       | Size | Use                                     |
+| ----------- | ---- | --------------------------------------- |
+| `text-xs`   | 12px | metadata, captions                      |
 | `text-sm`   | 14px | dense UI (forms, sidebars, table cells) |
-| `text-base` | 16px | body copy, default paragraph |
-| `text-lg`   | 18px | section intros |
-| `text-xl`   | 20px | card titles |
-| `text-2xl`  | 24px | page subheadings |
-| `text-3xl`  | 30px | section headings |
-| `text-4xl`  | 36px | page titles |
-| `text-5xl`  | 48px | hero h1 (landing only) |
+| `text-base` | 16px | body copy, default paragraph            |
+| `text-lg`   | 18px | section intros                          |
+| `text-xl`   | 20px | card titles                             |
+| `text-2xl`  | 24px | page subheadings                        |
+| `text-3xl`  | 30px | section headings                        |
+| `text-4xl`  | 36px | page titles                             |
+| `text-5xl`  | 48px | hero h1 (landing only)                  |
 
 `text-6xl` and above are reserved — don't use without a reason.
 
@@ -148,10 +148,8 @@
 - Preload pattern (in `__root.tsx` `<head>`):
 
 ```html
-<link rel="preload" as="font" type="font/woff2" crossorigin
-      href="/fonts/inter-400.woff2">
-<link rel="preload" as="font" type="font/woff2" crossorigin
-      href="/fonts/inter-600.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/inter-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/inter-600.woff2" />
 ```
 
 ## Theme flash mitigation (non-negotiable)

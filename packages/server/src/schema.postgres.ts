@@ -1,13 +1,5 @@
 import { sql } from "drizzle-orm";
-import {
-  pgTable,
-  serial,
-  text,
-  integer,
-  timestamp,
-  index,
-  pgEnum,
-} from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, timestamp, index, pgEnum } from "drizzle-orm/pg-core";
 
 export const statusEnum = pgEnum("block_rate_status", ["loaded", "blocked"]);
 
@@ -36,13 +28,9 @@ export const events = pgTable(
     latency: integer("latency").notNull(),
   },
   (t) => ({
-    byTenantService: index("idx_events_tenant_service").on(
-      t.tenantId,
-      t.service,
-      t.timestamp
-    ),
+    byTenantService: index("idx_events_tenant_service").on(t.tenantId, t.service, t.timestamp),
     byProvider: index("idx_events_provider").on(t.provider),
-  })
+  }),
 );
 
 export type Tenant = typeof tenants.$inferSelect;

@@ -32,7 +32,7 @@ describe("blockrate-server (sqlite)", () => {
       new Request("http://x/ingest", {
         method: "POST",
         body: JSON.stringify(payload()),
-      })
+      }),
     );
     expect(res.status).toBe(401);
   });
@@ -43,7 +43,7 @@ describe("blockrate-server (sqlite)", () => {
         method: "POST",
         headers: { "x-blockrate-key": "br_test_key" },
         body: JSON.stringify({ bogus: true }),
-      })
+      }),
     );
     expect(res.status).toBe(400);
   });
@@ -55,7 +55,7 @@ describe("blockrate-server (sqlite)", () => {
           method: "POST",
           headers: { "x-blockrate-key": "br_test_key" },
           body: JSON.stringify(body),
-        })
+        }),
       );
 
     expect((await ingest(payload())).status).toBe(204);
@@ -65,21 +65,19 @@ describe("blockrate-server (sqlite)", () => {
         await ingest(
           payload({
             providers: [{ name: "optimizely", status: "loaded", latency: 8 }],
-          })
+          }),
         )
-      ).status
+      ).status,
     ).toBe(204);
 
     const res = await app.fetch(
       new Request("http://x/stats?since=7", {
         headers: { "x-blockrate-key": "br_test_key" },
-      })
+      }),
     );
     expect(res.status).toBe(200);
     const data: any = await res.json();
-    const optimizely = data.stats.find(
-      (s: any) => s.provider === "optimizely"
-    );
+    const optimizely = data.stats.find((s: any) => s.provider === "optimizely");
     expect(optimizely.total).toBe(3);
     expect(optimizely.blocked).toBe(2);
     expect(optimizely.blockRate).toBeCloseTo(2 / 3);
@@ -95,7 +93,7 @@ describe("blockrate-server (sqlite)", () => {
           method: "POST",
           headers: { "x-blockrate-key": "br_test_key" },
           body: JSON.stringify(body),
-        })
+        }),
       );
     await ingest(payload({ service: "web" }));
     await ingest(payload({ service: "mobile" }));
@@ -103,7 +101,7 @@ describe("blockrate-server (sqlite)", () => {
     const res = await app.fetch(
       new Request("http://x/stats?service=web", {
         headers: { "x-blockrate-key": "br_test_key" },
-      })
+      }),
     );
     const data: any = await res.json();
     const total = data.stats.reduce((a: number, s: any) => a + s.total, 0);
@@ -118,9 +116,7 @@ describe("blockrate-server (sqlite)", () => {
   });
 
   it("responds to CORS preflight", async () => {
-    const res = await app.fetch(
-      new Request("http://x/ingest", { method: "OPTIONS" })
-    );
+    const res = await app.fetch(new Request("http://x/ingest", { method: "OPTIONS" }));
     expect(res.status).toBe(204);
     expect(res.headers.get("Access-Control-Allow-Origin")).toBe("*");
   });
@@ -140,9 +136,9 @@ describe("blockrate-server (sqlite)", () => {
           payload({
             userAgent:
               "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-          })
+          }),
         ),
-      })
+      }),
     );
     // Verify the stored UA is the truncated form
     const tenant = await app.store.findTenantByApiKey("br_test_key");

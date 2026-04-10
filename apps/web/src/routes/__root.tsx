@@ -1,36 +1,36 @@
-import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { TanStackDevtools } from '@tanstack/react-devtools'
+import { HeadContent, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { TanStackDevtools } from "@tanstack/react-devtools";
 
-import { Dogfood } from '../components/dogfood'
-import { Nav } from '../components/nav'
-import { getNavSession } from '../server/session'
-import appCss from '../styles/app.css?url'
+import { Dogfood } from "../components/dogfood";
+import { Nav } from "../components/nav";
+import { getNavSession } from "../server/session";
+import appCss from "../styles/app.css?url";
 
-const THEME_INIT_SCRIPT = `(function(){try{var s=localStorage.getItem("theme");var m=window.matchMedia("(prefers-color-scheme: dark)").matches;var d=s==="dark"||(s!=="light"&&m);document.documentElement.classList.toggle("dark",d);document.documentElement.style.colorScheme=d?"dark":"light";}catch(e){}})();`
+const THEME_INIT_SCRIPT = `(function(){try{var s=localStorage.getItem("theme");var m=window.matchMedia("(prefers-color-scheme: dark)").matches;var d=s==="dark"||(s!=="light"&&m);document.documentElement.classList.toggle("dark",d);document.documentElement.style.colorScheme=d?"dark":"light";}catch(e){}})();`;
 
 export const Route = createRootRoute({
   head: () => ({
     meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { name: 'color-scheme', content: 'light dark' },
-      { title: 'blockrate.app — know what your ad blockers are hiding' },
+      { charSet: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "color-scheme", content: "light dark" },
+      { title: "blockrate.app — know what your ad blockers are hiding" },
       {
-        name: 'description',
+        name: "description",
         content:
-          'Measure the actual block rate of third-party services caused by ad blockers and privacy tools. OSS library + hosted dashboard.',
+          "Measure the actual block rate of third-party services caused by ad blockers and privacy tools. OSS library + hosted dashboard.",
       },
     ],
     links: [
-      { rel: 'stylesheet', href: appCss },
-      { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
     ],
   }),
   loader: () => getNavSession(),
   shellComponent: RootShell,
   component: RootLayout,
-})
+});
 
 /** HTML shell — renders during SSR before any loader data is available. */
 function RootShell({ children }: { children: React.ReactNode }) {
@@ -44,16 +44,14 @@ function RootShell({ children }: { children: React.ReactNode }) {
         {children}
         {import.meta.env.DEV && (
           <TanStackDevtools
-            config={{ position: 'bottom-right' }}
-            plugins={[
-              { name: 'Tanstack Router', render: <TanStackRouterDevtoolsPanel /> },
-            ]}
+            config={{ position: "bottom-right" }}
+            plugins={[{ name: "Tanstack Router", render: <TanStackRouterDevtoolsPanel /> }]}
           />
         )}
         <Scripts />
       </body>
     </html>
-  )
+  );
 }
 
 /** Root layout — has access to loader data (session). */
@@ -69,12 +67,21 @@ function RootLayout() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-6 py-8 text-sm text-muted-foreground sm:flex-row">
           <p>© 2026 blockrate</p>
           <div className="flex gap-4">
-            <a href="https://github.com/afonsojramos/blockrate" className="hover:text-foreground">OSS</a>
-            <a href="https://github.com/afonsojramos/blockrate/tree/main/packages/server" className="hover:text-foreground">Self-host</a>
-            <a href="/privacy" className="hover:text-foreground">Privacy</a>
+            <a href="https://github.com/afonsojramos/blockrate" className="hover:text-foreground">
+              OSS
+            </a>
+            <a
+              href="https://github.com/afonsojramos/blockrate/tree/main/packages/server"
+              className="hover:text-foreground"
+            >
+              Self-host
+            </a>
+            <a href="/privacy" className="hover:text-foreground">
+              Privacy
+            </a>
           </div>
         </div>
       </footer>
     </>
-  )
+  );
 }

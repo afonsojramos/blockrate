@@ -31,8 +31,8 @@ export function StatsTable({ stats }: { stats: StatsRow[] }) {
         <h3 className="text-base font-medium">No data yet</h3>
         <p className="mt-2 text-sm text-muted-foreground">
           Drop the blockrate library into your app and POST events to{" "}
-          <code className="font-mono text-xs">/api/ingest</code>. Once data
-          arrives, this table will show per-provider block rates.
+          <code className="font-mono text-xs">/api/ingest</code>. Once data arrives, this table will
+          show per-provider block rates.
         </p>
       </div>
     );
@@ -46,9 +46,7 @@ export function StatsTable({ stats }: { stats: StatsRow[] }) {
           <TableHead className="text-right tabular-nums">Checks</TableHead>
           <TableHead className="text-right tabular-nums">Blocked</TableHead>
           <TableHead>Block rate</TableHead>
-          <TableHead className="text-right tabular-nums">
-            Avg latency
-          </TableHead>
+          <TableHead className="text-right tabular-nums">Avg latency</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -67,9 +65,7 @@ export function StatsTable({ stats }: { stats: StatsRow[] }) {
           return (
             <TableRow key={s.provider}>
               <TableCell className="font-medium">{s.provider}</TableCell>
-              <TableCell className="text-right tabular-nums">
-                {s.total.toLocaleString()}
-              </TableCell>
+              <TableCell className="text-right tabular-nums">{s.total.toLocaleString()}</TableCell>
               <TableCell className="text-right tabular-nums text-muted-foreground">
                 {s.blocked.toLocaleString()}
               </TableCell>

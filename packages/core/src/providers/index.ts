@@ -23,15 +23,4 @@ export const builtInProviders: Record<string, Provider> = {
   intercom,
 };
 
-export {
-  optimizely,
-  posthog,
-  ga4,
-  gtm,
-  segment,
-  hotjar,
-  amplitude,
-  mixpanel,
-  metaPixel,
-  intercom,
-};
+export { optimizely, posthog, ga4, gtm, segment, hotjar, amplitude, mixpanel, metaPixel, intercom };

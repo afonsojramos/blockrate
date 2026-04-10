@@ -40,12 +40,7 @@ const tiers = [
     badge: "Coming soon",
     href: null,
     cta: null,
-    features: [
-      "10M events / month",
-      "Multi-seat accounts",
-      "1-year history",
-      "Priority support",
-    ],
+    features: ["10M events / month", "Multi-seat accounts", "1-year history", "Priority support"],
   },
 ];
 
@@ -55,20 +50,17 @@ function Pricing() {
   return (
     <main className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
       <header className="space-y-4 text-center">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          Honest pricing
-        </h1>
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Honest pricing</h1>
         <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-          Free for hobbyists. Paid tiers when there's real demand. No hidden
-          fees, no per-seat upcharges, no "contact sales" walls.
+          Free for hobbyists. Paid tiers when there's real demand. No hidden fees, no per-seat
+          upcharges, no "contact sales" walls.
         </p>
 
         {/* Billing toggle */}
         <div className="mt-6 flex items-center justify-center gap-3">
           <span
             className={
-              "text-sm font-medium " +
-              (!annual ? "text-foreground" : "text-muted-foreground")
+              "text-sm font-medium " + (!annual ? "text-foreground" : "text-muted-foreground")
             }
           >
             Monthly
@@ -92,8 +84,7 @@ function Pricing() {
           </button>
           <span
             className={
-              "text-sm font-medium " +
-              (annual ? "text-foreground" : "text-muted-foreground")
+              "text-sm font-medium " + (annual ? "text-foreground" : "text-muted-foreground")
             }
           >
             Annual
@@ -123,9 +114,7 @@ function Pricing() {
                 <p className="mt-2 text-3xl font-semibold tabular-nums">
                   €{price}
                   {period && (
-                    <span className="text-sm font-normal text-muted-foreground">
-                      {period}
-                    </span>
+                    <span className="text-sm font-normal text-muted-foreground">{period}</span>
                   )}
                 </p>
                 {annual && tier.monthly > 0 && (

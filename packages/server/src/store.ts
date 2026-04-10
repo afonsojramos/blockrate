@@ -41,10 +41,7 @@ export interface BlockRateStore {
   // tenant management
   findTenantByApiKey(apiKey: string): Promise<StoredTenant | null>;
   findTenantByName(name: string): Promise<StoredTenant | null>;
-  createTenant(input: {
-    name: string;
-    apiKey: string;
-  }): Promise<StoredTenant>;
+  createTenant(input: { name: string; apiKey: string }): Promise<StoredTenant>;
   listTenants(): Promise<StoredTenant[]>;
   deleteTenant(name: string): Promise<boolean>;
   updateTenantApiKey(name: string, apiKey: string): Promise<boolean>;

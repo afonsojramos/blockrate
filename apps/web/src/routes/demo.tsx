@@ -1,12 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/demo")({ component: Demo });
@@ -32,7 +26,7 @@ const PROVIDERS = [
 
 function Demo() {
   const [results, setResults] = useState<ProviderResult[]>(
-    PROVIDERS.map((name) => ({ name, status: "checking", latency: 0 }))
+    PROVIDERS.map((name) => ({ name, status: "checking", latency: 0 })),
   );
   const [running, setRunning] = useState(false);
   const [done, setDone] = useState(false);
@@ -40,9 +34,7 @@ function Demo() {
   async function runCheck() {
     setRunning(true);
     setDone(false);
-    setResults(
-      PROVIDERS.map((name) => ({ name, status: "checking", latency: 0 }))
-    );
+    setResults(PROVIDERS.map((name) => ({ name, status: "checking", latency: 0 })));
 
     // Dynamic import so the library only loads when the user visits /demo
     const { BlockRate, serverReporter } = await import("blockrate");
@@ -62,7 +54,7 @@ function Demo() {
             name: p.name,
             status: p.status,
             latency: p.latency,
-          }))
+          })),
         );
         setDone(true);
         setRunning(false);
@@ -100,11 +92,9 @@ function Demo() {
           What's your browser blocking right now?
         </h1>
         <p className="text-lg text-muted-foreground">
-          This page checks 10 common third-party analytics tools from your
-          browser, right now, using the same{" "}
-          <code className="font-mono text-sm">blockrate</code> library your
-          app would use. No data leaves your browser — this is purely
-          client-side.
+          This page checks 10 common third-party analytics tools from your browser, right now, using
+          the same <code className="font-mono text-sm">blockrate</code> library your app would use.
+          No data leaves your browser — this is purely client-side.
         </p>
       </header>
 
@@ -140,9 +130,8 @@ function Demo() {
           </div>
           <p className="mt-3 text-sm text-muted-foreground">
             If your app depends on any of these tools, {blocked > 1 ? "those" : "that"}{" "}
-            {blocked > 1 ? "services are" : "service is"} invisible for a
-            fraction of your users. blockrate.app measures exactly how large
-            that fraction is across your entire audience.
+            {blocked > 1 ? "services are" : "service is"} invisible for a fraction of your users.
+            blockrate.app measures exactly how large that fraction is across your entire audience.
           </p>
         </div>
       )}
@@ -150,10 +139,7 @@ function Demo() {
       {done && blocked === 0 && (
         <div className="mt-8 rounded-lg border border-rate-low/30 bg-rate-low/5 p-6">
           <div className="flex items-baseline gap-3">
-            <span
-              className="text-5xl font-bold tabular-nums"
-              style={{ color: "var(--rate-low)" }}
-            >
+            <span className="text-5xl font-bold tabular-nums" style={{ color: "var(--rate-low)" }}>
               0
             </span>
             <span className="text-base text-muted-foreground">
@@ -164,9 +150,8 @@ function Demo() {
             <div className="h-full w-0 rounded-full" />
           </div>
           <p className="mt-3 text-sm text-muted-foreground">
-            You're not running an ad blocker (or it doesn't target these
-            tools). But many of your users are — blockrate.app tells you
-            exactly how many per provider.
+            You're not running an ad blocker (or it doesn't target these tools). But many of your
+            users are — blockrate.app tells you exactly how many per provider.
           </p>
         </div>
       )}
@@ -176,15 +161,10 @@ function Demo() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-base">
-                {done
-                  ? `${loaded} loaded · ${blocked} blocked`
-                  : running
-                    ? "Checking..."
-                    : "Ready"}
+                {done ? `${loaded} loaded · ${blocked} blocked` : running ? "Checking..." : "Ready"}
               </CardTitle>
               <CardDescription>
-                Each provider is checked via a window global + a HEAD probe
-                to its CDN.
+                Each provider is checked via a window global + a HEAD probe to its CDN.
               </CardDescription>
             </div>
             {done && (
@@ -203,9 +183,7 @@ function Demo() {
               <div
                 key={r.name}
                 className={`flex items-center justify-between py-3 transition-[opacity,transform] duration-150 ease-out ${
-                  done
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-2 opacity-0"
+                  done ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
                 }`}
                 style={{ transitionDelay: `${i * 50}ms` }}
               >
@@ -243,10 +221,9 @@ function Demo() {
 
       <div className="mt-10 space-y-4 text-center">
         <p className="text-sm text-muted-foreground">
-          This demo checks provider reachability from your browser. Results
-          are sent to our own blockrate.app dashboard (we eat our own
-          dogfood) so we can see aggregate block rates across demo visitors.
-          No personal data is collected — only provider name, status, and
+          This demo checks provider reachability from your browser. Results are sent to our own
+          blockrate.app dashboard (we eat our own dogfood) so we can see aggregate block rates
+          across demo visitors. No personal data is collected — only provider name, status, and
           browser family. See our{" "}
           <Link to="/privacy" className="underline-offset-4 hover:underline">
             privacy policy

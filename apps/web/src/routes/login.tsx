@@ -66,9 +66,8 @@ function Login() {
               <h2 className="text-lg font-semibold">Check your email</h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 We sent a sign-in link to{" "}
-                <span className="font-medium text-foreground">{email}</span>.
-                It expires in 10 minutes. (In dev, check the terminal for the
-                URL.)
+                <span className="font-medium text-foreground">{email}</span>. It expires in 10
+                minutes. (In dev, check the terminal for the URL.)
               </p>
               <button
                 type="button"
@@ -100,11 +99,7 @@ function Login() {
               <div className="min-h-5 text-sm text-destructive" role="alert">
                 {state === "error" ? errorMsg : ""}
               </div>
-              <Button
-                type="submit"
-                aria-disabled={state === "submitting"}
-                className="w-full"
-              >
+              <Button type="submit" aria-disabled={state === "submitting"} className="w-full">
                 {state === "submitting" ? "Sending…" : "Send magic link"}
               </Button>
               <OAuthButtons providers={providers} />

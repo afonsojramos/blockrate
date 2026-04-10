@@ -102,12 +102,8 @@
           "name": "api_keys_account_id_app_accounts_id_fk",
           "tableFrom": "api_keys",
           "tableTo": "app_accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -117,9 +113,7 @@
         "api_keys_key_hash_unique": {
           "name": "api_keys_key_hash_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "key_hash"
-          ]
+          "columns": ["key_hash"]
         }
       },
       "policies": {},
@@ -163,12 +157,8 @@
           "name": "app_accounts_user_id_user_id_fk",
           "tableFrom": "app_accounts",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -178,9 +168,7 @@
         "app_accounts_user_id_unique": {
           "name": "app_accounts_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "user_id"
-          ]
+          "columns": ["user_id"]
         }
       },
       "policies": {},
@@ -318,12 +306,8 @@
           "name": "events_account_id_app_accounts_id_fk",
           "tableFrom": "events",
           "tableTo": "app_accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -331,12 +315,8 @@
           "name": "events_api_key_id_api_keys_id_fk",
           "tableFrom": "events",
           "tableTo": "api_keys",
-          "columnsFrom": [
-            "api_key_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["api_key_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -377,12 +357,8 @@
           "name": "usage_counters_account_id_app_accounts_id_fk",
           "tableFrom": "usage_counters",
           "tableTo": "app_accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -390,10 +366,7 @@
       "compositePrimaryKeys": {
         "usage_counters_account_id_year_month_pk": {
           "name": "usage_counters_account_id_year_month_pk",
-          "columns": [
-            "account_id",
-            "year_month"
-          ]
+          "columns": ["account_id", "year_month"]
         }
       },
       "uniqueConstraints": {},
@@ -507,12 +480,8 @@
           "name": "account_user_id_user_id_fk",
           "tableFrom": "account",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -599,12 +568,8 @@
           "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -614,9 +579,7 @@
         "session_token_unique": {
           "name": "session_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -680,9 +643,7 @@
         "user_email_unique": {
           "name": "user_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -761,10 +722,7 @@
     "public.block_rate_status": {
       "name": "block_rate_status",
       "schema": "public",
-      "values": [
-        "loaded",
-        "blocked"
-      ]
+      "values": ["loaded", "blocked"]
     }
   },
   "schemas": {},
