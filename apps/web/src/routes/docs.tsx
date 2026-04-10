@@ -74,7 +74,7 @@ function Docs() {
           The library is one tiny dependency. Pick the reporter that fits.
         </p>
 
-        <CodeBlock>{`bun add blockrate`}</CodeBlock>
+        <CodeBlock filename="terminal">{`bun add blockrate`}</CodeBlock>
 
         <p className="text-sm text-muted-foreground">
           With the hosted blockrate.app — get an API key from{" "}
@@ -106,7 +106,7 @@ new BlockRate({
           ) — same shape, different endpoint:
         </p>
 
-        <CodeBlock>{`reporter: serverReporter({
+        <CodeBlock filename="config">{`reporter: serverReporter({
   endpoint: "https://blockrate.your-domain.com",
   apiKey: process.env.NEXT_PUBLIC_BR_KEY!,
 }),`}</CodeBlock>
@@ -116,7 +116,7 @@ new BlockRate({
           webhook):
         </p>
 
-        <CodeBlock>{`new BlockRate({
+        <CodeBlock filename="app.ts">{`new BlockRate({
   providers: ["optimizely", "posthog", "ga4"],
   reporter: (result) => {
     navigator.sendBeacon("/my-endpoint", JSON.stringify(result));
@@ -157,7 +157,7 @@ new BlockRate({
 
         <p className="text-sm text-muted-foreground">Custom providers are a single function:</p>
 
-        <CodeBlock>{`import { BlockRate, createProvider } from "blockrate";
+        <CodeBlock filename="custom-provider.ts">{`import { BlockRate, createProvider } from "blockrate";
 
 const myProvider = createProvider({
   name: "my-analytics",
@@ -172,7 +172,7 @@ new BlockRate({ providers: [myProvider], reporter: console.log }).check();`}</Co
         <h2 className="text-2xl font-semibold tracking-tight">Framework integrations</h2>
 
         <h3 className="mt-4 text-base font-medium">React</h3>
-        <CodeBlock>{`import { useBlockRate } from "blockrate/react";
+        <CodeBlock filename="app.tsx">{`import { useBlockRate } from "blockrate/react";
 
 useBlockRate({
   providers: ["optimizely", "posthog"],
@@ -180,7 +180,7 @@ useBlockRate({
 });`}</CodeBlock>
 
         <h3 className="mt-4 text-base font-medium">Next.js</h3>
-        <CodeBlock>{`// app/layout.tsx
+        <CodeBlock filename="app/layout.tsx">{`// app/layout.tsx
 import { BlockRateScript } from "blockrate/next";
 
 export default function RootLayout({ children }) {
@@ -199,7 +199,7 @@ export default function RootLayout({ children }) {
 }`}</CodeBlock>
 
         <h3 className="mt-4 text-base font-medium">SvelteKit</h3>
-        <CodeBlock>{`// src/routes/api/blockrate/+server.ts
+        <CodeBlock filename="+server.ts">{`// src/routes/api/blockrate/+server.ts
 import { createBlockRateHandler } from "blockrate/sveltekit";
 
 export const POST = createBlockRateHandler({
@@ -207,7 +207,7 @@ export const POST = createBlockRateHandler({
 });`}</CodeBlock>
 
         <h3 className="mt-4 text-base font-medium">TanStack Start</h3>
-        <CodeBlock>{`// src/routes/api/blockrate.ts
+        <CodeBlock filename="api/blockrate.ts">{`// src/routes/api/blockrate.ts
 import { createFileRoute } from "@tanstack/react-router";
 import { createBlockRateHandler } from "blockrate/tanstack-start";
 
