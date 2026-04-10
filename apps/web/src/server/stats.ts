@@ -70,7 +70,10 @@ export const getOverviewData = createServerFn({ method: "GET" })
         blocked: sql<number>`SUM(CASE WHEN ${events.status} = 'blocked' THEN 1 ELSE 0 END)`.as(
           "blocked",
         ),
-        avgLatency: sql<number>`AVG(${events.latency})`.as("avg_latency"),
+        avgLatency:
+          sql<number>`AVG(CASE WHEN ${events.status} = 'loaded' THEN ${events.latency} END)`.as(
+            "avg_latency",
+          ),
       })
       .from(events)
       .where(where)

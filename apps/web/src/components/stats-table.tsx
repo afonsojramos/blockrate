@@ -46,7 +46,7 @@ export function StatsTable({ stats }: { stats: StatsRow[] }) {
           <TableHead className="text-right tabular-nums">Checks</TableHead>
           <TableHead className="text-right tabular-nums">Blocked</TableHead>
           <TableHead>Block rate</TableHead>
-          <TableHead className="text-right tabular-nums">Avg latency</TableHead>
+          <TableHead className="text-right tabular-nums">Loaded latency</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -95,7 +95,7 @@ export function StatsTable({ stats }: { stats: StatsRow[] }) {
                 </div>
               </TableCell>
               <TableCell className="text-right tabular-nums text-muted-foreground">
-                {s.avgLatency}ms
+                {s.avgLatency > 0 ? `${s.avgLatency}ms` : "—"}
               </TableCell>
             </TableRow>
           );
