@@ -5,9 +5,9 @@ export const Route = createFileRoute("/docs")({ component: Docs });
 
 const PROVIDERS = [
   ["optimizely", "window.optimizely + cdn.optimizely.com probe"],
-  ["posthog", "window.posthog + us.i.posthog.com probe"],
-  ["ga4", "window.gtag / dataLayer + analytics.js probe"],
-  ["gtm", "window.google_tag_manager + gtag/js probe"],
+  ["posthog", "window.posthog + us.i.posthog.com / eu.i.posthog.com probe"],
+  ["ga4", "window.gtag / dataLayer + google-analytics.com probe"],
+  ["gtm", "window.google_tag_manager + googletagmanager.com probe"],
   ["segment", "window.analytics + cdn.segment.com probe"],
   ["hotjar", "window.hj + static.hotjar.com probe"],
   ["amplitude", "window.amplitude + cdn.amplitude.com probe"],
@@ -25,22 +25,23 @@ function Docs() {
         </p>
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">blockrate docs</h1>
         <p className="text-lg text-muted-foreground">
-          A 1.6 KB client library that measures per-provider block rate. Drop it in, point it at any
-          reporter, see exactly how much each third-party tool is being blocked.
+          A 1.6 KB client library that measures per-provider block rate. Drop it in, point it at
+          blockrate.app or your own server, see exactly how much each third-party tool is being
+          blocked.
         </p>
       </header>
 
       <nav className="mt-10 grid gap-3 sm:grid-cols-2">
         <a
           href="#install"
-          className="rounded-md border border-border bg-card p-4 transition-[background-color] duration-150 hover:bg-accent"
+          className="rounded-md border border-border bg-card p-4 transition-[background-color,border-color,box-shadow] duration-150 hover:border-muted-foreground/30 hover:shadow-sm"
         >
           <div className="font-medium">Quick start</div>
           <div className="mt-1 text-sm text-muted-foreground">Install + 5-line setup</div>
         </a>
         <a
           href="#providers"
-          className="rounded-md border border-border bg-card p-4 transition-[background-color] duration-150 hover:bg-accent"
+          className="rounded-md border border-border bg-card p-4 transition-[background-color,border-color,box-shadow] duration-150 hover:border-muted-foreground/30 hover:shadow-sm"
         >
           <div className="font-medium">Built-in providers</div>
           <div className="mt-1 text-sm text-muted-foreground">
@@ -49,16 +50,16 @@ function Docs() {
         </a>
         <a
           href="#frameworks"
-          className="rounded-md border border-border bg-card p-4 transition-[background-color] duration-150 hover:bg-accent"
+          className="rounded-md border border-border bg-card p-4 transition-[background-color,border-color,box-shadow] duration-150 hover:border-muted-foreground/30 hover:shadow-sm"
         >
-          <div className="font-medium">Framework integrations</div>
+          <div className="font-medium">Framework guides</div>
           <div className="mt-1 text-sm text-muted-foreground">
-            React, Next, SvelteKit, TanStack Start
+            React, Next.js, SvelteKit, TanStack Start, vanilla
           </div>
         </a>
         <Link
           to="/docs/api"
-          className="rounded-md border border-border bg-card p-4 transition-[background-color] duration-150 hover:bg-accent"
+          className="rounded-md border border-border bg-card p-4 transition-[background-color,border-color,box-shadow] duration-150 hover:border-muted-foreground/30 hover:shadow-sm"
         >
           <div className="font-medium">Hosted API reference</div>
           <div className="mt-1 text-sm text-muted-foreground">
@@ -70,58 +71,78 @@ function Docs() {
       {/* ─── Quick start ────────────────────────────────────────────── */}
       <section id="install" className="mt-16 space-y-4 scroll-mt-20">
         <h2 className="text-2xl font-semibold tracking-tight">Quick start</h2>
-        <p className="text-sm text-muted-foreground">
-          The library is one tiny dependency. Pick the reporter that fits.
-        </p>
 
         <CodeBlock filename="terminal">{`bun add blockrate`}</CodeBlock>
 
         <p className="text-sm text-muted-foreground">
-          With the hosted blockrate.app — get an API key from{" "}
-          <Link to="/app/keys" className="underline-offset-4 hover:underline">
-            /app/keys
-          </Link>{" "}
-          after signing up:
+          The library runs in the browser, checks each provider, and calls your reporter with the
+          results. There are two ways to collect data:
         </p>
 
+        <h3 className="mt-6 text-base font-medium">Option A: Hosted dashboard (blockrate.app)</h3>
+        <p className="text-sm text-muted-foreground">
+          Sign up, get an API key from{" "}
+          <Link to="/app/keys" className="underline-offset-4 hover:underline">
+            /app/keys
+          </Link>
+          , and use <code className="font-mono text-xs">serverReporter</code>. No server code needed
+          — blockrate.app stores and visualizes the data.
+        </p>
         <CodeBlock>{`import { BlockRate, serverReporter } from "blockrate";
 
 new BlockRate({
   providers: ["optimizely", "posthog", "ga4"],
-  service: "web-app",
+  service: "my-app",
   reporter: serverReporter({
-    endpoint: "https://blockrate.app",
-    apiKey: process.env.NEXT_PUBLIC_BR_KEY!,
+    endpoint: "https://blockrate.app/api",
+    apiKey: "br_your_key_here",
   }),
+  sampleRate: 0.1, // check 10% of sessions
 }).check();`}</CodeBlock>
 
+        <h3 className="mt-6 text-base font-medium">Option B: Self-hosted (blockrate-server)</h3>
         <p className="text-sm text-muted-foreground">
-          Self-hosted with your own ingestion server (
+          Run{" "}
           <a
             href="https://github.com/afonsojramos/blockrate/tree/main/packages/server"
             className="underline-offset-4 hover:underline"
           >
             blockrate-server
-          </a>
-          ) — same shape, different endpoint:
+          </a>{" "}
+          on your own infrastructure. Same library, different endpoint.
         </p>
+        <CodeBlock>{`import { BlockRate, serverReporter } from "blockrate";
 
-        <CodeBlock filename="config">{`reporter: serverReporter({
-  endpoint: "https://blockrate.your-domain.com",
-  apiKey: process.env.NEXT_PUBLIC_BR_KEY!,
-}),`}</CodeBlock>
+new BlockRate({
+  providers: ["optimizely", "posthog", "ga4"],
+  reporter: serverReporter({
+    endpoint: "https://br.your-domain.com",
+    apiKey: "br_your_self_hosted_key",
+  }),
+}).check();`}</CodeBlock>
 
+        <h3 className="mt-6 text-base font-medium">Option C: Custom pipeline</h3>
         <p className="text-sm text-muted-foreground">
-          Or with any custom reporter (e.g. PostHog server-side, BigQuery, Datadog, your own
-          webhook):
+          Write your own reporter to forward results anywhere — BigQuery, Datadog, a webhook, your
+          own API. The reporter receives a{" "}
+          <Link to="/docs/api" className="underline-offset-4 hover:underline">
+            BlockRateResult
+          </Link>{" "}
+          object.
         </p>
+        <CodeBlock filename="custom-reporter.ts">{`import { BlockRate } from "blockrate";
 
-        <CodeBlock filename="app.ts">{`new BlockRate({
+new BlockRate({
   providers: ["optimizely", "posthog", "ga4"],
   reporter: (result) => {
-    navigator.sendBeacon("/my-endpoint", JSON.stringify(result));
+    // result.providers = [{ name, status, latency }, ...]
+    fetch("/your-api/analytics", {
+      method: "POST",
+      body: JSON.stringify(result),
+      headers: { "Content-Type": "application/json" },
+      keepalive: true,
+    });
   },
-  sampleRate: 0.1,
 }).check();`}</CodeBlock>
       </section>
 
@@ -130,10 +151,11 @@ new BlockRate({
         <h2 className="text-2xl font-semibold tracking-tight">Built-in providers</h2>
         <p className="text-sm text-muted-foreground">
           Each provider is checked first via a <code className="font-mono text-xs">window</code>{" "}
-          global, then via a HEAD probe to its CDN. The probe uses{" "}
-          <code className="font-mono text-xs">mode: "no-cors"</code> so a successful opaque response
-          counts as "loaded" and a <code className="font-mono text-xs">TypeError</code> counts as
-          "blocked."
+          global (fast — the script already loaded), then via a{" "}
+          <code className="font-mono text-xs">fetch</code> HEAD probe to its CDN with{" "}
+          <code className="font-mono text-xs">mode: "cors"</code>. If the ad blocker redirects to a
+          local response (which lacks CORS headers), the fetch throws — correctly detected as
+          blocked.
         </p>
 
         <div className="overflow-hidden rounded-md border border-border">
@@ -155,69 +177,165 @@ new BlockRate({
           </table>
         </div>
 
-        <p className="text-sm text-muted-foreground">Custom providers are a single function:</p>
+        <p className="text-sm text-muted-foreground">
+          Need a provider we don't ship? Add your own:
+        </p>
 
-        <CodeBlock filename="custom-provider.ts">{`import { BlockRate, createProvider } from "blockrate";
+        <CodeBlock filename="custom-provider.ts">{`import { BlockRate, createProvider, serverReporter } from "blockrate";
 
 const myProvider = createProvider({
   name: "my-analytics",
   detect: async () => (window.myAnalytics ? "loaded" : "blocked"),
 });
 
-new BlockRate({ providers: [myProvider], reporter: console.log }).check();`}</CodeBlock>
+new BlockRate({
+  providers: ["posthog", myProvider], // mix built-in + custom
+  reporter: serverReporter({ endpoint: "https://blockrate.app/api", apiKey: "..." }),
+}).check();`}</CodeBlock>
       </section>
 
-      {/* ─── Frameworks ────────────────────────────────────────────── */}
-      <section id="frameworks" className="mt-16 space-y-4 scroll-mt-20">
-        <h2 className="text-2xl font-semibold tracking-tight">Framework integrations</h2>
+      {/* ─── Framework guides ──────────────────────────────────────── */}
+      <section id="frameworks" className="mt-16 space-y-6 scroll-mt-20">
+        <h2 className="text-2xl font-semibold tracking-tight">Framework guides</h2>
+        <p className="text-sm text-muted-foreground">
+          The library is framework-agnostic — it's just a class that calls{" "}
+          <code className="font-mono text-xs">.check()</code>. These guides show the idiomatic way
+          to wire it into each framework so it runs once per session, handles SSR safely, and
+          doesn't block rendering.
+        </p>
 
-        <h3 className="mt-4 text-base font-medium">React</h3>
-        <CodeBlock filename="app.tsx">{`import { useBlockRate } from "blockrate/react";
+        {/* React */}
+        <div className="space-y-3">
+          <h3 className="text-base font-medium">React</h3>
+          <p className="text-sm text-muted-foreground">
+            The <code className="font-mono text-xs">useBlockRate</code> hook runs once on mount,
+            skips on the server, and handles cleanup.
+          </p>
+          <CodeBlock filename="App.tsx">{`import { useBlockRate } from "blockrate/react";
+import { serverReporter } from "blockrate";
 
-useBlockRate({
-  providers: ["optimizely", "posthog"],
-  reporter: serverReporter({ endpoint: "...", apiKey: "..." }),
-});`}</CodeBlock>
+function App() {
+  useBlockRate({
+    providers: ["optimizely", "posthog", "ga4"],
+    reporter: serverReporter({
+      endpoint: "https://blockrate.app/api",
+      apiKey: process.env.NEXT_PUBLIC_BR_KEY!,
+    }),
+    sampleRate: 0.1,
+  });
 
-        <h3 className="mt-4 text-base font-medium">Next.js</h3>
-        <CodeBlock filename="app/layout.tsx">{`// app/layout.tsx
-import { BlockRateScript } from "blockrate/next";
+  return <div>...</div>;
+}`}</CodeBlock>
+        </div>
+
+        {/* Next.js */}
+        <div className="space-y-3">
+          <h3 className="text-base font-medium">Next.js (App Router)</h3>
+          <p className="text-sm text-muted-foreground">
+            Add a client component that calls{" "}
+            <code className="font-mono text-xs">useBlockRate</code> and drop it in your root layout.
+            The <code className="font-mono text-xs">"use client"</code> directive is required
+            because the library uses browser APIs.
+          </p>
+          <CodeBlock filename="components/blockrate.tsx">{`"use client";
+
+import { useBlockRate } from "blockrate/react";
+import { serverReporter } from "blockrate";
+
+export function BlockRate() {
+  useBlockRate({
+    providers: ["optimizely", "posthog", "ga4"],
+    reporter: serverReporter({
+      endpoint: "https://blockrate.app/api",
+      apiKey: process.env.NEXT_PUBLIC_BR_KEY!,
+    }),
+    sampleRate: 0.1,
+  });
+  return null;
+}`}</CodeBlock>
+          <CodeBlock filename="app/layout.tsx">{`import { BlockRate } from "@/components/blockrate";
 
 export default function RootLayout({ children }) {
   return (
     <html>
       <body>
         {children}
-        <BlockRateScript
-          providers={["optimizely", "posthog", "ga4"]}
-          endpoint="https://blockrate.app"
-          apiKey={process.env.NEXT_PUBLIC_BR_KEY}
-        />
+        <BlockRate />
       </body>
     </html>
   );
 }`}</CodeBlock>
+        </div>
 
-        <h3 className="mt-4 text-base font-medium">SvelteKit</h3>
-        <CodeBlock filename="+server.ts">{`// src/routes/api/blockrate/+server.ts
-import { createBlockRateHandler } from "blockrate/sveltekit";
+        {/* SvelteKit */}
+        <div className="space-y-3">
+          <h3 className="text-base font-medium">SvelteKit</h3>
+          <p className="text-sm text-muted-foreground">
+            Call <code className="font-mono text-xs">BlockRate</code> in{" "}
+            <code className="font-mono text-xs">onMount</code> in your root layout.
+          </p>
+          <CodeBlock filename="+layout.svelte">{`<script lang="ts">
+  import { onMount } from "svelte";
+  import { BlockRate, serverReporter } from "blockrate";
 
-export const POST = createBlockRateHandler({
-  onResult: async (result) => console.log(result),
-});`}</CodeBlock>
+  onMount(() => {
+    new BlockRate({
+      providers: ["optimizely", "posthog", "ga4"],
+      reporter: serverReporter({
+        endpoint: "https://blockrate.app/api",
+        apiKey: import.meta.env.VITE_BR_KEY,
+      }),
+      sampleRate: 0.1,
+    }).check();
+  });
+</script>
 
-        <h3 className="mt-4 text-base font-medium">TanStack Start</h3>
-        <CodeBlock filename="api/blockrate.ts">{`// src/routes/api/blockrate.ts
-import { createFileRoute } from "@tanstack/react-router";
-import { createBlockRateHandler } from "blockrate/tanstack-start";
+<slot />`}</CodeBlock>
+        </div>
 
-const handler = createBlockRateHandler({
-  onResult: async (result) => console.log(result),
-});
+        {/* TanStack Start */}
+        <div className="space-y-3">
+          <h3 className="text-base font-medium">TanStack Start</h3>
+          <p className="text-sm text-muted-foreground">
+            Same <code className="font-mono text-xs">useBlockRate</code> hook as React, dropped into
+            the root layout component.
+          </p>
+          <CodeBlock filename="routes/__root.tsx">{`import { useBlockRate } from "blockrate/react";
+import { serverReporter } from "blockrate";
 
-export const Route = createFileRoute("/api/blockrate")({
-  server: { handlers: { POST: ({ request }) => handler(request) } },
-});`}</CodeBlock>
+function RootLayout() {
+  useBlockRate({
+    providers: ["optimizely", "posthog", "ga4"],
+    reporter: serverReporter({
+      endpoint: "https://blockrate.app/api",
+      apiKey: import.meta.env.VITE_BR_KEY,
+    }),
+    sampleRate: 0.1,
+  });
+
+  return <Outlet />;
+}`}</CodeBlock>
+        </div>
+
+        {/* Vanilla */}
+        <div className="space-y-3">
+          <h3 className="text-base font-medium">Vanilla JS / script tag</h3>
+          <p className="text-sm text-muted-foreground">
+            Import the library directly in a script tag. Works in any site.
+          </p>
+          <CodeBlock filename="index.html">{`<script type="module">
+  import { BlockRate, serverReporter } from "https://esm.sh/blockrate";
+
+  new BlockRate({
+    providers: ["optimizely", "posthog", "ga4"],
+    reporter: serverReporter({
+      endpoint: "https://blockrate.app/api",
+      apiKey: "br_your_key_here",
+    }),
+    sampleRate: 0.1,
+  }).check();
+</script>`}</CodeBlock>
+        </div>
       </section>
 
       <hr className="my-16 border-border" />
@@ -238,5 +356,3 @@ export const Route = createFileRoute("/api/blockrate")({
     </main>
   );
 }
-
-// Uses the shared CodeBlock from @/components/code-block
