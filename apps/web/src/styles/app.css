@@ -105,24 +105,6 @@
   --font-sans: "Geist Variable", sans-serif;
 }
 
-/* ---------- fumadocs token mapping ---------- */
-:root {
-  --fd-primary: var(--primary);
-  --fd-primary-foreground: var(--primary-foreground);
-  --fd-foreground: var(--foreground);
-  --fd-muted: var(--muted);
-  --fd-muted-foreground: var(--muted-foreground);
-  --fd-accent-foreground: var(--foreground);
-  --fd-card: var(--card);
-  --color-fd-primary: var(--primary);
-  --color-fd-primary-foreground: var(--primary-foreground);
-  --color-fd-foreground: var(--foreground);
-  --color-fd-muted: var(--muted);
-  --color-fd-muted-foreground: var(--muted-foreground);
-  --color-fd-accent-foreground: var(--foreground);
-  --color-fd-card: var(--card);
-}
-
 /* ---------- sugar-high syntax highlighting tokens ---------- */
 :root {
   --sh-class: oklch(0.55 0.15 250);
