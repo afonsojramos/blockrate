@@ -31,6 +31,9 @@ export class BlockRate {
   private delay: number;
   private sessionKey: string;
   private service: string | undefined;
+  private consentGiven: boolean | (() => boolean);
+  private sanitizeUrl: ((url: string) => string) | undefined;
+  private sessionDedup: boolean;
 
   constructor(options: BlockRateOptions) {
     this.providers = options.providers
@@ -41,16 +44,26 @@ export class BlockRate {
     this.delay = options.delay ?? 3000;
     this.sessionKey = options.sessionKey ?? "__block_rate";
     this.service = options.service;
+    this.consentGiven = options.consentGiven ?? true;
+    this.sanitizeUrl = options.sanitizeUrl;
+    this.sessionDedup = options.sessionDedup ?? false;
   }
 
   async check(): Promise<BlockRateResult | null> {
     if (typeof window === "undefined") return null;
-    if (hasCheckedThisSession(this.sessionKey)) return null;
-    if (!shouldSample(this.sampleRate)) {
+
+    // Consent gate — skip if consent not (yet) given
+    const consent =
+      typeof this.consentGiven === "function" ? this.consentGiven() : this.consentGiven;
+    if (!consent) return null;
+
+    // Session dedup — only when explicitly opted in
+    if (this.sessionDedup) {
+      if (hasCheckedThisSession(this.sessionKey)) return null;
       markChecked(this.sessionKey);
-      return null;
     }
-    markChecked(this.sessionKey);
+
+    if (!shouldSample(this.sampleRate)) return null;
 
     if (this.delay > 0) {
       await new Promise((r) => setTimeout(r, this.delay));
@@ -65,9 +78,12 @@ export class BlockRate {
       }),
     );
 
+    let url = typeof location !== "undefined" ? location.pathname : "";
+    if (this.sanitizeUrl) url = this.sanitizeUrl(url);
+
     const result: BlockRateResult = {
       timestamp: new Date().toISOString(),
-      url: typeof location !== "undefined" ? location.pathname : "",
+      url,
       userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
       providers: providerResults,
       ...(this.service ? { service: this.service } : {}),
