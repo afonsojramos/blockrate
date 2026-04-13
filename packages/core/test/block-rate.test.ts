@@ -58,7 +58,22 @@ describe("BlockRate", () => {
     expect(received.userAgent).toBe("test-ua");
   });
 
-  it("dedupes per session", async () => {
+  it("dedupes per session when sessionDedup is enabled", async () => {
+    let calls = 0;
+    const br = new BlockRate({
+      providers: [{ name: "a", detect: async () => "loaded" }],
+      reporter: () => {
+        calls++;
+      },
+      delay: 0,
+      sessionDedup: true,
+    });
+    await br.check();
+    await br.check();
+    expect(calls).toBe(1);
+  });
+
+  it("does NOT dedupe when sessionDedup is false (the default)", async () => {
     let calls = 0;
     const br = new BlockRate({
       providers: [{ name: "a", detect: async () => "loaded" }],
@@ -69,7 +84,88 @@ describe("BlockRate", () => {
     });
     await br.check();
     await br.check();
+    expect(calls).toBe(2);
+  });
+
+  it("never writes to sessionStorage when sessionDedup is false", async () => {
+    let writeCount = 0;
+    const origSetItem = (globalThis as any).sessionStorage.setItem;
+    (globalThis as any).sessionStorage.setItem = (k: string, v: string) => {
+      writeCount++;
+      origSetItem(k, v);
+    };
+
+    const br = new BlockRate({
+      providers: [{ name: "a", detect: async () => "loaded" }],
+      reporter: () => {},
+      delay: 0,
+    });
+    await br.check();
+
+    (globalThis as any).sessionStorage.setItem = origSetItem;
+    expect(writeCount).toBe(0);
+  });
+
+  it("is a no-op when consentGiven is false", async () => {
+    let calls = 0;
+    const br = new BlockRate({
+      providers: [{ name: "a", detect: async () => "loaded" }],
+      reporter: () => {
+        calls++;
+      },
+      delay: 0,
+      consentGiven: false,
+    });
+    const result = await br.check();
+    expect(result).toBeNull();
+    expect(calls).toBe(0);
+  });
+
+  it("is a no-op when consentGiven returns false", async () => {
+    let calls = 0;
+    const br = new BlockRate({
+      providers: [{ name: "a", detect: async () => "loaded" }],
+      reporter: () => {
+        calls++;
+      },
+      delay: 0,
+      consentGiven: () => false,
+    });
+    const result = await br.check();
+    expect(result).toBeNull();
+    expect(calls).toBe(0);
+  });
+
+  it("re-evaluates consentGiven on each check() call", async () => {
+    let allowed = false;
+    let calls = 0;
+    const br = new BlockRate({
+      providers: [{ name: "a", detect: async () => "loaded" }],
+      reporter: () => {
+        calls++;
+      },
+      delay: 0,
+      consentGiven: () => allowed,
+    });
+    await br.check();
+    expect(calls).toBe(0);
+    allowed = true;
+    await br.check();
     expect(calls).toBe(1);
+  });
+
+  it("applies sanitizeUrl to location.pathname before reporting", async () => {
+    let received: any = null;
+    const br = new BlockRate({
+      providers: [{ name: "a", detect: async () => "loaded" }],
+      reporter: (r) => {
+        received = r;
+      },
+      delay: 0,
+      sanitizeUrl: (path) => path.replace(/\/test/, "/:sanitized"),
+    });
+    await br.check();
+    expect(received.url).toBe("/:sanitized");
   });
 
   it("skips when sampleRate is 0", async () => {
