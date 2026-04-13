@@ -79,6 +79,12 @@ function RootLayout() {
             <a href="/privacy" className="hover:text-foreground">
               Privacy
             </a>
+            <a href="/dpa" className="hover:text-foreground">
+              DPA
+            </a>
+            <a href="/terms" className="hover:text-foreground">
+              Terms
+            </a>
           </div>
         </div>
       </footer>

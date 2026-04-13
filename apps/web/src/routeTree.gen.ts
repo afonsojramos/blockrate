@@ -9,10 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as PrivacySnippetRouteImport } from './routes/privacy-snippet'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as DpaRouteImport } from './routes/dpa'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as AuthedRouteImport } from './routes/_authed'
@@ -26,9 +29,19 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
 import { Route as AuthedAppSettingsRouteImport } from './routes/_authed/app/settings'
 import { Route as AuthedAppKeysRouteImport } from './routes/_authed/app/keys'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacySnippetRoute = PrivacySnippetRouteImport.update({
+  id: '/privacy-snippet',
+  path: '/privacy-snippet',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -44,6 +57,11 @@ const PricingRoute = PricingRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DpaRoute = DpaRouteImport.update({
+  id: '/dpa',
+  path: '/dpa',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsRoute = DocsRouteImport.update({
@@ -110,10 +128,13 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
   '/docs': typeof DocsRouteWithChildren
+  '/dpa': typeof DpaRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/privacy-snippet': typeof PrivacySnippetRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
   '/docs/api': typeof DocsApiRoute
@@ -127,10 +148,13 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
   '/docs': typeof DocsRouteWithChildren
+  '/dpa': typeof DpaRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/privacy-snippet': typeof PrivacySnippetRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
   '/docs/api': typeof DocsApiRoute
@@ -146,10 +170,13 @@ export interface FileRoutesById {
   '/_authed': typeof AuthedRouteWithChildren
   '/demo': typeof DemoRoute
   '/docs': typeof DocsRouteWithChildren
+  '/dpa': typeof DpaRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/privacy-snippet': typeof PrivacySnippetRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
   '/docs/api': typeof DocsApiRoute
@@ -165,10 +192,13 @@ export interface FileRouteTypes {
     | '/'
     | '/demo'
     | '/docs'
+    | '/dpa'
     | '/login'
     | '/pricing'
     | '/privacy'
+    | '/privacy-snippet'
     | '/signup'
+    | '/terms'
     | '/api/health'
     | '/api/ingest'
     | '/docs/api'
@@ -182,10 +212,13 @@ export interface FileRouteTypes {
     | '/'
     | '/demo'
     | '/docs'
+    | '/dpa'
     | '/login'
     | '/pricing'
     | '/privacy'
+    | '/privacy-snippet'
     | '/signup'
+    | '/terms'
     | '/api/health'
     | '/api/ingest'
     | '/docs/api'
@@ -200,10 +233,13 @@ export interface FileRouteTypes {
     | '/_authed'
     | '/demo'
     | '/docs'
+    | '/dpa'
     | '/login'
     | '/pricing'
     | '/privacy'
+    | '/privacy-snippet'
     | '/signup'
+    | '/terms'
     | '/api/health'
     | '/api/ingest'
     | '/docs/api'
@@ -219,10 +255,13 @@ export interface RootRouteChildren {
   AuthedRoute: typeof AuthedRouteWithChildren
   DemoRoute: typeof DemoRoute
   DocsRoute: typeof DocsRouteWithChildren
+  DpaRoute: typeof DpaRoute
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
+  PrivacySnippetRoute: typeof PrivacySnippetRoute
   SignupRoute: typeof SignupRoute
+  TermsRoute: typeof TermsRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiIngestRoute: typeof ApiIngestRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -231,11 +270,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy-snippet': {
+      id: '/privacy-snippet'
+      path: '/privacy-snippet'
+      fullPath: '/privacy-snippet'
+      preLoaderRoute: typeof PrivacySnippetRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -257,6 +310,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dpa': {
+      id: '/dpa'
+      path: '/dpa'
+      fullPath: '/dpa'
+      preLoaderRoute: typeof DpaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs': {
@@ -376,10 +436,13 @@ const rootRouteChildren: RootRouteChildren = {
   AuthedRoute: AuthedRouteWithChildren,
   DemoRoute: DemoRoute,
   DocsRoute: DocsRouteWithChildren,
+  DpaRoute: DpaRoute,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
+  PrivacySnippetRoute: PrivacySnippetRoute,
   SignupRoute: SignupRoute,
+  TermsRoute: TermsRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiIngestRoute: ApiIngestRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

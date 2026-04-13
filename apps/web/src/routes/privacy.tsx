@@ -10,7 +10,7 @@ function Privacy() {
           privacy
         </p>
         <h1 className="text-4xl font-bold tracking-tight">Privacy policy</h1>
-        <p className="text-sm text-muted-foreground">Last updated: April 9, 2026</p>
+        <p className="text-sm text-muted-foreground">Last updated: April 10, 2026</p>
       </header>
 
       <div className="prose prose-sm mt-10 max-w-none space-y-8 text-sm leading-relaxed text-muted-foreground">
@@ -110,7 +110,93 @@ function Privacy() {
         </section>
 
         <section className="space-y-3">
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">
+            Roles: controller and processor
+          </h2>
+          <p>
+            When you install the blockrate library on your website, <strong>you</strong> are the
+            data controller — you decide which providers to check, on which pages, and for what
+            purpose. blockrate.app acts as your data processor under GDPR Article 28, processing
+            visitor data solely on your behalf and according to your instructions. Our{" "}
+            <Link to="/dpa" className="underline-offset-4 hover:underline">
+              Data Processing Agreement
+            </Link>{" "}
+            governs this relationship and is automatically accepted when you use the service.
+          </p>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">
+            Consent-free by design
+          </h2>
+          <p>
+            blockrate is designed to work without a cookie banner. It does not set cookies, does not
+            write to localStorage or sessionStorage (by default), does not store IP addresses, and
+            does not perform cross-site tracking. This places it in the same category as
+            privacy-first analytics tools (like Plausible and Fathom) that qualify for the CNIL's
+            audience measurement exemption from consent requirements.
+          </p>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">
+            Legal basis for processing
+          </h2>
+          <p>
+            <span className="text-foreground">Visitor data</span> — as data processor, we process
+            visitor data on your documented instructions. As data controller, you will typically
+            rely on <strong>legitimate interest</strong> (GDPR Article 6(1)(f)): understanding
+            whether third-party tools your site depends on are being blocked is a legitimate
+            operational concern, and the processing is minimal with negligible impact on data
+            subjects.
+          </p>
+          <p>
+            <span className="text-foreground">Customer account data</span> — processed under{" "}
+            <strong>contract performance</strong> (Article 6(1)(b)): we need your email and API keys
+            to provide the service you signed up for.
+          </p>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">
+            Visitor identification and Article 11
+          </h2>
+          <p>
+            blockrate does not collect direct identifiers — no IP addresses, cookies, user IDs, or
+            persistent identifiers of any kind. The data we store (page path, browser family + major
+            version, provider status, latency, timestamp) cannot identify an individual visitor,
+            even when combined.
+          </p>
+          <p>
+            Under GDPR Article 11, we are not required to process additional information solely to
+            identify data subjects for the purpose of complying with access or erasure requests. If
+            you believe your data is in our system and can provide information that enables
+            identification, contact{" "}
+            <a href="mailto:privacy@blockrate.app" className="underline-offset-4 hover:underline">
+              privacy@blockrate.app
+            </a>
+            .
+          </p>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">
+            International data transfers
+          </h2>
+          <p>
+            blockrate.app is hosted on Railway in the United States. Personal data transferred from
+            the EU/EEA to the US is protected by the Standard Contractual Clauses (SCCs) adopted by
+            the European Commission (Decision 2021/914), incorporated into our{" "}
+            <Link to="/dpa" className="underline-offset-4 hover:underline">
+              DPA
+            </Link>
+            .
+          </p>
+        </section>
+
+        <section className="space-y-3">
           <h2 className="text-xl font-semibold tracking-tight text-foreground">Your rights</h2>
+          <p>As a customer (account holder), you can:</p>
           <ul className="list-inside list-disc space-y-1">
             <li>
               <span className="text-foreground">Export</span> — download your full event history as
@@ -132,6 +218,10 @@ function Privacy() {
               visible in the dashboard. There is no secret second profile.
             </li>
           </ul>
+          <p>
+            You also have the right to lodge a complaint with your local data protection supervisory
+            authority if you believe your data is being processed unlawfully.
+          </p>
         </section>
 
         <section className="space-y-3">
