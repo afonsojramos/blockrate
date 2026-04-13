@@ -1,4 +1,4 @@
-import { BlockRateScript } from "block-rate/next";
+import { BlockRateScript } from "blockrate/next";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

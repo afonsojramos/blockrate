@@ -1,4 +1,4 @@
-import { createBlockRateHandler } from "block-rate/next";
+import { createBlockRateHandler } from "blockrate/next";
 
 export const POST = createBlockRateHandler({
   onResult: async (result) => {

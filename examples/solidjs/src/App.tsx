@@ -1,5 +1,5 @@
 import { onMount } from "solid-js";
-import { BlockRate } from "block-rate";
+import { BlockRate } from "blockrate";
 
 export default function App() {
   onMount(() => {

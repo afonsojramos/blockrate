@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
-import { BlockRate } from "block-rate";
+import { BlockRate } from "blockrate";
 
 onMounted(() => {
   const br = new BlockRate({

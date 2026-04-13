@@ -1,5 +1,5 @@
 import { Outlet, createRootRoute } from "@tanstack/react-router";
-import { useBlockRate } from "block-rate/react";
+import { useBlockRate } from "blockrate/react";
 
 function RootComponent() {
   useBlockRate({

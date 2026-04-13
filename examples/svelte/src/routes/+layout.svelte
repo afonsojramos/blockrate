@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { BlockRate } from "block-rate";
+  import { BlockRate } from "blockrate";
 
   onMount(() => {
     const br = new BlockRate({
