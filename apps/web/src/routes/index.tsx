@@ -46,6 +46,17 @@ function Landing() {
               View on GitHub
             </a>
           </div>
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-xs text-muted-foreground">
+            <span>No cookies</span>
+            <span aria-hidden="true" className="text-muted-foreground/40">
+              ·
+            </span>
+            <span>No consent banner</span>
+            <span aria-hidden="true" className="text-muted-foreground/40">
+              ·
+            </span>
+            <span>No IP addresses</span>
+          </p>
         </div>
 
         {/* Real data: radar chart on large screens, summary sentence on small */}
@@ -100,7 +111,7 @@ new BlockRate({
           },
           {
             title: "Honest about the gap",
-            body: "See the exact percentage of users who can\u2019t reach each tool, sliced by browser family. No fingerprinting, no personal data.",
+            body: "See the exact percentage of users who can\u2019t reach each tool, sliced by browser family. No cookies, no consent banner, no fingerprinting, no personal data.",
           },
         ].map((card) => (
           <article
