@@ -7,12 +7,17 @@ const items = [
   { title: "Hosted", url: "#hosted", depth: 3 },
   { title: "Self-hosted", url: "#self-hosted", depth: 3 },
   { title: "Custom pipeline", url: "#custom-pipeline", depth: 3 },
+  { title: "Options", url: "#options", depth: 2 },
+  { title: "Consent", url: "#opt-consent", depth: 3 },
+  { title: "Sanitize URLs", url: "#opt-sanitize", depth: 3 },
   { title: "Providers", url: "#providers", depth: 2 },
   { title: "Framework guides", url: "#frameworks", depth: 2 },
   { title: "React", url: "#fw-react", depth: 3 },
   { title: "Next.js", url: "#fw-nextjs", depth: 3 },
   { title: "SvelteKit", url: "#fw-sveltekit", depth: 3 },
   { title: "TanStack Start", url: "#fw-tanstack", depth: 3 },
+  { title: "Vue", url: "#fw-vue", depth: 3 },
+  { title: "Solid.js", url: "#fw-solid", depth: 3 },
   { title: "Vanilla JS", url: "#fw-vanilla", depth: 3 },
 ];
 
