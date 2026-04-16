@@ -43,8 +43,10 @@ export const Route = createFileRoute("/api/stripe/webhook")({
 
         const stripe = new Stripe(env.STRIPE_SECRET_KEY);
 
-        // Read raw body BEFORE any .json() — required for signature verification
-        const rawBody = await request.text();
+        // Read raw body BEFORE any .json() — required for signature verification.
+        // Use arrayBuffer() → Buffer to get exact bytes without any text processing.
+        const arrayBuffer = await request.arrayBuffer();
+        const rawBody = Buffer.from(arrayBuffer);
         const signature = request.headers.get("stripe-signature");
         if (!signature) {
           return new Response(JSON.stringify({ error: "missing stripe-signature" }), {
@@ -54,9 +56,18 @@ export const Route = createFileRoute("/api/stripe/webhook")({
 
         let event: Stripe.Event;
         try {
-          event = stripe.webhooks.constructEvent(rawBody, signature, env.STRIPE_WEBHOOK_SECRET);
+          // constructEventAsync uses Web Crypto instead of Node crypto — more
+          // portable across runtimes (Nitro/Bun/Workers). Pass Buffer for bytes.
+          event = await stripe.webhooks.constructEventAsync(
+            rawBody,
+            signature,
+            env.STRIPE_WEBHOOK_SECRET,
+          );
         } catch (err) {
-          console.error("[stripe webhook] signature verification failed:", err);
+          const msg = err instanceof Error ? err.message : String(err);
+          console.error(
+            `[stripe webhook] signature verification failed: ${msg}; bodyLen=${rawBody.length}; sigHeader=${signature.substring(0, 50)}...`,
+          );
           return new Response(JSON.stringify({ error: "invalid signature" }), { status: 400 });
         }
 
