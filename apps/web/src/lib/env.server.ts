@@ -37,6 +37,14 @@ const schema = z.object({
 
   GITHUB_CLIENT_ID: z.string().optional(),
   GITHUB_CLIENT_SECRET: z.string().optional(),
+
+  // Stripe billing — all optional, billing features enabled only when present
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  STRIPE_PRO_MONTHLY_PRICE_ID: z.string().optional(),
+  STRIPE_PRO_ANNUAL_PRICE_ID: z.string().optional(),
+  STRIPE_TEAM_MONTHLY_PRICE_ID: z.string().optional(),
+  STRIPE_TEAM_ANNUAL_PRICE_ID: z.string().optional(),
 });
 
 function loadEnv() {
@@ -59,4 +67,5 @@ export const capabilities = {
   google: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
   github: Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET),
   resend: Boolean(env.RESEND_API_KEY),
+  stripe: Boolean(env.STRIPE_SECRET_KEY),
 };

@@ -50,3 +50,31 @@ export const PLANS: Record<PlanName, Plan> = {
 export function getPlan(name: string): Plan {
   return (PLANS as Record<string, Plan>)[name] ?? PLANS.free;
 }
+
+/**
+ * Resolve a Stripe Price ID → PlanName. Used by the webhook handler to
+ * map subscription changes back to our plan tiers. Returns "free" for
+ * unrecognised IDs (defensive fallback).
+ */
+export function planFromPriceId(priceId: string): PlanName {
+  const env = process.env;
+  if (priceId === env.STRIPE_PRO_MONTHLY_PRICE_ID || priceId === env.STRIPE_PRO_ANNUAL_PRICE_ID)
+    return "pro";
+  if (priceId === env.STRIPE_TEAM_MONTHLY_PRICE_ID || priceId === env.STRIPE_TEAM_ANNUAL_PRICE_ID)
+    return "team";
+  return "free";
+}
+
+/**
+ * Set of all known Stripe Price IDs. Used to validate the priceId
+ * parameter in the checkout endpoint (allowlist).
+ */
+export function validPriceIds(): Set<string> {
+  const env = process.env;
+  const ids = new Set<string>();
+  if (env.STRIPE_PRO_MONTHLY_PRICE_ID) ids.add(env.STRIPE_PRO_MONTHLY_PRICE_ID);
+  if (env.STRIPE_PRO_ANNUAL_PRICE_ID) ids.add(env.STRIPE_PRO_ANNUAL_PRICE_ID);
+  if (env.STRIPE_TEAM_MONTHLY_PRICE_ID) ids.add(env.STRIPE_TEAM_MONTHLY_PRICE_ID);
+  if (env.STRIPE_TEAM_ANNUAL_PRICE_ID) ids.add(env.STRIPE_TEAM_ANNUAL_PRICE_ID);
+  return ids;
+}

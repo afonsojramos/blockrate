@@ -40,17 +40,31 @@ export * from "./auth-schema";
 
 // ─── Account ─────────────────────────────────────────────────────────────
 
-export const appAccounts = pgTable("app_accounts", {
-  id: serial("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .unique()
-    .references(() => user.id, { onDelete: "cascade" }),
-  plan: text("plan").notNull().default("free"),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .default(sql`now()`),
-});
+export const appAccounts = pgTable(
+  "app_accounts",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .unique()
+      .references(() => user.id, { onDelete: "cascade" }),
+    plan: text("plan").notNull().default("free"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .default(sql`now()`),
+    /** Stripe Customer ID — stored eagerly at first checkout. */
+    stripeCustomerId: text("stripe_customer_id"),
+    /** Stripe Subscription ID — set on checkout, cleared on cancellation. */
+    stripeSubscriptionId: text("stripe_subscription_id"),
+    /** Mirrors Stripe subscription.status (active, past_due, canceled, etc.). */
+    stripeSubscriptionStatus: text("stripe_subscription_status"),
+    /** End of current billing period — for "cancels on [date]" display. */
+    stripeCurrentPeriodEnd: timestamp("stripe_current_period_end", { withTimezone: true }),
+  },
+  (t) => ({
+    byStripeCustomer: uniqueIndex("idx_app_accounts_stripe_customer").on(t.stripeCustomerId),
+  }),
+);
 
 // ─── API keys ────────────────────────────────────────────────────────────
 
