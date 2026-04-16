@@ -5,6 +5,9 @@ import type { BlockRateOptions, BlockRateResult, Provider, ProviderResult } from
 export * from "./types";
 export { beaconReporter, serverReporter } from "./reporter";
 export type { ServerReporterOptions } from "./reporter";
+export { createWebHandler } from "./handler";
+export type { BlockRateHandlerOptions, ForwardError, ForwardOptions } from "./handler";
+export { isValidBlockRateResult } from "./validate";
 export { probe } from "./probe";
 export {
   builtInProviders,
