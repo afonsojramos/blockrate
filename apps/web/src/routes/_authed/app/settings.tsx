@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,26 @@ function Settings() {
   const [deleting, setDeleting] = useState(false);
 
   const usagePct = Math.min(100, (data.usage.used / data.plan.eventsPerMonth) * 100);
+  const [managingSubscription, setManagingSubscription] = useState(false);
+
+  async function onManageSubscription() {
+    if (managingSubscription) return;
+    setManagingSubscription(true);
+    try {
+      const res = await fetch("/api/stripe/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error ?? "Failed to open billing portal");
+      }
+    } finally {
+      setManagingSubscription(false);
+    }
+  }
 
   async function onExport() {
     if (exporting) return;
@@ -76,6 +96,39 @@ function Settings() {
             <span className="text-muted-foreground">Plan</span>
             <span className="font-medium">{data.plan.label}</span>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Subscription</CardTitle>
+          <CardDescription>
+            {data.plan.name === "free"
+              ? "You're on the Free plan."
+              : data.stripe.subscriptionStatus === "past_due"
+                ? "There's an issue with your payment method."
+                : data.stripe.currentPeriodEnd && data.stripe.subscriptionStatus === "active"
+                  ? `Your ${data.plan.label} plan renews on ${new Date(data.stripe.currentPeriodEnd).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.`
+                  : `You're on the ${data.plan.label} plan.`}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {data.stripe.customerId ? (
+            <Button
+              variant="outline"
+              onClick={onManageSubscription}
+              aria-disabled={managingSubscription}
+            >
+              {managingSubscription ? "Opening..." : "Manage subscription"}
+            </Button>
+          ) : (
+            <Link
+              to="/pricing"
+              className="inline-flex h-9 items-center justify-center rounded-md border border-border bg-transparent px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            >
+              View plans
+            </Link>
+          )}
         </CardContent>
       </Card>
 

@@ -119,6 +119,11 @@ export const getUsageSnapshot = createServerFn({ method: "GET" }).handler(async 
     email: session.user.email,
     plan,
     usage,
+    stripe: {
+      customerId: account.stripeCustomerId,
+      subscriptionStatus: account.stripeSubscriptionStatus,
+      currentPeriodEnd: account.stripeCurrentPeriodEnd?.toISOString() ?? null,
+    },
   };
 });
 

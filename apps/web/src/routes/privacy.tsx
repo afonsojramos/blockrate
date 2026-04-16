@@ -97,10 +97,10 @@ function Privacy() {
               <span className="text-foreground">Free</span> — 7 days
             </li>
             <li>
-              <span className="text-foreground">Pro</span> — 30 days (when available)
+              <span className="text-foreground">Pro</span> — 30 days
             </li>
             <li>
-              <span className="text-foreground">Team</span> — 90 days (when available)
+              <span className="text-foreground">Team</span> — 90 days
             </li>
           </ul>
           <p>

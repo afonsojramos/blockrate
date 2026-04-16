@@ -129,7 +129,7 @@ function Overview() {
       <p className="mt-6 text-center text-xs text-muted-foreground">
         Need more history?{" "}
         <Link to="/pricing" className="underline-offset-4 hover:underline">
-          Upgrade plans coming soon
+          Upgrade your plan
         </Link>
         .
       </p>
