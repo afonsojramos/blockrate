@@ -83,16 +83,7 @@ const tiers: Tier[] = [
   },
 ];
 
-/** Server fn that returns the actual price IDs from env so we don't leak env var names to the client */
-const getStripePriceIds = createServerFn({ method: "GET" }).handler(async () => {
-  const { env } = await import("@/lib/env.server");
-  return {
-    proMonthly: env.STRIPE_PRO_MONTHLY_PRICE_ID ?? null,
-    proAnnual: env.STRIPE_PRO_ANNUAL_PRICE_ID ?? null,
-    teamMonthly: env.STRIPE_TEAM_MONTHLY_PRICE_ID ?? null,
-    teamAnnual: env.STRIPE_TEAM_ANNUAL_PRICE_ID ?? null,
-  };
-});
+import { getStripePriceIds } from "@/server/stripe";
 
 function Pricing() {
   const { loggedIn, plan } = Route.useLoaderData();

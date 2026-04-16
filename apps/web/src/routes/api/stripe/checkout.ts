@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import type Stripe from "stripe";
 
 /**
  * POST /api/stripe/checkout — Creates a Stripe Checkout Session for
@@ -65,8 +66,32 @@ export const Route = createFileRoute("/api/stripe/checkout")({
         }
 
         const stripe = new Stripe(env.STRIPE_SECRET_KEY);
+        const baseUrl = env.BETTER_AUTH_URL;
 
-        // Eagerly create or reuse a Stripe Customer
+        // If user already has an active subscription, update it (plan switch)
+        // instead of creating a second subscription via Checkout.
+        if (account.stripeSubscriptionId) {
+          const sub = (await stripe.subscriptions.retrieve(
+            account.stripeSubscriptionId,
+          )) as unknown as Stripe.Subscription;
+
+          if (sub.status === "active" || sub.status === "trialing") {
+            const itemId = sub.items.data[0]?.id;
+            if (itemId) {
+              await stripe.subscriptions.update(account.stripeSubscriptionId, {
+                items: [{ id: itemId, price: priceId }],
+                proration_behavior: "always_invoice",
+              });
+              // The subscription.updated webhook will update the plan in the DB.
+              return new Response(
+                JSON.stringify({ url: `${baseUrl}/app/settings?session_id=upgraded` }),
+                { status: 200, headers: { "Content-Type": "application/json" } },
+              );
+            }
+          }
+        }
+
+        // No existing subscription — create a Checkout Session (new subscriber)
         let stripeCustomerId = account.stripeCustomerId;
         if (!stripeCustomerId) {
           const customer = await stripe.customers.create({
@@ -80,11 +105,11 @@ export const Route = createFileRoute("/api/stripe/checkout")({
             .where(eq(appAccounts.id, account.id));
         }
 
-        const baseUrl = env.BETTER_AUTH_URL;
         const checkoutSession = await stripe.checkout.sessions.create({
           mode: "subscription",
           customer: stripeCustomerId,
           client_reference_id: String(account.id),
+          metadata: { account_id: String(account.id) },
           line_items: [{ price: priceId, quantity: 1 }],
           success_url: `${baseUrl}/app/settings?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${baseUrl}/pricing`,

@@ -1,24 +1,60 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { deleteAccount, exportEventsCsv, getUsageSnapshot } from "@/server/stats";
 
+const settingsSearch = z.object({
+  session_id: z.string().optional(),
+});
+
 export const Route = createFileRoute("/_authed/app/settings")({
+  validateSearch: (input) => settingsSearch.parse(input),
   loader: () => getUsageSnapshot(),
   component: Settings,
 });
 
 function Settings() {
   const data = Route.useLoaderData();
+  const search = Route.useSearch();
   const navigate = useNavigate();
+  const router = useRouter();
   const [exporting, setExporting] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  // After Stripe Checkout redirect, poll until the webhook updates the plan.
+  // Also handles inline upgrades (Pro → Team) that redirect back here.
+  useEffect(() => {
+    if (!search.session_id) return;
+
+    let attempts = 0;
+    const poll = setInterval(async () => {
+      attempts++;
+      await router.invalidate();
+      // Stop polling after the plan changes from free, or after 10 attempts
+      if (attempts >= 10) {
+        clearInterval(poll);
+        navigate({ to: "/app/settings", search: {}, replace: true });
+      }
+    }, 1500);
+
+    return () => clearInterval(poll);
+  }, [search.session_id, router, navigate]);
+
+  // Clear session_id from URL once plan is no longer free (webhook arrived)
+  useEffect(() => {
+    if (search.session_id && data.plan.name !== "free") {
+      navigate({ to: "/app/settings", search: {}, replace: true });
+    }
+  }, [search.session_id, data.plan.name, navigate]);
+
   const usagePct = Math.min(100, (data.usage.used / data.plan.eventsPerMonth) * 100);
   const [managingSubscription, setManagingSubscription] = useState(false);
+
+  const [upgrading, setUpgrading] = useState(false);
 
   async function onManageSubscription() {
     if (managingSubscription) return;
@@ -28,14 +64,45 @@ function Settings() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
+      const result = await res.json();
+      if (result.url) {
+        window.location.href = result.url;
       } else {
-        alert(data.error ?? "Failed to open billing portal");
+        alert(result.error ?? "Failed to open billing portal");
       }
     } finally {
       setManagingSubscription(false);
+    }
+  }
+
+  async function onUpgrade() {
+    if (upgrading) return;
+    setUpgrading(true);
+    try {
+      // Resolve the right price ID from env via server fn
+      const { getStripePriceIds } = await import("@/server/stripe");
+      const priceIds = await getStripePriceIds();
+      const targetPlan = data.plan.name === "free" ? "pro" : "team";
+      const priceId = targetPlan === "pro" ? priceIds.proMonthly : priceIds.teamMonthly;
+
+      if (!priceId) {
+        alert("Billing not configured.");
+        return;
+      }
+
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ priceId }),
+      });
+      const result = await res.json();
+      if (result.url) {
+        window.location.href = result.url;
+      } else {
+        alert(result.error ?? "Failed to start upgrade");
+      }
+    } finally {
+      setUpgrading(false);
     }
   }
 
@@ -94,7 +161,13 @@ function Settings() {
           </div>
           <div className="flex items-baseline justify-between gap-4">
             <span className="text-muted-foreground">Plan</span>
-            <span className="font-medium">{data.plan.label}</span>
+            {search.session_id && data.plan.name === "free" ? (
+              <span className="text-sm text-muted-foreground animate-pulse">
+                Updating your plan...
+              </span>
+            ) : (
+              <span className="font-medium">{data.plan.label}</span>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -103,16 +176,18 @@ function Settings() {
         <CardHeader>
           <CardTitle className="text-base">Subscription</CardTitle>
           <CardDescription>
-            {data.plan.name === "free"
-              ? "You're on the Free plan."
-              : data.stripe.subscriptionStatus === "past_due"
-                ? "There's an issue with your payment method."
-                : data.stripe.currentPeriodEnd && data.stripe.subscriptionStatus === "active"
-                  ? `Your ${data.plan.label} plan renews on ${new Date(data.stripe.currentPeriodEnd).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.`
-                  : `You're on the ${data.plan.label} plan.`}
+            {search.session_id && data.plan.name === "free"
+              ? "Processing your upgrade..."
+              : data.plan.name === "free"
+                ? "You're on the Free plan."
+                : data.stripe.subscriptionStatus === "past_due"
+                  ? "There's an issue with your payment method."
+                  : data.stripe.currentPeriodEnd && data.stripe.subscriptionStatus === "active"
+                    ? `Your ${data.plan.label} plan renews on ${new Date(data.stripe.currentPeriodEnd).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.`
+                    : `You're on the ${data.plan.label} plan.`}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-wrap gap-2">
           {data.stripe.customerId ? (
             <Button
               variant="outline"
@@ -128,6 +203,20 @@ function Settings() {
             >
               View plans
             </Link>
+          )}
+          {data.plan.name !== "team" && (
+            <button
+              type="button"
+              onClick={onUpgrade}
+              disabled={upgrading}
+              className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out active:scale-[0.96] disabled:opacity-50"
+            >
+              {upgrading
+                ? "Upgrading..."
+                : data.plan.name === "free"
+                  ? "Upgrade"
+                  : "Upgrade to Team"}
+            </button>
           )}
         </CardContent>
       </Card>

@@ -56,7 +56,7 @@ export const Route = createFileRoute("/api/stripe/webhook")({
         switch (event.type) {
           case "checkout.session.completed": {
             const session = event.data.object as Stripe.Checkout.Session;
-            const accountId = Number(session.metadata?.account_id);
+            const accountId = Number(session.client_reference_id);
             const subscriptionId =
               typeof session.subscription === "string"
                 ? session.subscription
