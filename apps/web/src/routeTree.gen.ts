@@ -24,6 +24,9 @@ import { Route as DocsApiRouteImport } from './routes/docs/api'
 import { Route as ApiIngestRouteImport } from './routes/api/ingest'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AuthedAppIndexRouteImport } from './routes/_authed/app/index'
+import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
+import { Route as ApiStripePortalRouteImport } from './routes/api/stripe/portal'
+import { Route as ApiStripeCheckoutRouteImport } from './routes/api/stripe/checkout'
 import { Route as ApiInternalRetentionRouteImport } from './routes/api/internal/retention'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
 import { Route as AuthedAppSettingsRouteImport } from './routes/_authed/app/settings'
@@ -103,6 +106,21 @@ const AuthedAppIndexRoute = AuthedAppIndexRouteImport.update({
   path: '/app/',
   getParentRoute: () => AuthedRoute,
 } as any)
+const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
+  id: '/api/stripe/webhook',
+  path: '/api/stripe/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStripePortalRoute = ApiStripePortalRouteImport.update({
+  id: '/api/stripe/portal',
+  path: '/api/stripe/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStripeCheckoutRoute = ApiStripeCheckoutRouteImport.update({
+  id: '/api/stripe/checkout',
+  path: '/api/stripe/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiInternalRetentionRoute = ApiInternalRetentionRouteImport.update({
   id: '/api/internal/retention',
   path: '/api/internal/retention',
@@ -142,6 +160,9 @@ export interface FileRoutesByFullPath {
   '/app/settings': typeof AuthedAppSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/internal/retention': typeof ApiInternalRetentionRoute
+  '/api/stripe/checkout': typeof ApiStripeCheckoutRoute
+  '/api/stripe/portal': typeof ApiStripePortalRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/app/': typeof AuthedAppIndexRoute
 }
 export interface FileRoutesByTo {
@@ -162,6 +183,9 @@ export interface FileRoutesByTo {
   '/app/settings': typeof AuthedAppSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/internal/retention': typeof ApiInternalRetentionRoute
+  '/api/stripe/checkout': typeof ApiStripeCheckoutRoute
+  '/api/stripe/portal': typeof ApiStripePortalRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/app': typeof AuthedAppIndexRoute
 }
 export interface FileRoutesById {
@@ -184,6 +208,9 @@ export interface FileRoutesById {
   '/_authed/app/settings': typeof AuthedAppSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/internal/retention': typeof ApiInternalRetentionRoute
+  '/api/stripe/checkout': typeof ApiStripeCheckoutRoute
+  '/api/stripe/portal': typeof ApiStripePortalRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/_authed/app/': typeof AuthedAppIndexRoute
 }
 export interface FileRouteTypes {
@@ -206,6 +233,9 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/api/auth/$'
     | '/api/internal/retention'
+    | '/api/stripe/checkout'
+    | '/api/stripe/portal'
+    | '/api/stripe/webhook'
     | '/app/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -226,6 +256,9 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/api/auth/$'
     | '/api/internal/retention'
+    | '/api/stripe/checkout'
+    | '/api/stripe/portal'
+    | '/api/stripe/webhook'
     | '/app'
   id:
     | '__root__'
@@ -247,6 +280,9 @@ export interface FileRouteTypes {
     | '/_authed/app/settings'
     | '/api/auth/$'
     | '/api/internal/retention'
+    | '/api/stripe/checkout'
+    | '/api/stripe/portal'
+    | '/api/stripe/webhook'
     | '/_authed/app/'
   fileRoutesById: FileRoutesById
 }
@@ -266,6 +302,9 @@ export interface RootRouteChildren {
   ApiIngestRoute: typeof ApiIngestRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiInternalRetentionRoute: typeof ApiInternalRetentionRoute
+  ApiStripeCheckoutRoute: typeof ApiStripeCheckoutRoute
+  ApiStripePortalRoute: typeof ApiStripePortalRoute
+  ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -375,6 +414,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAppIndexRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/api/stripe/webhook': {
+      id: '/api/stripe/webhook'
+      path: '/api/stripe/webhook'
+      fullPath: '/api/stripe/webhook'
+      preLoaderRoute: typeof ApiStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stripe/portal': {
+      id: '/api/stripe/portal'
+      path: '/api/stripe/portal'
+      fullPath: '/api/stripe/portal'
+      preLoaderRoute: typeof ApiStripePortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stripe/checkout': {
+      id: '/api/stripe/checkout'
+      path: '/api/stripe/checkout'
+      fullPath: '/api/stripe/checkout'
+      preLoaderRoute: typeof ApiStripeCheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/internal/retention': {
       id: '/api/internal/retention'
       path: '/api/internal/retention'
@@ -447,6 +507,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiIngestRoute: ApiIngestRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiInternalRetentionRoute: ApiInternalRetentionRoute,
+  ApiStripeCheckoutRoute: ApiStripeCheckoutRoute,
+  ApiStripePortalRoute: ApiStripePortalRoute,
+  ApiStripeWebhookRoute: ApiStripeWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -175,9 +175,25 @@ export const exportEventsCsv = createServerFn({ method: "GET" }).handler(async (
  * api_keys / events / usage_counters via their own FKs.
  */
 export const deleteAccount = createServerFn({ method: "POST" }).handler(async () => {
-  const { session, db } = await requireAccount();
+  const { session, account, db } = await requireAccount();
   const { user: userTable } = await import("@/lib/db/auth-schema");
   const { eq } = await import("drizzle-orm");
+
+  // Cancel any active Stripe subscription before cascade-deleting the DB rows.
+  // If this fails, proceed anyway — an orphaned Stripe sub is preferable to a
+  // blocked account deletion. Stripe will eventually cancel on payment failure.
+  if (account.stripeSubscriptionId) {
+    try {
+      const { env } = await import("@/lib/env.server");
+      if (env.STRIPE_SECRET_KEY) {
+        const { default: Stripe } = await import("stripe");
+        const stripe = new Stripe(env.STRIPE_SECRET_KEY);
+        await stripe.subscriptions.cancel(account.stripeSubscriptionId);
+      }
+    } catch (err) {
+      console.error("[deleteAccount] failed to cancel Stripe subscription:", err);
+    }
+  }
 
   await db.delete(userTable).where(eq(userTable.id, session.user.id));
   return { ok: true };
