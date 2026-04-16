@@ -27,11 +27,33 @@ function Docs() {
           </p>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">blockrate docs</h1>
           <p className="text-lg text-muted-foreground">
-            A 1.6 KB client library that measures per-provider block rate. Drop it in, point it at
-            blockrate.app or your own server, see exactly how much each third-party tool is being
-            blocked.
+            A 1.6 KB client library that measures per-provider block rate. Drop it in, post to your
+            own <code className="font-mono text-sm">/api/block-rate</code> route, and let
+            blockrate.app handle storage and visualization.
           </p>
         </header>
+
+        {/* ─── First-party rule ───────────────────────────────────────── */}
+        <section id="first-party" className="mt-12 scroll-mt-20">
+          <div className="rounded-lg border border-border bg-muted/30 p-5">
+            <p className="text-sm font-medium text-foreground">
+              The reporter endpoint must be first-party.
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Your client always posts to a route on your own origin (
+              <code className="font-mono text-xs">/api/block-rate</code>), never directly to
+              blockrate.app. A one-line server handler forwards the payload with your API key
+              attached server-side. This keeps the key off the browser and prevents blocklists from
+              silently wiping out your "blocked" counts.{" "}
+              <a
+                href="https://github.com/afonsojramos/blockrate/tree/main/packages/core#why-the-reporter-endpoint-must-be-first-party"
+                className="underline-offset-4 hover:underline"
+              >
+                Why this matters →
+              </a>
+            </p>
+          </div>
+        </section>
 
         {/* ─── Quick start ────────────────────────────────────────────── */}
         <section id="install" className="mt-16 space-y-4 scroll-mt-20">
@@ -40,30 +62,39 @@ function Docs() {
           <CodeBlock filename="terminal">{`bun add blockrate`}</CodeBlock>
 
           <p className="text-sm text-muted-foreground">
-            The library runs in the browser, checks each provider, and calls your reporter with the
-            results. There are two ways to collect data:
+            Every integration is two pieces: a client that runs detection and posts to{" "}
+            <code className="font-mono text-xs">/api/block-rate</code> on your own origin, and a
+            server route that forwards to the ingest endpoint with your API key.
           </p>
 
           <h3 id="hosted" className="mt-6 text-base font-medium scroll-mt-20">
             Option A: Hosted dashboard (blockrate.app)
           </h3>
           <p className="text-sm text-muted-foreground">
-            Sign up, get an API key from{" "}
+            Sign up, create an API key at{" "}
             <Link to="/app/keys" className="underline-offset-4 hover:underline">
               /app/keys
             </Link>
-            , and use <code className="font-mono text-xs">serverReporter</code>. No server code
-            needed — blockrate.app stores and visualizes the data.
+            , and set it as <code className="font-mono text-xs">BLOCKRATE_API_KEY</code> in your
+            server's environment. The key never touches the browser.
           </p>
-          <CodeBlock>{`import { BlockRate, serverReporter } from "blockrate";
+          <CodeBlock filename="app/api/block-rate/route.ts">{`import { createBlockRateHandler } from "blockrate/next";
+
+export const POST = createBlockRateHandler({
+  forward: { apiKey: process.env.BLOCKRATE_API_KEY! },
+});`}</CodeBlock>
+          <p className="text-sm text-muted-foreground">
+            Client-side, point any <code className="font-mono text-xs">BlockRate</code> reporter at
+            that same-origin path:
+          </p>
+          <CodeBlock filename="client.ts">{`import { BlockRate } from "blockrate";
 
 new BlockRate({
   providers: ["optimizely", "posthog", "ga4"],
   service: "my-app",
-  reporter: serverReporter({
-    endpoint: "https://blockrate.app/api",
-    apiKey: "br_your_key_here",
-  }),
+  reporter: (result) => {
+    navigator.sendBeacon("/api/block-rate", JSON.stringify(result));
+  },
   sampleRate: 0.1, // check 10% of sessions
 }).check();`}</CodeBlock>
 
@@ -78,43 +109,43 @@ new BlockRate({
             >
               blockrate-server
             </a>{" "}
-            on your own infrastructure. Same library, different endpoint.
+            on your own infrastructure and point the forward helper at it. Same client code, same
+            first-party route, different <code className="font-mono text-xs">endpoint</code>.
           </p>
-          <CodeBlock>{`import { BlockRate, serverReporter } from "blockrate";
+          <CodeBlock filename="app/api/block-rate/route.ts">{`import { createBlockRateHandler } from "blockrate/next";
 
-new BlockRate({
-  providers: ["optimizely", "posthog", "ga4"],
-  reporter: serverReporter({
-    endpoint: "https://br.your-domain.com",
-    apiKey: "br_your_self_hosted_key",
-  }),
-}).check();`}</CodeBlock>
+export const POST = createBlockRateHandler({
+  forward: {
+    apiKey: process.env.BLOCK_RATE_API_KEY!,
+    endpoint: "https://br.your-domain.com", // your self-hosted blockrate-server
+  },
+});`}</CodeBlock>
 
           <h3 id="custom-pipeline" className="mt-6 text-base font-medium scroll-mt-20">
             Option C: Custom pipeline
           </h3>
           <p className="text-sm text-muted-foreground">
-            Write your own reporter to forward results anywhere — BigQuery, Datadog, a webhook, your
-            own API. The reporter receives a{" "}
+            Skip <code className="font-mono text-xs">forward</code> and use{" "}
+            <code className="font-mono text-xs">onResult</code> to write results anywhere you want —
+            BigQuery, Datadog, a webhook, your own API. The handler still parses and validates the
+            payload, so you only see well-formed{" "}
             <Link to="/docs/api" className="underline-offset-4 hover:underline">
               BlockRateResult
             </Link>{" "}
-            object.
+            objects.
           </p>
-          <CodeBlock filename="custom-reporter.ts">{`import { BlockRate } from "blockrate";
+          <CodeBlock filename="app/api/block-rate/route.ts">{`import { createBlockRateHandler } from "blockrate/next";
 
-new BlockRate({
-  providers: ["optimizely", "posthog", "ga4"],
-  reporter: (result) => {
-    // result.providers = [{ name, status, latency }, ...]
-    fetch("/your-api/analytics", {
-      method: "POST",
-      body: JSON.stringify(result),
-      headers: { "Content-Type": "application/json" },
-      keepalive: true,
-    });
+export const POST = createBlockRateHandler({
+  onResult: async (result) => {
+    await myLogger.info({ event: "block_rate_check", ...result });
   },
-}).check();`}</CodeBlock>
+});`}</CodeBlock>
+          <p className="text-sm text-muted-foreground">
+            You can combine <code className="font-mono text-xs">forward</code> and{" "}
+            <code className="font-mono text-xs">onResult</code> — both fire in parallel on a valid
+            payload, failures are isolated, and the browser always gets a 204.
+          </p>
         </section>
 
         {/* ─── Options ─────────────────────────────────────────────── */}
@@ -157,8 +188,10 @@ new BlockRate({
                   <td className="px-3 py-2 text-muted-foreground">—</td>
                   <td className="px-3 py-2 text-muted-foreground">
                     Called once with the full <code className="font-mono">BlockRateResult</code>{" "}
-                    after detection finishes. Use <code className="font-mono">serverReporter</code>,{" "}
-                    <code className="font-mono">beaconReporter</code>, or your own.
+                    after detection finishes. For the hosted or self-hosted pattern, post to your
+                    same-origin route with{" "}
+                    <code className="font-mono">navigator.sendBeacon("/api/block-rate", …)</code> or{" "}
+                    <code className="font-mono">fetch</code>.
                   </td>
                 </tr>
                 <tr className="border-t border-border">
@@ -256,7 +289,7 @@ new BlockRate({
           <CodeBlock>{`new BlockRate({
   providers: ["posthog", "ga4"],
   consentGiven: () => window.CookieConsent?.accepted("analytics"),
-  reporter: serverReporter({ endpoint: "...", apiKey: "..." }),
+  reporter: (r) => navigator.sendBeacon("/api/block-rate", JSON.stringify(r)),
 }).check();`}</CodeBlock>
           <p className="text-sm text-muted-foreground">
             When the predicate returns <code className="font-mono text-xs">false</code>,{" "}
@@ -280,7 +313,7 @@ new BlockRate({
     path
       .replace(/\\/users\\/[^/]+/, "/users/:id")
       .replace(/\\/orders\\/\\d+/, "/orders/:id"),
-  reporter: serverReporter({ endpoint: "...", apiKey: "..." }),
+  reporter: (r) => navigator.sendBeacon("/api/block-rate", JSON.stringify(r)),
 }).check();`}</CodeBlock>
         </section>
 
@@ -319,7 +352,7 @@ new BlockRate({
             Need a provider we don't ship? Add your own:
           </p>
 
-          <CodeBlock filename="custom-provider.ts">{`import { BlockRate, createProvider, serverReporter } from "blockrate";
+          <CodeBlock filename="custom-provider.ts">{`import { BlockRate, createProvider } from "blockrate";
 
 const myProvider = createProvider({
   name: "my-analytics",
@@ -328,7 +361,7 @@ const myProvider = createProvider({
 
 new BlockRate({
   providers: ["posthog", myProvider], // mix built-in + custom
-  reporter: serverReporter({ endpoint: "https://blockrate.app/api", apiKey: "..." }),
+  reporter: (r) => navigator.sendBeacon("/api/block-rate", JSON.stringify(r)),
 }).check();`}</CodeBlock>
         </section>
 
@@ -336,10 +369,10 @@ new BlockRate({
         <section id="frameworks" className="mt-16 space-y-6 scroll-mt-20">
           <h2 className="text-2xl font-semibold tracking-tight">Framework guides</h2>
           <p className="text-sm text-muted-foreground">
-            The library is framework-agnostic — it's just a class that calls{" "}
-            <code className="font-mono text-xs">.check()</code>. These guides show the idiomatic way
-            to wire it into each framework so it runs once per session, handles SSR safely, and
-            doesn't block rendering.
+            Every integration is two files: a client that posts to{" "}
+            <code className="font-mono text-xs">/api/block-rate</code>, and a same-origin server
+            route that forwards upstream. The server route holds the API key; the browser never sees
+            it.
           </p>
 
           <div className="rounded-lg border border-border bg-muted/30 p-4">
@@ -353,29 +386,33 @@ new BlockRate({
                 examples/
               </a>{" "}
               directory — clone, <code className="font-mono text-xs">bun install</code>, and run.
-              Available for Next.js, TanStack Start, SvelteKit, Vue, Solid.js, and plain HTML.
+              Available for Next.js, TanStack Start, SvelteKit, Nuxt, SolidStart, and plain HTML.
             </p>
           </div>
 
-          {/* React */}
+          {/* React (generic) */}
           <div className="space-y-3">
             <h3 id="fw-react" className="text-base font-medium scroll-mt-20">
-              React
+              React (generic)
             </h3>
             <p className="text-sm text-muted-foreground">
               The <code className="font-mono text-xs">useBlockRate</code> hook runs once on mount,
-              skips on the server, and handles cleanup.
+              skips on the server, and handles cleanup. Use it from any React setup; see the
+              Next.js, TanStack Start, or SolidStart sections below for framework-specific server
+              routes.
             </p>
             <CodeBlock filename="App.tsx">{`import { useBlockRate } from "blockrate/react";
-import { serverReporter } from "blockrate";
 
-function App() {
+export function App() {
   useBlockRate({
     providers: ["optimizely", "posthog", "ga4"],
-    reporter: serverReporter({
-      endpoint: "https://blockrate.app/api",
-      apiKey: process.env.NEXT_PUBLIC_BR_KEY!,
-    }),
+    reporter: (r) =>
+      fetch("/api/block-rate", {
+        method: "POST",
+        body: JSON.stringify(r),
+        headers: { "Content-Type": "application/json" },
+        keepalive: true,
+      }),
     sampleRate: 0.1,
   });
 
@@ -391,8 +428,8 @@ function App() {
             <p className="text-sm text-muted-foreground">
               Drop the <code className="font-mono text-xs">&lt;BlockRateScript&gt;</code> component
               from <code className="font-mono text-xs">blockrate/next</code> into your root layout.
-              It's a pre-built client component that wires up the check once on mount and sends the
-              result to the endpoint you configure — no wrapper file, no{" "}
+              It's a pre-built client component that wires up the check once on mount and posts the
+              result to your same-origin route — no wrapper file, no{" "}
               <code className="font-mono text-xs">"use client"</code> directive needed at the import
               site.
             </p>
@@ -413,16 +450,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   );
 }`}</CodeBlock>
             <p className="text-sm text-muted-foreground">
-              Pair it with <code className="font-mono text-xs">createBlockRateHandler</code> for a
-              ready-made route handler that forwards results to your logger, database, or wherever
-              you want the data to land:
+              Pair it with <code className="font-mono text-xs">createBlockRateHandler</code> —{" "}
+              <code className="font-mono text-xs">forward</code> does the server-side hop to the
+              ingest endpoint, with your API key read from the server's environment.
             </p>
             <CodeBlock filename="app/api/block-rate/route.ts">{`import { createBlockRateHandler } from "blockrate/next";
 
 export const POST = createBlockRateHandler({
-  onResult: async (result) => {
-    console.log(JSON.stringify({ event: "block_rate_check", ...result }));
-  },
+  forward: { apiKey: process.env.BLOCKRATE_API_KEY! },
 });`}</CodeBlock>
           </div>
 
@@ -433,25 +468,28 @@ export const POST = createBlockRateHandler({
             </h3>
             <p className="text-sm text-muted-foreground">
               Call <code className="font-mono text-xs">BlockRate</code> in{" "}
-              <code className="font-mono text-xs">onMount</code> in your root layout.
+              <code className="font-mono text-xs">onMount</code> in your root layout, and add a{" "}
+              <code className="font-mono text-xs">+server.ts</code> route that forwards.
             </p>
             <CodeBlock filename="+layout.svelte">{`<script lang="ts">
   import { onMount } from "svelte";
-  import { BlockRate, serverReporter } from "blockrate";
+  import { BlockRate } from "blockrate";
 
   onMount(() => {
     new BlockRate({
       providers: ["optimizely", "posthog", "ga4"],
-      reporter: serverReporter({
-        endpoint: "https://blockrate.app/api",
-        apiKey: import.meta.env.VITE_BR_KEY,
-      }),
+      reporter: (r) => navigator.sendBeacon("/api/block-rate", JSON.stringify(r)),
       sampleRate: 0.1,
     }).check();
   });
 </script>
 
 <slot />`}</CodeBlock>
+            <CodeBlock filename="src/routes/api/block-rate/+server.ts">{`import { createBlockRateHandler } from "blockrate/sveltekit";
+
+export const POST = createBlockRateHandler({
+  forward: { apiKey: process.env.BLOCKRATE_API_KEY! },
+});`}</CodeBlock>
           </div>
 
           {/* TanStack Start */}
@@ -460,84 +498,109 @@ export const POST = createBlockRateHandler({
               TanStack Start
             </h3>
             <p className="text-sm text-muted-foreground">
-              Same <code className="font-mono text-xs">useBlockRate</code> hook as React, dropped
-              into the root layout component.
+              Use <code className="font-mono text-xs">useBlockRate</code> in the root route
+              component, and add an API file route that forwards.
             </p>
-            <CodeBlock filename="routes/__root.tsx">{`import { useBlockRate } from "blockrate/react";
-import { serverReporter } from "blockrate";
+            <CodeBlock filename="src/routes/__root.tsx">{`import { Outlet, createRootRoute } from "@tanstack/react-router";
+import { useBlockRate } from "blockrate/react";
 
-function RootLayout() {
+function RootComponent() {
   useBlockRate({
     providers: ["optimizely", "posthog", "ga4"],
-    reporter: serverReporter({
-      endpoint: "https://blockrate.app/api",
-      apiKey: import.meta.env.VITE_BR_KEY,
-    }),
+    reporter: (r) =>
+      fetch("/api/block-rate", {
+        method: "POST",
+        body: JSON.stringify(r),
+        headers: { "Content-Type": "application/json" },
+        keepalive: true,
+      }),
     sampleRate: 0.1,
   });
 
   return <Outlet />;
-}`}</CodeBlock>
+}
+
+export const Route = createRootRoute({ component: RootComponent });`}</CodeBlock>
+            <CodeBlock filename="src/routes/api/block-rate.ts">{`import { createFileRoute } from "@tanstack/react-router";
+import { createBlockRateHandler } from "blockrate/tanstack-start";
+
+const handler = createBlockRateHandler({
+  forward: { apiKey: process.env.BLOCKRATE_API_KEY! },
+});
+
+export const Route = createFileRoute("/api/block-rate")({
+  server: { handlers: { POST: ({ request }) => handler(request) } },
+});`}</CodeBlock>
           </div>
 
-          {/* Vue */}
+          {/* Nuxt */}
           <div className="space-y-3">
-            <h3 id="fw-vue" className="text-base font-medium scroll-mt-20">
-              Vue
+            <h3 id="fw-nuxt" className="text-base font-medium scroll-mt-20">
+              Nuxt
             </h3>
             <p className="text-sm text-muted-foreground">
-              Call <code className="font-mono text-xs">BlockRate</code> inside{" "}
-              <code className="font-mono text-xs">onMounted</code> in your root component. Works
-              with Vite, Nuxt (add <code className="font-mono text-xs">"use client"</code> if using
-              Nuxt 3 Islands), or any other Vue setup.
+              Run <code className="font-mono text-xs">BlockRate</code> inside{" "}
+              <code className="font-mono text-xs">onMounted</code> in your root Vue component, and
+              add a Nitro server route (
+              <code className="font-mono text-xs">server/api/block-rate.post.ts</code>) that
+              forwards.
             </p>
-            <CodeBlock filename="App.vue">{`<script setup lang="ts">
+            <CodeBlock filename="app.vue">{`<script setup lang="ts">
 import { onMounted } from "vue";
-import { BlockRate, serverReporter } from "blockrate";
+import { BlockRate } from "blockrate";
 
 onMounted(() => {
   new BlockRate({
     providers: ["optimizely", "posthog", "ga4"],
-    reporter: serverReporter({
-      endpoint: "https://blockrate.app/api",
-      apiKey: import.meta.env.VITE_BR_KEY,
-    }),
+    reporter: (r) => navigator.sendBeacon("/api/block-rate", JSON.stringify(r)),
     sampleRate: 0.1,
   }).check();
 });
 </script>
 
 <template>
-  <router-view />
+  <NuxtPage />
 </template>`}</CodeBlock>
+            <CodeBlock filename="server/api/block-rate.post.ts">{`import { createWebHandler } from "blockrate";
+
+const handle = createWebHandler({
+  forward: { apiKey: process.env.BLOCKRATE_API_KEY! },
+});
+
+export default defineEventHandler((event) => handle(toWebRequest(event)));`}</CodeBlock>
           </div>
 
-          {/* Solid.js */}
+          {/* SolidStart */}
           <div className="space-y-3">
-            <h3 id="fw-solid" className="text-base font-medium scroll-mt-20">
-              Solid.js
+            <h3 id="fw-solidstart" className="text-base font-medium scroll-mt-20">
+              SolidStart
             </h3>
             <p className="text-sm text-muted-foreground">
-              Use <code className="font-mono text-xs">onMount</code> in your root component. Solid
-              runs effects on the client only, so this is SSR-safe by default.
+              Use <code className="font-mono text-xs">onMount</code> in your root component, and add
+              an API route under <code className="font-mono text-xs">src/routes/api/</code> that
+              forwards.
             </p>
-            <CodeBlock filename="App.tsx">{`import { onMount } from "solid-js";
-import { BlockRate, serverReporter } from "blockrate";
+            <CodeBlock filename="src/app.tsx">{`import { onMount } from "solid-js";
+import { BlockRate } from "blockrate";
 
 export default function App() {
   onMount(() => {
     new BlockRate({
       providers: ["optimizely", "posthog", "ga4"],
-      reporter: serverReporter({
-        endpoint: "https://blockrate.app/api",
-        apiKey: import.meta.env.VITE_BR_KEY,
-      }),
+      reporter: (r) => navigator.sendBeacon("/api/block-rate", JSON.stringify(r)),
       sampleRate: 0.1,
     }).check();
   });
 
   return <div>...</div>;
 }`}</CodeBlock>
+            <CodeBlock filename="src/routes/api/block-rate.ts">{`import { createWebHandler } from "blockrate";
+
+const handle = createWebHandler({
+  forward: { apiKey: process.env.BLOCKRATE_API_KEY! },
+});
+
+export const POST = (event: { request: Request }) => handle(event.request);`}</CodeBlock>
           </div>
 
           {/* Vanilla */}
@@ -546,20 +609,32 @@ export default function App() {
               Vanilla JS / script tag
             </h3>
             <p className="text-sm text-muted-foreground">
-              Import the library directly in a script tag. Works in any site.
+              Import the library directly in a script tag and post to your same-origin route. Any
+              HTTP server can host the matching forward route — below is a minimal Bun server.
             </p>
             <CodeBlock filename="index.html">{`<script type="module">
-  import { BlockRate, serverReporter } from "https://esm.sh/blockrate";
+  import { BlockRate } from "https://esm.sh/blockrate";
 
   new BlockRate({
     providers: ["optimizely", "posthog", "ga4"],
-    reporter: serverReporter({
-      endpoint: "https://blockrate.app/api",
-      apiKey: "br_your_key_here",
-    }),
+    reporter: (r) => navigator.sendBeacon("/api/block-rate", JSON.stringify(r)),
     sampleRate: 0.1,
   }).check();
 </script>`}</CodeBlock>
+            <CodeBlock filename="server.ts">{`import { createWebHandler } from "blockrate";
+
+const handle = createWebHandler({
+  forward: { apiKey: process.env.BLOCKRATE_API_KEY! },
+});
+
+Bun.serve({
+  port: 3000,
+  fetch: (req) => {
+    const url = new URL(req.url);
+    if (url.pathname === "/api/block-rate" && req.method === "POST") return handle(req);
+    return new Response("not found", { status: 404 });
+  },
+});`}</CodeBlock>
           </div>
         </section>
 

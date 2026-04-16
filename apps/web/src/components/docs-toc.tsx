@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 const items = [
+  { title: "First-party rule", url: "#first-party", depth: 2 },
   { title: "Quick start", url: "#install", depth: 2 },
   { title: "Hosted", url: "#hosted", depth: 3 },
   { title: "Self-hosted", url: "#self-hosted", depth: 3 },
@@ -16,8 +17,8 @@ const items = [
   { title: "Next.js", url: "#fw-nextjs", depth: 3 },
   { title: "SvelteKit", url: "#fw-sveltekit", depth: 3 },
   { title: "TanStack Start", url: "#fw-tanstack", depth: 3 },
-  { title: "Vue", url: "#fw-vue", depth: 3 },
-  { title: "Solid.js", url: "#fw-solid", depth: 3 },
+  { title: "Nuxt", url: "#fw-nuxt", depth: 3 },
+  { title: "SolidStart", url: "#fw-solidstart", depth: 3 },
   { title: "Vanilla JS", url: "#fw-vanilla", depth: 3 },
 ];
 
