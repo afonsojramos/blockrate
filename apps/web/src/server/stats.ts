@@ -120,7 +120,7 @@ export const getUsageSnapshot = createServerFn({ method: "GET" }).handler(async 
     plan,
     usage,
     stripe: {
-      customerId: account.stripeCustomerId,
+      hasSubscription: Boolean(account.stripeCustomerId),
       subscriptionStatus: account.stripeSubscriptionStatus,
       currentPeriodEnd: account.stripeCurrentPeriodEnd?.toISOString() ?? null,
     },

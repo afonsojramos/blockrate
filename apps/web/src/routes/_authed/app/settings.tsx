@@ -24,17 +24,26 @@ function Settings() {
   const router = useRouter();
   const [exporting, setExporting] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [managingSubscription, setManagingSubscription] = useState(false);
+  const [upgrading, setUpgrading] = useState(false);
 
-  // After Stripe Checkout redirect, poll until the webhook updates the plan.
-  // Also handles inline upgrades (Pro → Team) that redirect back here.
+  // After Stripe Checkout redirect or inline upgrade, poll until the
+  // webhook updates the plan, then clear the session_id from the URL.
   useEffect(() => {
     if (!search.session_id) return;
+    if (data.plan.name !== "free") {
+      navigate({ to: "/app/settings", search: {}, replace: true });
+      return;
+    }
 
     let attempts = 0;
     const poll = setInterval(async () => {
       attempts++;
-      await router.invalidate();
-      // Stop polling after the plan changes from free, or after 10 attempts
+      try {
+        await router.invalidate();
+      } catch {
+        // Network error during poll — keep trying
+      }
       if (attempts >= 10) {
         clearInterval(poll);
         navigate({ to: "/app/settings", search: {}, replace: true });
@@ -42,19 +51,9 @@ function Settings() {
     }, 1500);
 
     return () => clearInterval(poll);
-  }, [search.session_id, router, navigate]);
-
-  // Clear session_id from URL once plan is no longer free (webhook arrived)
-  useEffect(() => {
-    if (search.session_id && data.plan.name !== "free") {
-      navigate({ to: "/app/settings", search: {}, replace: true });
-    }
-  }, [search.session_id, data.plan.name, navigate]);
+  }, [search.session_id, data.plan.name, router, navigate]);
 
   const usagePct = Math.min(100, (data.usage.used / data.plan.eventsPerMonth) * 100);
-  const [managingSubscription, setManagingSubscription] = useState(false);
-
-  const [upgrading, setUpgrading] = useState(false);
 
   async function onManageSubscription() {
     if (managingSubscription) return;
@@ -70,6 +69,8 @@ function Settings() {
       } else {
         alert(result.error ?? "Failed to open billing portal");
       }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
       setManagingSubscription(false);
     }
@@ -79,21 +80,11 @@ function Settings() {
     if (upgrading) return;
     setUpgrading(true);
     try {
-      // Resolve the right price ID from env via server fn
-      const { getStripePriceIds } = await import("@/server/stripe");
-      const priceIds = await getStripePriceIds();
       const targetPlan = data.plan.name === "free" ? "pro" : "team";
-      const priceId = targetPlan === "pro" ? priceIds.proMonthly : priceIds.teamMonthly;
-
-      if (!priceId) {
-        alert("Billing not configured.");
-        return;
-      }
-
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId }),
+        body: JSON.stringify({ plan: targetPlan, annual: false }),
       });
       const result = await res.json();
       if (result.url) {
@@ -101,6 +92,8 @@ function Settings() {
       } else {
         alert(result.error ?? "Failed to start upgrade");
       }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
       setUpgrading(false);
     }
@@ -118,6 +111,8 @@ function Settings() {
       a.download = `blockrate-events-${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
       URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Export failed. Please try again.");
     } finally {
       setExporting(false);
     }
@@ -188,7 +183,7 @@ function Settings() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
-          {data.stripe.customerId ? (
+          {data.stripe.hasSubscription ? (
             <Button
               variant="outline"
               onClick={onManageSubscription}
@@ -252,7 +247,7 @@ function Settings() {
         </CardHeader>
         <CardContent>
           <Button variant="outline" onClick={onExport} aria-disabled={exporting}>
-            {exporting ? "Generating…" : "Export events as CSV"}
+            {exporting ? "Generating..." : "Export events as CSV"}
           </Button>
         </CardContent>
       </Card>
@@ -266,7 +261,7 @@ function Settings() {
         </CardHeader>
         <CardContent>
           <Button variant="destructive" onClick={onDelete} aria-disabled={deleting}>
-            {deleting ? "Deleting…" : "Delete account"}
+            {deleting ? "Deleting..." : "Delete account"}
           </Button>
         </CardContent>
       </Card>

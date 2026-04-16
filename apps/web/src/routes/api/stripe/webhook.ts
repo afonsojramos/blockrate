@@ -16,6 +16,13 @@ import type Stripe from "stripe";
  *   invoice.payment_failed        → mark past_due
  */
 
+/** Extract current_period_end from a SubscriptionItem (Stripe SDK v22+). */
+function getItemPeriodEnd(item: Stripe.SubscriptionItem | undefined): Date | null {
+  if (!item) return null;
+  const end = item.current_period_end;
+  return end ? new Date(end * 1000) : null;
+}
+
 export const Route = createFileRoute("/api/stripe/webhook")({
   server: {
     handlers: {
@@ -48,124 +55,145 @@ export const Route = createFileRoute("/api/stripe/webhook")({
         let event: Stripe.Event;
         try {
           event = stripe.webhooks.constructEvent(rawBody, signature, env.STRIPE_WEBHOOK_SECRET);
-        } catch {
+        } catch (err) {
+          console.error("[stripe webhook] signature verification failed:", err);
           return new Response(JSON.stringify({ error: "invalid signature" }), { status: 400 });
         }
 
-        // Handle each event type — all handlers are idempotent
-        switch (event.type) {
-          case "checkout.session.completed": {
-            const session = event.data.object as Stripe.Checkout.Session;
-            const accountId = Number(session.client_reference_id);
-            const subscriptionId =
-              typeof session.subscription === "string"
-                ? session.subscription
-                : session.subscription?.id;
+        try {
+          switch (event.type) {
+            case "checkout.session.completed": {
+              const session = event.data.object as Stripe.Checkout.Session;
+              const accountId = Number(session.client_reference_id);
+              const subscriptionId =
+                typeof session.subscription === "string"
+                  ? session.subscription
+                  : session.subscription?.id;
 
-            if (accountId && subscriptionId) {
-              // Fetch the full subscription to get price + period details.
-              // In Stripe SDK v22+, retrieve() returns Response<Subscription>.
-              const subResponse = await stripe.subscriptions.retrieve(subscriptionId);
-              const sub = subResponse as unknown as Stripe.Subscription;
+              if (!accountId || !subscriptionId) {
+                console.error(
+                  `[stripe webhook] checkout.session.completed missing data: accountId=${accountId}, subscriptionId=${subscriptionId}, event=${event.id}`,
+                );
+                return new Response(JSON.stringify({ error: "missing account or subscription" }), {
+                  status: 400,
+                });
+              }
+
+              const sub = await stripe.subscriptions.retrieve(subscriptionId);
               const item = sub.items.data[0];
               const priceId = item?.price.id;
-              const plan = priceId ? planFromPriceId(priceId) : "free";
-              // In API version 2025+, current_period_end is on SubscriptionItem, not Subscription
-              const periodEnd = (item as unknown as Record<string, unknown>)?.current_period_end as
-                | number
-                | undefined;
+              const plan = priceId ? planFromPriceId(priceId) : null;
+
+              if (!plan) {
+                console.error(
+                  `[stripe webhook] unrecognized priceId=${priceId} for event=${event.id}`,
+                );
+                // Return 500 so Stripe retries — likely env misconfiguration
+                return new Response(JSON.stringify({ error: "unrecognized price" }), {
+                  status: 500,
+                });
+              }
+
+              // Verify the customer matches the account (defense in depth)
+              const customerId = session.customer as string;
+              const result = await db
+                .update(appAccounts)
+                .set({
+                  plan,
+                  stripeCustomerId: customerId,
+                  stripeSubscriptionId: subscriptionId,
+                  stripeSubscriptionStatus: sub.status,
+                  stripeCurrentPeriodEnd: getItemPeriodEnd(item),
+                })
+                .where(eq(appAccounts.id, accountId))
+                .returning({ id: appAccounts.id });
+
+              if (result.length === 0) {
+                console.error(
+                  `[stripe webhook] checkout.session.completed: no account found for id=${accountId}, event=${event.id}`,
+                );
+                return new Response(JSON.stringify({ error: "account not found" }), {
+                  status: 500,
+                });
+              }
+              break;
+            }
+
+            case "customer.subscription.updated": {
+              const sub = event.data.object as Stripe.Subscription;
+              const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
+              const item = sub.items.data[0];
+              const priceId = item?.price.id;
+              const plan = priceId ? planFromPriceId(priceId) : null;
+
+              const update: Partial<typeof appAccounts.$inferInsert> = {
+                stripeSubscriptionStatus: sub.status,
+                stripeCurrentPeriodEnd: getItemPeriodEnd(item),
+              };
+
+              if (sub.status === "canceled" || sub.status === "unpaid") {
+                update.plan = "free";
+                update.stripeSubscriptionId = null;
+              } else if (plan && !sub.cancel_at_period_end) {
+                update.plan = plan;
+              }
+
+              await db
+                .update(appAccounts)
+                .set(update)
+                .where(eq(appAccounts.stripeCustomerId, customerId));
+              break;
+            }
+
+            case "customer.subscription.deleted": {
+              const sub = event.data.object as Stripe.Subscription;
+              const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
 
               await db
                 .update(appAccounts)
                 .set({
-                  plan,
-                  stripeCustomerId: session.customer as string,
-                  stripeSubscriptionId: subscriptionId,
-                  stripeSubscriptionStatus: sub.status,
-                  stripeCurrentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null,
+                  plan: "free",
+                  stripeSubscriptionId: null,
+                  stripeSubscriptionStatus: "canceled",
+                  stripeCurrentPeriodEnd: null,
                 })
-                .where(eq(appAccounts.id, accountId));
-            }
-            break;
-          }
-
-          case "customer.subscription.updated": {
-            const sub = event.data.object as Stripe.Subscription;
-            const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
-            const item = sub.items.data[0];
-            const priceId = item?.price.id;
-            const plan = priceId ? planFromPriceId(priceId) : undefined;
-            const periodEnd = (item as unknown as Record<string, unknown>)?.current_period_end as
-              | number
-              | undefined;
-
-            const update: Record<string, unknown> = {
-              stripeSubscriptionStatus: sub.status,
-              stripeCurrentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null,
-            };
-            // Only update plan if we can resolve the price
-            if (plan && plan !== "free") update.plan = plan;
-            // If cancelled at period end but still active, keep the current plan
-            // until subscription.deleted fires
-            if (sub.cancel_at_period_end && sub.status === "active") {
-              // Keep plan as-is — the user retains access until period end
-            } else if (sub.status === "canceled" || sub.status === "unpaid") {
-              update.plan = "free";
-              update.stripeSubscriptionId = null;
-            }
-
-            await db
-              .update(appAccounts)
-              .set(update)
-              .where(eq(appAccounts.stripeCustomerId, customerId));
-            break;
-          }
-
-          case "customer.subscription.deleted": {
-            const sub = event.data.object as Stripe.Subscription;
-            const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
-
-            await db
-              .update(appAccounts)
-              .set({
-                plan: "free",
-                stripeSubscriptionId: null,
-                stripeSubscriptionStatus: "canceled",
-                stripeCurrentPeriodEnd: null,
-              })
-              .where(eq(appAccounts.stripeCustomerId, customerId));
-            break;
-          }
-
-          case "invoice.paid": {
-            const invoice = event.data.object as Stripe.Invoice;
-            const customerId =
-              typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
-            if (customerId) {
-              await db
-                .update(appAccounts)
-                .set({ stripeSubscriptionStatus: "active" })
                 .where(eq(appAccounts.stripeCustomerId, customerId));
+              break;
             }
-            break;
-          }
 
-          case "invoice.payment_failed": {
-            const invoice = event.data.object as Stripe.Invoice;
-            const customerId =
-              typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
-            if (customerId) {
-              await db
-                .update(appAccounts)
-                .set({ stripeSubscriptionStatus: "past_due" })
-                .where(eq(appAccounts.stripeCustomerId, customerId));
+            case "invoice.paid": {
+              const invoice = event.data.object as Stripe.Invoice;
+              const customerId =
+                typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
+              if (customerId) {
+                await db
+                  .update(appAccounts)
+                  .set({ stripeSubscriptionStatus: "active" })
+                  .where(eq(appAccounts.stripeCustomerId, customerId));
+              }
+              break;
             }
-            break;
-          }
 
-          default:
-            // Unhandled event — log and acknowledge
-            console.log(`[stripe] unhandled event: ${event.type}`);
+            case "invoice.payment_failed": {
+              const invoice = event.data.object as Stripe.Invoice;
+              const customerId =
+                typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
+              if (customerId) {
+                await db
+                  .update(appAccounts)
+                  .set({ stripeSubscriptionStatus: "past_due" })
+                  .where(eq(appAccounts.stripeCustomerId, customerId));
+              }
+              break;
+            }
+
+            default:
+              console.log(`[stripe] unhandled event: ${event.type}`);
+          }
+        } catch (err) {
+          console.error(`[stripe webhook] handler error for ${event.type} (${event.id}):`, err);
+          // Return 500 so Stripe retries
+          return new Response(JSON.stringify({ error: "internal error" }), { status: 500 });
         }
 
         return new Response(JSON.stringify({ received: true }), { status: 200 });

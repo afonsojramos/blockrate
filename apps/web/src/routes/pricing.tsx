@@ -3,12 +3,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-/**
- * Lightweight session check for the pricing page. Returns the user's
- * current plan (or null if not logged in). Unlike the _authed layout,
- * this does NOT redirect — unauthenticated visitors see the pricing
- * page normally with "Sign up" CTAs.
- */
 const getPricingSession = createServerFn({ method: "GET" }).handler(async () => {
   const { getRequest } = await import("@tanstack/react-start/server");
   const { auth } = await import("@/lib/auth.server");
@@ -33,24 +27,12 @@ export const Route = createFileRoute("/pricing")({
   component: Pricing,
 });
 
-interface Tier {
-  name: string;
-  planKey: string;
-  monthly: number;
-  annual: number;
-  monthlyPriceEnv: string | null;
-  annualPriceEnv: string | null;
-  features: string[];
-}
-
-const tiers: Tier[] = [
+const tiers = [
   {
     name: "Free",
     planKey: "free",
     monthly: 0,
     annual: 0,
-    monthlyPriceEnv: null,
-    annualPriceEnv: null,
     features: [
       "100,000 events / month",
       "3 API keys",
@@ -63,8 +45,6 @@ const tiers: Tier[] = [
     planKey: "pro",
     monthly: 4,
     annual: 40,
-    monthlyPriceEnv: "STRIPE_PRO_MONTHLY_PRICE_ID",
-    annualPriceEnv: "STRIPE_PRO_ANNUAL_PRICE_ID",
     features: [
       "1M events / month",
       "Unlimited API keys",
@@ -77,13 +57,9 @@ const tiers: Tier[] = [
     planKey: "team",
     monthly: 8,
     annual: 80,
-    monthlyPriceEnv: "STRIPE_TEAM_MONTHLY_PRICE_ID",
-    annualPriceEnv: "STRIPE_TEAM_ANNUAL_PRICE_ID",
     features: ["10M events / month", "Multi-seat accounts", "1-year history", "Priority support"],
   },
 ];
-
-import { getStripePriceIds } from "@/server/stripe";
 
 function Pricing() {
   const { loggedIn, plan } = Route.useLoaderData();
@@ -91,34 +67,19 @@ function Pricing() {
   const [loading, setLoading] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  async function handleUpgrade(tier: Tier) {
+  async function handleUpgrade(planKey: string) {
     if (loading) return;
     if (!loggedIn) {
       navigate({ to: "/signup" });
       return;
     }
 
-    setLoading(tier.planKey);
+    setLoading(planKey);
     try {
-      const priceIds = await getStripePriceIds();
-      const priceId =
-        tier.planKey === "pro"
-          ? annual
-            ? priceIds.proAnnual
-            : priceIds.proMonthly
-          : annual
-            ? priceIds.teamAnnual
-            : priceIds.teamMonthly;
-
-      if (!priceId) {
-        alert("Billing not configured. Please try again later.");
-        return;
-      }
-
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId }),
+        body: JSON.stringify({ plan: planKey, annual }),
       });
       const data = await res.json();
       if (data.url) {
@@ -126,6 +87,8 @@ function Pricing() {
       } else {
         alert(data.error ?? "Failed to create checkout session");
       }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
       setLoading(null);
     }
@@ -140,7 +103,6 @@ function Pricing() {
           upcharges, no "contact sales" walls.
         </p>
 
-        {/* Billing toggle */}
         <div className="mt-6 flex items-center justify-center gap-3">
           <span
             className={
@@ -218,7 +180,7 @@ function Pricing() {
                 {isCurrent ? null : isPaid ? (
                   <button
                     type="button"
-                    onClick={() => handleUpgrade(tier)}
+                    onClick={() => handleUpgrade(tier.planKey)}
                     disabled={loading !== null}
                     className="inline-flex h-10 w-full items-center justify-center rounded-md bg-primary text-sm font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out active:scale-[0.96] disabled:opacity-50"
                   >

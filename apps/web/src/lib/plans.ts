@@ -47,34 +47,46 @@ export const PLANS: Record<PlanName, Plan> = {
   },
 };
 
+function isPlanName(name: string): name is PlanName {
+  return name in PLANS;
+}
+
 export function getPlan(name: string): Plan {
-  return (PLANS as Record<string, Plan>)[name] ?? PLANS.free;
+  return isPlanName(name) ? PLANS[name] : PLANS.free;
 }
 
 /**
  * Resolve a Stripe Price ID → PlanName. Used by the webhook handler to
- * map subscription changes back to our plan tiers. Returns "free" for
- * unrecognised IDs (defensive fallback).
+ * map subscription changes back to our plan tiers. Returns null for
+ * unrecognised IDs so the caller can decide how to handle it (log + retry
+ * rather than silently downgrading to free).
+ *
+ * Note: imports env lazily to keep this file importable from client code
+ * (PLANS/getPlan are used everywhere, but Stripe fns are server-only).
  */
-export function planFromPriceId(priceId: string): PlanName {
-  const env = process.env;
-  if (priceId === env.STRIPE_PRO_MONTHLY_PRICE_ID || priceId === env.STRIPE_PRO_ANNUAL_PRICE_ID)
+export function planFromPriceId(priceId: string): PlanName | null {
+  const e = process.env;
+  if (priceId === e.STRIPE_PRO_MONTHLY_PRICE_ID || priceId === e.STRIPE_PRO_ANNUAL_PRICE_ID)
     return "pro";
-  if (priceId === env.STRIPE_TEAM_MONTHLY_PRICE_ID || priceId === env.STRIPE_TEAM_ANNUAL_PRICE_ID)
+  if (priceId === e.STRIPE_TEAM_MONTHLY_PRICE_ID || priceId === e.STRIPE_TEAM_ANNUAL_PRICE_ID)
     return "team";
-  return "free";
+  return null;
 }
 
 /**
- * Set of all known Stripe Price IDs. Used to validate the priceId
- * parameter in the checkout endpoint (allowlist).
+ * Resolve (planName, annual) → Stripe Price ID. Used by the checkout
+ * endpoint so the client sends plan name + interval instead of raw price IDs.
+ * Returns null for invalid input.
  */
-export function validPriceIds(): Set<string> {
-  const env = process.env;
-  const ids = new Set<string>();
-  if (env.STRIPE_PRO_MONTHLY_PRICE_ID) ids.add(env.STRIPE_PRO_MONTHLY_PRICE_ID);
-  if (env.STRIPE_PRO_ANNUAL_PRICE_ID) ids.add(env.STRIPE_PRO_ANNUAL_PRICE_ID);
-  if (env.STRIPE_TEAM_MONTHLY_PRICE_ID) ids.add(env.STRIPE_TEAM_MONTHLY_PRICE_ID);
-  if (env.STRIPE_TEAM_ANNUAL_PRICE_ID) ids.add(env.STRIPE_TEAM_ANNUAL_PRICE_ID);
-  return ids;
+export function resolvePriceId(plan: string | undefined, annual?: boolean): string | null {
+  const e = process.env;
+  if (plan === "pro")
+    return annual
+      ? (e.STRIPE_PRO_ANNUAL_PRICE_ID ?? null)
+      : (e.STRIPE_PRO_MONTHLY_PRICE_ID ?? null);
+  if (plan === "team")
+    return annual
+      ? (e.STRIPE_TEAM_ANNUAL_PRICE_ID ?? null)
+      : (e.STRIPE_TEAM_MONTHLY_PRICE_ID ?? null);
+  return null;
 }
