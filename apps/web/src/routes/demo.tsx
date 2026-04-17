@@ -37,9 +37,7 @@ function Demo() {
     setResults(PROVIDERS.map((name) => ({ name, status: "checking", latency: 0 })));
 
     // Dynamic import so the library only loads when the user visits /demo
-    const { BlockRate, serverReporter } = await import("blockrate");
-
-    const apiKey = import.meta.env.VITE_BLOCKRATE_PUBLIC_KEY;
+    const { BlockRate } = await import("blockrate");
 
     const br = new BlockRate({
       providers: [...PROVIDERS],
@@ -59,9 +57,10 @@ function Demo() {
         setDone(true);
         setRunning(false);
 
-        // Also report to the hosted dashboard when the key is configured
-        if (apiKey) {
-          serverReporter({ endpoint: "/api", apiKey })(result);
+        // Also report to our own forward route; it 204s when BLOCKRATE_API_KEY
+        // is unset so dev is a no-op.
+        if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+          navigator.sendBeacon("/api/block-rate", JSON.stringify(result));
         }
       },
     });

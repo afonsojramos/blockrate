@@ -1,50 +1,39 @@
-import { serverReporter } from "blockrate";
 import { useBlockRate } from "blockrate/react";
 
 /**
- * Dogfood: blockrate.app uses the blockrate library on itself, reporting
- * to its own /api/ingest. The whole point of the product is "your analytics
- * are blocked more than you think" — running the OSS library on the
- * marketing/landing surface puts our money where our mouth is.
+ * Dogfood: blockrate.app uses the blockrate library on itself. The whole
+ * point of the product is "your analytics are blocked more than you
+ * think" — running the OSS library on the marketing/landing surface puts
+ * our money where our mouth is.
  *
- * No-op when VITE_BLOCKRATE_PUBLIC_KEY is unset (dev mode). The underlying
- * useBlockRate hook is SSR-safe and runs once on mount.
+ * Follows the same-origin pattern we recommend to every customer. The
+ * browser posts to /api/block-rate on this origin; that route forwards
+ * to /api/ingest server-side with a key pulled from BLOCKRATE_API_KEY.
+ * The key never reaches the browser — see apps/web/src/routes/api/block-rate.ts.
  *
- * Why fetch + keepalive (via serverReporter), not sendBeacon: the Beacon
- * API can't set custom headers, so we can't pass `x-blockrate-key`. The
- * `serverReporter` helper that ships with blockrate handles exactly this
- * case via `fetch({ keepalive: true })`.
- *
- * The key bootstrap (see apps/web/README.md → "Dogfooding") happens
- * post-deploy via the dashboard or seed script — we can't bake a key
- * into source.
+ * When BLOCKRATE_API_KEY is unset the server route is a 204 no-op, so it
+ * is safe to keep this component mounted on every page regardless of
+ * environment.
  */
 export function Dogfood() {
-  const apiKey = import.meta.env.VITE_BLOCKRATE_PUBLIC_KEY;
-
-  useBlockRate(
-    apiKey
-      ? {
-          providers: ["optimizely", "posthog", "ga4", "gtm", "segment"],
-          service: "blockrate-app",
-          sampleRate: 0.25,
-          delay: 3000,
-          // Empty endpoint → relative "/ingest" URL → browser resolves it
-          // against the current origin. Avoids touching window during SSR.
-          reporter: serverReporter({
-            endpoint: "/api",
-            apiKey,
-          }),
-        }
-      : // No-op when key is missing — sampleRate 0 means the check itself
-        // never runs. dev mode is unaffected.
-        {
-          providers: [],
-          reporter: () => {},
-          sampleRate: 0,
-          delay: 0,
-        },
-  );
+  useBlockRate({
+    providers: ["optimizely", "posthog", "ga4", "gtm", "segment"],
+    service: "blockrate-app",
+    sampleRate: 0.25,
+    delay: 3000,
+    reporter: (result) => {
+      if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+        navigator.sendBeacon("/api/block-rate", JSON.stringify(result));
+        return;
+      }
+      fetch("/api/block-rate", {
+        method: "POST",
+        body: JSON.stringify(result),
+        headers: { "Content-Type": "application/json" },
+        keepalive: true,
+      }).catch(() => {});
+    },
+  });
 
   return null;
 }

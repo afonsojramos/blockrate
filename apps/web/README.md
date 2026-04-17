@@ -42,19 +42,19 @@ Open `http://localhost:3000`. Sign in via `/login` — the magic link URL prints
 
 **Do not set `NODE_ENV` in `.env`.** Vite reads `.env` at build time, and a hardcoded `NODE_ENV=development` causes `vite build` to bundle a dev-mode build. Mode is determined by the script you run (`bun run dev` vs `bun run start`, the latter sets `NODE_ENV=production`).
 
-| Variable                    | Required  | Default                           | Notes                                                         |
-| --------------------------- | --------- | --------------------------------- | ------------------------------------------------------------- |
-| `DATABASE_URL`              | no        | `pglite://./.local/blockrate.db`  | Either `pglite://...` (dev) or `postgres://...` (prod)        |
-| `BETTER_AUTH_SECRET`        | **yes**   | —                                 | ≥32 chars; `openssl rand -base64 32`                          |
-| `BETTER_AUTH_URL`           | no        | `http://localhost:3000`           | Set to `https://blockrate.app` in prod                        |
-| `CRON_SECRET`               | prod only | —                                 | ≥32 chars; bearer for `/api/internal/retention`               |
-| `RESEND_API_KEY`            | prod only | —                                 | sendMagicLink falls back to console.log when unset (dev only) |
-| `EMAIL_FROM`                | no        | `blockrate <magic@blockrate.app>` | From address for transactional email                          |
-| `GOOGLE_CLIENT_ID`          | optional  | —                                 | Enables Google OAuth button when set with secret              |
-| `GOOGLE_CLIENT_SECRET`      | optional  | —                                 |                                                               |
-| `GITHUB_CLIENT_ID`          | optional  | —                                 | Enables GitHub OAuth button when set with secret              |
-| `GITHUB_CLIENT_SECRET`      | optional  | —                                 | Required scope: `user:email`                                  |
-| `VITE_BLOCKRATE_PUBLIC_KEY` | optional  | —                                 | Dogfood key — exposed to the browser. No-op when unset        |
+| Variable               | Required  | Default                           | Notes                                                         |
+| ---------------------- | --------- | --------------------------------- | ------------------------------------------------------------- |
+| `DATABASE_URL`         | no        | `pglite://./.local/blockrate.db`  | Either `pglite://...` (dev) or `postgres://...` (prod)        |
+| `BETTER_AUTH_SECRET`   | **yes**   | —                                 | ≥32 chars; `openssl rand -base64 32`                          |
+| `BETTER_AUTH_URL`      | no        | `http://localhost:3000`           | Set to `https://blockrate.app` in prod                        |
+| `CRON_SECRET`          | prod only | —                                 | ≥32 chars; bearer for `/api/internal/retention`               |
+| `RESEND_API_KEY`       | prod only | —                                 | sendMagicLink falls back to console.log when unset (dev only) |
+| `EMAIL_FROM`           | no        | `blockrate <magic@blockrate.app>` | From address for transactional email                          |
+| `GOOGLE_CLIENT_ID`     | optional  | —                                 | Enables Google OAuth button when set with secret              |
+| `GOOGLE_CLIENT_SECRET` | optional  | —                                 |                                                               |
+| `GITHUB_CLIENT_ID`     | optional  | —                                 | Enables GitHub OAuth button when set with secret              |
+| `GITHUB_CLIENT_SECRET` | optional  | —                                 | Required scope: `user:email`                                  |
+| `BLOCKRATE_API_KEY`    | optional  | —                                 | Dogfood key — server-only. When unset `/api/block-rate` 204s  |
 
 ## Retention sweep (Phase 4)
 
@@ -139,17 +139,17 @@ Setup:
 
 ## Dogfooding (Phase 5)
 
-`components/dogfood.tsx` adds `useBlockRate` from the OSS `blockrate` library to the root layout, reporting to **its own** `/api/ingest`. The blockrate.app marketing surface measures itself the same way customers measure theirs — putting our money where our mouth is for a "your analytics are blocked more than you think" product.
+`components/dogfood.tsx` adds `useBlockRate` from the OSS `blockrate` library to the root layout. The browser posts to the same-origin `/api/block-rate` route (`src/routes/api/block-rate.ts`), which uses `createWebHandler({ forward })` to forward upstream to `/api/ingest` on the same instance — exactly the first-party pattern we recommend to every customer. The blockrate.app marketing surface measures itself the same way customers measure theirs, putting our money where our mouth is for a "your analytics are blocked more than you think" product.
 
 Setup post-deploy:
 
 1. Sign up on the deployed blockrate.app with an internal admin email
 2. Visit `/app/keys`, create a new key named "blockrate-app" with service "blockrate-app"
 3. **Copy the plaintext** (it's shown only once)
-4. Set `VITE_BLOCKRATE_PUBLIC_KEY=<plaintext>` as a Railway env var on the web service
-5. Trigger a redeploy so Vite picks up the new client-side env
+4. Set `BLOCKRATE_API_KEY=<plaintext>` as a Railway env var on the web service — **server-side only**; do not prefix it with `VITE_`
+5. Trigger a redeploy so the forward route picks up the new env var
 
-When the var is unset (dev or pre-bootstrap), `useBlockRate` is configured with `sampleRate: 0` and an empty providers list — a complete no-op.
+When the var is unset (dev or pre-bootstrap), the `/api/block-rate` route returns 204 without forwarding — the client can keep posting, nothing lands upstream. Safe default for local dev.
 
 ## Railway deploy (Phase 5)
 
@@ -175,7 +175,7 @@ The `nixpacks.toml` shipped with the TanStack Start scaffold + the `start` scrip
 4. **Cron service** (separate Railway service, same project):
    - Schedule: `0 3 * * *`
    - Command: `curl -fsS -X POST -H "Authorization: Bearer $CRON_SECRET" https://blockrate.app/api/internal/retention`
-5. **Bootstrap dogfood key**: see "Dogfooding" above. Then add `VITE_BLOCKRATE_PUBLIC_KEY` to the web service vars and redeploy.
+5. **Bootstrap dogfood key**: see "Dogfooding" above. Then add `BLOCKRATE_API_KEY` to the web service vars and redeploy.
 6. **Smoke tests** post-deploy:
    ```bash
    curl -fsS https://blockrate.app/api/health                     # → "ok"

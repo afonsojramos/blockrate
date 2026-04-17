@@ -23,6 +23,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DocsApiRouteImport } from './routes/docs/api'
 import { Route as ApiIngestRouteImport } from './routes/api/ingest'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as ApiBlockRateRouteImport } from './routes/api/block-rate'
 import { Route as AuthedAppIndexRouteImport } from './routes/_authed/app/index'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
 import { Route as ApiStripePortalRouteImport } from './routes/api/stripe/portal'
@@ -101,6 +102,11 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
   path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiBlockRateRoute = ApiBlockRateRouteImport.update({
+  id: '/api/block-rate',
+  path: '/api/block-rate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthedAppIndexRoute = AuthedAppIndexRouteImport.update({
   id: '/app/',
   path: '/app/',
@@ -153,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/privacy-snippet': typeof PrivacySnippetRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/api/block-rate': typeof ApiBlockRateRoute
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
   '/docs/api': typeof DocsApiRoute
@@ -176,6 +183,7 @@ export interface FileRoutesByTo {
   '/privacy-snippet': typeof PrivacySnippetRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/api/block-rate': typeof ApiBlockRateRoute
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
   '/docs/api': typeof DocsApiRoute
@@ -201,6 +209,7 @@ export interface FileRoutesById {
   '/privacy-snippet': typeof PrivacySnippetRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/api/block-rate': typeof ApiBlockRateRoute
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
   '/docs/api': typeof DocsApiRoute
@@ -226,6 +235,7 @@ export interface FileRouteTypes {
     | '/privacy-snippet'
     | '/signup'
     | '/terms'
+    | '/api/block-rate'
     | '/api/health'
     | '/api/ingest'
     | '/docs/api'
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
     | '/privacy-snippet'
     | '/signup'
     | '/terms'
+    | '/api/block-rate'
     | '/api/health'
     | '/api/ingest'
     | '/docs/api'
@@ -273,6 +284,7 @@ export interface FileRouteTypes {
     | '/privacy-snippet'
     | '/signup'
     | '/terms'
+    | '/api/block-rate'
     | '/api/health'
     | '/api/ingest'
     | '/docs/api'
@@ -298,6 +310,7 @@ export interface RootRouteChildren {
   PrivacySnippetRoute: typeof PrivacySnippetRoute
   SignupRoute: typeof SignupRoute
   TermsRoute: typeof TermsRoute
+  ApiBlockRateRoute: typeof ApiBlockRateRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiIngestRoute: typeof ApiIngestRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -407,6 +420,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/block-rate': {
+      id: '/api/block-rate'
+      path: '/api/block-rate'
+      fullPath: '/api/block-rate'
+      preLoaderRoute: typeof ApiBlockRateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authed/app/': {
       id: '/_authed/app/'
       path: '/app'
@@ -503,6 +523,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacySnippetRoute: PrivacySnippetRoute,
   SignupRoute: SignupRoute,
   TermsRoute: TermsRoute,
+  ApiBlockRateRoute: ApiBlockRateRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiIngestRoute: ApiIngestRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
