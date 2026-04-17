@@ -95,7 +95,7 @@ Integration is a single-line server route: [`createBlockRateHandler({ forward: {
 | `v0.10.0` | 5     | OAuth + Resend + dogfooding + production smoke |
 | `v0.11.0` | 6     | Documentation polish (this)                    |
 
-The hosted service code is feature-complete; production deployment is gated on OAuth client provisioning + a Railway project. See [`docs/plans/`](docs/plans/) for the full build plans.
+The hosted service code is feature-complete; production deployment is gated on OAuth client provisioning + a Railway project.
 
 ## Contributing
 

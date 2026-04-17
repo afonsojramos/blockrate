@@ -2,7 +2,7 @@
 
 The hosted dashboard at [blockrate.app](https://blockrate.app). TanStack Start + Better Auth (magic link) + Drizzle/Postgres + Tailwind v4 + Base UI via shadcn.
 
-> **This is Phase 1 of 6**. Auth works end-to-end (magic link only), the dashboard is a placeholder. Phase 2 builds the real ingest endpoint and key management; Phase 3 builds the real dashboard. See [`../../docs/plans/2026-04-08-feat-blockrate-app-web-scaffold-plan.md`](../../docs/plans/2026-04-08-feat-blockrate-app-web-scaffold-plan.md).
+> **This is Phase 1 of 6**. Auth works end-to-end (magic link only), the dashboard is a placeholder. Phase 2 builds the real ingest endpoint and key management; Phase 3 builds the real dashboard.
 
 ## Prerequisites
 
