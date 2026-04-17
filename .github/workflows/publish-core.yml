@@ -24,13 +24,13 @@ jobs:
     # if you did not scope the trusted publisher to an environment.
     # environment: release
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.3.11"
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
@@ -63,7 +63,7 @@ jobs:
       # Node is only needed for `npm publish`; Bun handled everything up
       # to this point. setup-node also writes an .npmrc pointed at the
       # public registry, which npm publish needs to pick the right endpoint.
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
