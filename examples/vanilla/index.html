@@ -8,6 +8,15 @@
     <h1>block-rate</h1>
     <p>Open devtools to see the result.</p>
     <pre id="out">Running...</pre>
+    <!--
+      DEMO ONLY. This page writes the result to the DOM for inspection and
+      never posts it anywhere. For a real integration, the reporter must
+      POST to a first-party route on your own origin (for example
+      /api/block-rate), and that route must forward upstream server-side
+      with your API key. See `server.ts` in this directory for a minimal
+      Bun server that does exactly that, and the full rationale at
+      https://github.com/afonsojramos/blockrate/tree/main/packages/core#why-the-reporter-endpoint-must-be-first-party
+    -->
     <script type="module">
       import { BlockRate } from "../../packages/core/src/index.ts";
 
