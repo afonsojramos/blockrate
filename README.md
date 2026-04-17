@@ -27,6 +27,7 @@ blockrate/
 │   ├── design.md             v0 design charter (tokens, voice, polish principles)
 │   └── plans/                phased build plans
 └── examples/                 minimal integration snippets per framework
+    ├── nextjs, tanstack-start, sveltekit, nuxt, solidstart, vanilla
 ```
 
 ## Quick start (OSS library)
@@ -41,11 +42,22 @@ import { BlockRate } from "blockrate";
 new BlockRate({
   providers: ["optimizely", "posthog", "ga4"],
   reporter: (result) => {
-    navigator.sendBeacon("/api/blockrate", JSON.stringify(result));
+    navigator.sendBeacon("/api/block-rate", JSON.stringify(result));
   },
   sampleRate: 0.1,
 }).check();
 ```
+
+```ts
+// app/api/block-rate/route.ts
+import { createBlockRateHandler } from "blockrate/next";
+
+export const POST = createBlockRateHandler({
+  forward: { apiKey: process.env.BLOCKRATE_API_KEY! },
+});
+```
+
+The client always posts to your own origin; the server route forwards to blockrate.app (or your self-hosted instance) with your API key attached server-side. This is load-bearing — read [Why the reporter endpoint must be first-party](packages/core/README.md#why-the-reporter-endpoint-must-be-first-party) in the core README.
 
 Full library docs (built-in providers, custom providers, framework adapters, query examples) in [`packages/core/README.md`](packages/core/README.md).
 
@@ -68,6 +80,8 @@ If you don't want to operate any infrastructure, [blockrate.app](https://blockra
 - Sign-in with magic link, Google, or GitHub
 - Per-account API keys, cascading delete, CSV export
 - Same OSS library — you can move on or off any time
+
+Integration is a single-line server route: [`createBlockRateHandler({ forward: { apiKey: … } })`](packages/core/README.md#why-the-reporter-endpoint-must-be-first-party). Your `br_` key stays on the server; the browser only sees your first-party `/api/block-rate` path.
 
 ## Project status
 

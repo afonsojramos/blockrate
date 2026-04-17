@@ -9,7 +9,7 @@ bunx blockrate-server
 # [blockrate-server] dashboard: http://localhost:4318/dashboard
 ```
 
-That's the entire setup. Open the printed dashboard URL, paste the API key, point your client at the `/ingest` endpoint with the same key in `x-blockrate-key`. Done.
+That's the entire setup. Open the printed dashboard URL, paste the API key, then wire your client through a same-origin route on your app that forwards to this server with the key attached server-side. See [Why the reporter endpoint must be first-party](../core/README.md#why-the-reporter-endpoint-must-be-first-party) in the core README — self-hosters are first-party by definition, but the rationale (ad blocker list hits, credential leakage) still applies to any browser-to-analytics traffic.
 
 ## What it gives you
 
