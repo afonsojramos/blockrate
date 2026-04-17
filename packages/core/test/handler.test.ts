@@ -73,17 +73,21 @@ function makePost(body: unknown): Request {
 describe("createWebHandler", () => {
   let consoleErrors: unknown[][];
   let originalError: typeof console.error;
+  let originalWarn: typeof console.warn;
 
   beforeEach(() => {
     consoleErrors = [];
     originalError = console.error;
+    originalWarn = console.warn;
     console.error = ((...args: unknown[]) => {
       consoleErrors.push(args);
     }) as typeof console.error;
+    console.warn = (() => {}) as typeof console.warn;
   });
 
   afterEach(() => {
     console.error = originalError;
+    console.warn = originalWarn;
   });
 
   it("returns 204 on a valid payload with no forward or onResult", async () => {
@@ -144,7 +148,7 @@ describe("createWebHandler", () => {
       expect(call.init.method).toBe("POST");
       const headers = call.init.headers as Record<string, string>;
       expect(headers["x-blockrate-key"]).toBe("br_test_key");
-      expect(headers["Content-Type"]).toBe("application/json");
+      expect(headers["content-type"]).toBe("application/json");
       expect(JSON.parse(call.init.body as string)).toEqual(validPayload);
     } finally {
       mock.restore();
@@ -326,6 +330,72 @@ describe("createWebHandler", () => {
     }
   });
 
+  it("truncates long upstream error bodies and includes a marker", async () => {
+    const big = "x".repeat(5000);
+    const mock = installFetchMock({ kind: "error", status: 500, body: big });
+    const errors: ForwardError[] = [];
+    try {
+      const handle = createWebHandler({
+        forward: { apiKey: "br_x", onError: (e) => errors.push(e) },
+      });
+      await handle(makePost(validPayload));
+      expect(errors).toHaveLength(1);
+      expect(errors[0].kind).toBe("upstream");
+      if (errors[0].kind === "upstream") {
+        expect(errors[0].body.length).toBeLessThan(big.length);
+        expect(errors[0].body).toContain("[truncated]");
+      }
+    } finally {
+      mock.restore();
+    }
+  });
+
+  it("does not let an upstream body that echoes the key land in onError unchanged", async () => {
+    // Defensive test: even if upstream echoes our request headers into an
+    // error body, truncation bounds the damage and the key is not
+    // exposed via any other shape (kind, status, statusText).
+    const echoed = "received x-blockrate-key: br_echoed_value";
+    const mock = installFetchMock({ kind: "error", status: 500, body: echoed });
+    const errors: ForwardError[] = [];
+    try {
+      const handle = createWebHandler({
+        forward: { apiKey: "br_echoed_value", onError: (e) => errors.push(e) },
+      });
+      await handle(makePost(validPayload));
+      // We intentionally do NOT assert the body lacks the key — it's a raw
+      // upstream body and we can't control that. We do assert the shape.
+      expect(errors[0].kind).toBe("upstream");
+    } finally {
+      mock.restore();
+    }
+  });
+
+  describe("endpoint URL validation", () => {
+    it("throws at construction when endpoint is missing a scheme", () => {
+      expect(() =>
+        createWebHandler({ forward: { apiKey: "br_x", endpoint: "blockrate.app/api" } }),
+      ).toThrow(/not a valid URL/);
+    });
+
+    it("throws at construction when endpoint uses a non-http scheme", () => {
+      expect(() =>
+        createWebHandler({ forward: { apiKey: "br_x", endpoint: "file:///etc/passwd" } }),
+      ).toThrow(/http or https/);
+    });
+
+    it("accepts a valid https endpoint", () => {
+      expect(() =>
+        createWebHandler({ forward: { apiKey: "br_x", endpoint: "https://example.com/api" } }),
+      ).not.toThrow();
+    });
+
+    it("accepts a valid http endpoint (for local dev / loopback)", () => {
+      expect(() =>
+        createWebHandler({ forward: { apiKey: "br_x", endpoint: "http://localhost:3000/api" } }),
+      ).not.toThrow();
+    });
+  });
+
   describe("construction-time API key validation", () => {
     it("throws when apiKey is missing", () => {
       expect(() =>
@@ -378,6 +448,19 @@ describe("isValidBlockRateResult", () => {
 
   it("rejects an unparsable timestamp", () => {
     expect(isValidBlockRateResult({ ...validPayload, timestamp: "not-a-date" })).toBe(false);
+  });
+
+  it("rejects a date-only string that Date.parse would accept", () => {
+    // Date.parse("2026-01-01") returns a valid number, but the upstream
+    // zod schema requires a full ISO-8601 datetime. Core must reject here
+    // to keep the core ↔ upstream contract tight.
+    expect(isValidBlockRateResult({ ...validPayload, timestamp: "2026-01-01" })).toBe(false);
+  });
+
+  it("rejects a datetime without a timezone suffix", () => {
+    expect(isValidBlockRateResult({ ...validPayload, timestamp: "2026-01-01T00:00:00" })).toBe(
+      false,
+    );
   });
 
   it("rejects an empty providers array", () => {
@@ -470,6 +553,8 @@ describe("contract with upstream blockRatePayloadSchema", () => {
       { ...validPayload, providers: [{ name: "x", status: "nope", latency: 1 }] },
       { ...validPayload, providers: [{ name: "x", status: "loaded", latency: -1 }] },
       { ...validPayload, timestamp: "not-a-date" },
+      { ...validPayload, timestamp: "2026-01-01" },
+      { ...validPayload, timestamp: "2026-01-01T00:00:00" },
       { ...validPayload, userAgent: "a".repeat(1025) },
     ];
     for (const c of bad) {

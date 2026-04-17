@@ -1,8 +1,6 @@
 import { createWebHandler } from "../handler";
 import type { BlockRateHandlerOptions } from "../handler";
 
-export type { BlockRateHandlerOptions, ForwardError, ForwardOptions } from "../handler";
-
 /**
  * Next.js App Router POST handler.
  *

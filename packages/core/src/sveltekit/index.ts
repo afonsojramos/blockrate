@@ -2,6 +2,7 @@ import { createWebHandler } from "../handler";
 import type { BlockRateHandlerOptions } from "../handler";
 
 export type { BlockRateHandlerOptions, ForwardError, ForwardOptions } from "../handler";
+export { isValidBlockRateResult } from "../validate";
 
 /**
  * SvelteKit `+server.ts` POST handler.

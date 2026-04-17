@@ -18,6 +18,14 @@ const DEFAULT_FORWARD_TIMEOUT_MS = 5000;
  */
 const API_KEY_PATTERN = /^br_[A-Za-z0-9_-]+$/;
 
+/**
+ * Upstream error bodies are untrusted strings from the ingest server (or
+ * whatever proxy/WAF sits between us and it). Cap them so a 4 MB HTML
+ * error page does not flood logs, and so a misbehaving proxy that echoes
+ * request payloads back cannot smuggle arbitrary data into customer logs.
+ */
+const MAX_FORWARD_ERROR_BODY = 2048;
+
 /** Shape passed to `forward.onError`. Never contains the API key. */
 export type ForwardError =
   | { kind: "network"; cause: unknown }
@@ -89,28 +97,52 @@ function assertValidApiKey(apiKey: unknown): asserts apiKey is string {
   }
 }
 
-async function forwardToUpstream(payload: BlockRateResult, options: ForwardOptions): Promise<void> {
-  const base = (options.endpoint ?? DEFAULT_FORWARD_ENDPOINT).replace(/\/$/, "");
-  const url = `${base}/ingest`;
+function resolveForwardUrl(endpoint: string | undefined): string {
+  const base = endpoint ?? DEFAULT_FORWARD_ENDPOINT;
+  let parsed: URL;
+  try {
+    parsed = new URL(base);
+  } catch {
+    throw new Error(
+      `createBlockRateHandler: forward.endpoint "${base}" is not a valid URL. ` +
+        "Pass an absolute URL including scheme (e.g. https://blockrate.app/api).",
+    );
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new Error(
+      `createBlockRateHandler: forward.endpoint must use http or https (got "${parsed.protocol}").`,
+    );
+  }
+  return `${base.replace(/\/$/, "")}/ingest`;
+}
+
+async function forwardToUpstream(
+  url: string,
+  payload: BlockRateResult,
+  options: ForwardOptions,
+): Promise<void> {
   const timeoutMs = options.timeoutMs ?? DEFAULT_FORWARD_TIMEOUT_MS;
 
-  const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
-  const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const res = await fetch(url, {
       method: "POST",
       body: JSON.stringify(payload),
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
         "x-blockrate-key": options.apiKey,
       },
-      signal: controller?.signal ?? undefined,
+      signal: controller.signal,
     });
     if (!res.ok) {
       let body = "";
       try {
         body = await res.text();
+        if (body.length > MAX_FORWARD_ERROR_BODY) {
+          body = body.slice(0, MAX_FORWARD_ERROR_BODY) + "…[truncated]";
+        }
       } catch {
         // ignore body read failures; we still report status
       }
@@ -124,7 +156,7 @@ async function forwardToUpstream(payload: BlockRateResult, options: ForwardOptio
   } catch (cause) {
     reportError(options, { kind: "network", cause });
   } finally {
-    if (timer) clearTimeout(timer);
+    clearTimeout(timer);
   }
 }
 
@@ -132,8 +164,16 @@ function reportError(options: ForwardOptions, err: ForwardError): void {
   if (!options.onError) return;
   try {
     options.onError(err);
-  } catch {
-    // Customer-supplied logger should never affect the response.
+  } catch (loggerErr) {
+    // Customer-supplied logger should never affect the response. But a
+    // throwing onError is a bug on their side worth surfacing — log once
+    // per throw so it lands in platform logs without hiding the real
+    // upstream error that triggered this path.
+    try {
+      console.warn("[blockrate] forward.onError threw:", loggerErr);
+    } catch {
+      // ignore logger-of-logger failures
+    }
   }
 }
 
@@ -150,10 +190,15 @@ function reportError(options: ForwardOptions, err: ForwardError): void {
  *     outcome. Failure of one does not prevent the other.
  *   - Missing/malformed `forward.apiKey` → throws at construction time.
  */
-export function createWebHandler(options: BlockRateHandlerOptions = {}) {
+export function createWebHandler(
+  options: BlockRateHandlerOptions = {},
+): (request: Request) => Promise<Response> {
+  let forwardUrl: string | null = null;
   if (options.forward) {
     assertValidApiKey(options.forward.apiKey);
+    forwardUrl = resolveForwardUrl(options.forward.endpoint);
   }
+  const forward = options.forward;
 
   return async function handle(request: Request): Promise<Response> {
     let body: unknown;
@@ -166,9 +211,9 @@ export function createWebHandler(options: BlockRateHandlerOptions = {}) {
       return new Response("invalid payload", { status: 400 });
     }
 
-    const tasks: Promise<unknown>[] = [];
-    if (options.forward) {
-      tasks.push(forwardToUpstream(body, options.forward));
+    const tasks: Promise<void>[] = [];
+    if (forward && forwardUrl) {
+      tasks.push(forwardToUpstream(forwardUrl, body, forward));
     }
     if (options.onResult) {
       const onResult = options.onResult;
