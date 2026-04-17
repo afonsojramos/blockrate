@@ -1,0 +1,76 @@
+name: Publish blockrate (core)
+
+# Trigger on tags of the form blockrate-v<semver>, e.g. blockrate-v0.2.0.
+# The tag prefix keeps the core and server packages versioned independently.
+on:
+  push:
+    tags:
+      - "blockrate-v*"
+
+# `id-token: write` lets the runner mint the OIDC token npm uses for trusted
+# publishing. `contents: read` is the default for checkout. `attestations:
+# write` is needed to write the provenance attestation via Sigstore.
+permissions:
+  id-token: write
+  contents: read
+  attestations: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # The environment name below must match the environment you configure on
+    # the trusted publisher entry at https://npmjs.com/packages/blockrate
+    # (Settings → Publishing access → GitHub Actions). Leave it commented
+    # if you did not scope the trusted publisher to an environment.
+    # environment: release
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.11"
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+
+      - run: bun install --frozen-lockfile
+
+      # Verify the tag matches packages/core/package.json. `GITHUB_REF_NAME`
+      # is injected by Actions as the tag string; git's refname rules keep
+      # shell metacharacters out of it, so the bash parameter expansion
+      # below is safe. Never inline `${{ github.ref_name }}` into a run
+      # block — this is the recommended pattern to avoid script injection.
+      - name: Verify tag matches package.json
+        run: |
+          tag_version="${GITHUB_REF_NAME#blockrate-v}"
+          pkg_version=$(node -p "require('./packages/core/package.json').version")
+          if [ "$tag_version" != "$pkg_version" ]; then
+            echo "::error::Tag version $tag_version does not match packages/core/package.json version $pkg_version"
+            exit 1
+          fi
+          echo "Publishing blockrate@$pkg_version"
+
+      - name: Build
+        working-directory: packages/core
+        run: bun run build
+
+      - name: Run tests
+        working-directory: packages/core
+        run: bun test
+
+      # Node is only needed for `npm publish`; Bun handled everything up
+      # to this point. setup-node also writes an .npmrc pointed at the
+      # public registry, which npm publish needs to pick the right endpoint.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Publish to npm (trusted publisher + provenance)
+        working-directory: packages/core
+        # `--provenance` produces a Sigstore attestation. `--access public`
+        # is required on first publish for unscoped packages; harmless on
+        # subsequent publishes.
+        run: npm publish --provenance --access public

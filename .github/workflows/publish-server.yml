@@ -1,0 +1,58 @@
+name: Publish blockrate-server
+
+# Trigger on tags of the form blockrate-server-v<semver>, e.g.
+# blockrate-server-v0.2.0. Keeps core and server versioned independently.
+on:
+  push:
+    tags:
+      - "blockrate-server-v*"
+
+permissions:
+  id-token: write
+  contents: read
+  attestations: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # environment: release  # uncomment if the trusted publisher is scoped
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.11"
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+
+      - run: bun install --frozen-lockfile
+
+      # Verify the tag matches packages/server/package.json. `GITHUB_REF_NAME`
+      # is injected by Actions as the tag string; using the env var instead of
+      # inlining `${{ github.ref_name }}` keeps run blocks safe from any
+      # would-be script-injection payload in a tag name.
+      - name: Verify tag matches package.json
+        run: |
+          tag_version="${GITHUB_REF_NAME#blockrate-server-v}"
+          pkg_version=$(node -p "require('./packages/server/package.json').version")
+          if [ "$tag_version" != "$pkg_version" ]; then
+            echo "::error::Tag version $tag_version does not match packages/server/package.json version $pkg_version"
+            exit 1
+          fi
+          echo "Publishing blockrate-server@$pkg_version"
+
+      - name: Run tests
+        working-directory: packages/server
+        run: bun test
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Publish to npm (trusted publisher + provenance)
+        working-directory: packages/server
+        run: npm publish --provenance --access public
