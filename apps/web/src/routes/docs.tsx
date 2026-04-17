@@ -610,7 +610,13 @@ export const POST = (event: { request: Request }) => handle(event.request);`}</C
             </h3>
             <p className="text-sm text-muted-foreground">
               Import the library directly in a script tag and post to your same-origin route. Any
-              HTTP server can host the matching forward route — below is a minimal Bun server.
+              HTTP server can host the matching forward route — below is a minimal Bun server. The
+              same shape works for any Vite SPA paired with its own backend (Hono, Express, Fastify,
+              Bun, Workers): <code className="font-mono text-xs">createWebHandler</code> returns a
+              Web-standard{" "}
+              <code className="font-mono text-xs">(Request) =&gt; Promise&lt;Response&gt;</code>, so
+              you just need to route POST <code className="font-mono text-xs">/api/block-rate</code>{" "}
+              to it.
             </p>
             <CodeBlock filename="index.html">{`<script type="module">
   import { BlockRate } from "https://esm.sh/blockrate";

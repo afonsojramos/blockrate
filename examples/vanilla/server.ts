@@ -3,6 +3,12 @@
 // this origin, and this handler forwards them upstream with the API key
 // (from the server env — never shipped to the browser).
 //
+// This same shape covers any "SPA + your own backend" deployment —
+// Vite + React/Vue/Solid with Hono / Express / Fastify / Bun / Workers.
+// `createWebHandler` returns a Web-standard `(Request) => Promise<Response>`
+// function; whichever backend you use just needs to route POST
+// /api/block-rate to it.
+//
 // Run with: BLOCKRATE_API_KEY=br_... bun run server.ts
 //
 // The reporter endpoint must be first-party — see
