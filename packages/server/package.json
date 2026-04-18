@@ -2,7 +2,14 @@
   "name": "blockrate-server",
   "version": "1.0.0",
   "description": "Self-hostable ingestion server and dashboard for block-rate.",
+  "homepage": "https://blockrate.app",
+  "bugs": "https://github.com/afonsojramos/blockrate/issues",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/afonsojramos/blockrate.git",
+    "directory": "packages/server"
+  },
   "bin": {
     "blockrate-server": "./src/cli.ts"
   },

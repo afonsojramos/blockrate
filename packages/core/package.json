@@ -8,7 +8,14 @@
     "blockrate",
     "privacy"
   ],
+  "homepage": "https://blockrate.app",
+  "bugs": "https://github.com/afonsojramos/blockrate/issues",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/afonsojramos/blockrate.git",
+    "directory": "packages/core"
+  },
   "files": [
     "dist",
     "src"
