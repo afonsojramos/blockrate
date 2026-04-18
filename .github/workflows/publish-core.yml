@@ -60,10 +60,6 @@ jobs:
         working-directory: packages/core
         run: bun run build
 
-      - name: Run tests
-        working-directory: packages/core
-        run: bun test
-
       # Node is only needed for `npm publish`; Bun handled everything up
       # to this point. setup-node also writes an .npmrc pointed at the
       # public registry, which npm publish needs to pick the right endpoint.

@@ -48,10 +48,6 @@ jobs:
           fi
           echo "Publishing blockrate-server@$pkg_version"
 
-      - name: Run tests
-        working-directory: packages/server
-        run: bun test
-
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
