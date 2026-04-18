@@ -1,11 +1,15 @@
 name: Publish blockrate-server
 
-# Trigger on tags of the form blockrate-server-v<semver>, e.g.
-# blockrate-server-v0.2.0. Keeps core and server versioned independently.
+# Trigger on tags of the form v<semver>, e.g. v0.2.0. Both blockrate and
+# blockrate-server are released in lockstep from the same tag — this
+# workflow and the sibling publish workflow both listen for v* and run
+# in parallel. package.json on the two packages MUST stay in sync; the
+# tag-version check below fails the publish if this package is out of
+# sync with the tag.
 on:
   push:
     tags:
-      - "blockrate-server-v*"
+      - "v*"
 
 permissions:
   id-token: write
@@ -36,7 +40,7 @@ jobs:
       # would-be script-injection payload in a tag name.
       - name: Verify tag matches package.json
         run: |
-          tag_version="${GITHUB_REF_NAME#blockrate-server-v}"
+          tag_version="${GITHUB_REF_NAME#v}"
           pkg_version=$(node -p "require('./packages/server/package.json').version")
           if [ "$tag_version" != "$pkg_version" ]; then
             echo "::error::Tag version $tag_version does not match packages/server/package.json version $pkg_version"
