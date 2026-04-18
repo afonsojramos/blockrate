@@ -1,6 +1,6 @@
 {
   "name": "blockrate-server",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Self-hostable ingestion server and dashboard for block-rate.",
   "license": "MIT",
   "bin": {

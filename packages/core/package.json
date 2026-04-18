@@ -1,6 +1,6 @@
 {
   "name": "blockrate",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Measure the actual block rate of third-party services caused by ad blockers and privacy tools.",
   "keywords": [
     "ad-block",
