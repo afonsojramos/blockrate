@@ -83,20 +83,6 @@ If you don't want to operate any infrastructure, [blockrate.app](https://blockra
 
 Integration is a single-line server route: [`createBlockRateHandler({ forward: { apiKey: … } })`](packages/core/README.md#why-the-reporter-endpoint-must-be-first-party). Your `br_` key stays on the server; the browser only sees your first-party `/api/block-rate` path.
 
-## Project status
-
-| Tag       | Phase | What                                           |
-| --------- | ----- | ---------------------------------------------- |
-| `v0.5.0`  | 0     | `packages/server` SQLite ↔ Postgres parity     |
-| `v0.6.0`  | 1     | `apps/web` scaffold + auth + design charter    |
-| `v0.7.0`  | 2     | ingest endpoint + key management + quota       |
-| `v0.8.0`  | 3     | dashboard with stats query + settings          |
-| `v0.9.0`  | 4     | retention sweep + cron                         |
-| `v0.10.0` | 5     | OAuth + Resend + dogfooding + production smoke |
-| `v0.11.0` | 6     | Documentation polish (this)                    |
-
-The hosted service code is feature-complete; production deployment is gated on OAuth client provisioning + a Railway project.
-
 ## Contributing
 
 PRs welcome — most things in this repo are intentionally small enough to read in one sitting. The OSS library is under 200 lines of TypeScript; the self-hosted server is ~1200 lines. The web app is the largest surface (~3500 lines).

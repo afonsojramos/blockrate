@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "build": "bun run --filter '*' build",
+    "bump": "bun scripts/bump.ts",
     "test": "bun test",
     "lint": "oxlint .",
     "fmt": "oxfmt .",
