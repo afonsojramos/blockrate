@@ -6,9 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OAuthButtons } from "@/components/oauth-buttons";
+import { seo } from "@/lib/seo";
 import { getAuthProviders } from "@/server/auth-providers";
 
 export const Route = createFileRoute("/login")({
+  head: () =>
+    seo({
+      title: "sign in — blockrate",
+      description: "Sign in to your blockrate account via magic link, Google, or GitHub.",
+      path: "/login",
+      noindex: true,
+    }),
   loader: () => getAuthProviders(),
   component: Login,
 });

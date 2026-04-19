@@ -6,9 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OAuthButtons } from "@/components/oauth-buttons";
+import { seo } from "@/lib/seo";
 import { getAuthProviders } from "@/server/auth-providers";
 
 export const Route = createFileRoute("/signup")({
+  head: () =>
+    seo({
+      title: "sign up — blockrate",
+      description: "Create a blockrate account. Free tier, magic-link sign-in, no credit card.",
+      path: "/signup",
+      noindex: true,
+    }),
   loader: () => getAuthProviders(),
   component: Signup,
 });

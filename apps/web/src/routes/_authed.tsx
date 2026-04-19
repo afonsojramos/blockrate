@@ -23,6 +23,9 @@ const fetchSession = createServerFn({ method: "GET" }).handler(async () => {
  * DB outage cannot reveal a gated page.
  */
 export const Route = createFileRoute("/_authed")({
+  head: () => ({
+    meta: [{ title: "app — blockrate" }, { name: "robots", content: "noindex,nofollow" }],
+  }),
   beforeLoad: async () => {
     const session = await fetchSession();
     if (!session) throw redirect({ to: "/login" });
