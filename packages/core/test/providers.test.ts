@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, beforeEach } from "bun:test";
-import { optimizely, posthog, ga4 } from "../src/providers";
+import { optimizely, posthog, ga4, hotjar } from "../src/providers";
 
 const originalFetch = globalThis.fetch;
 
@@ -55,5 +55,27 @@ describe("providers", () => {
     }) as any;
     await ga4.detect();
     expect(captured).toBe("https://www.google-analytics.com/g/collect");
+  });
+
+  it("hotjar: loaded when window.hj present", async () => {
+    (globalThis as any).window.hj = () => {};
+    expect(await hotjar.detect()).toBe("loaded");
+  });
+
+  it("hotjar: blocked when probe fails and no globals", async () => {
+    globalThis.fetch = (async () => {
+      throw new TypeError();
+    }) as any;
+    expect(await hotjar.detect()).toBe("blocked");
+  });
+
+  it("hotjar: probes script.hotjar.com when no globals", async () => {
+    let captured = "";
+    globalThis.fetch = (async (url: string | URL) => {
+      captured = url.toString();
+      return new Response(null);
+    }) as any;
+    await hotjar.detect();
+    expect(captured).toBe("https://script.hotjar.com/");
   });
 });
