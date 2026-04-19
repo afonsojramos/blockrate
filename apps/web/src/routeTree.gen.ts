@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as PrivacySnippetRouteImport } from './routes/privacy-snippet'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
@@ -38,9 +40,19 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacySnippetRoute = PrivacySnippetRouteImport.update({
@@ -157,7 +169,9 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/privacy-snippet': typeof PrivacySnippetRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/api/block-rate': typeof ApiBlockRateRoute
   '/api/health': typeof ApiHealthRoute
@@ -181,7 +195,9 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/privacy-snippet': typeof PrivacySnippetRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/api/block-rate': typeof ApiBlockRateRoute
   '/api/health': typeof ApiHealthRoute
@@ -207,7 +223,9 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/privacy-snippet': typeof PrivacySnippetRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/api/block-rate': typeof ApiBlockRateRoute
   '/api/health': typeof ApiHealthRoute
@@ -233,7 +251,9 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/privacy-snippet'
+    | '/robots.txt'
     | '/signup'
+    | '/sitemap.xml'
     | '/terms'
     | '/api/block-rate'
     | '/api/health'
@@ -257,7 +277,9 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/privacy-snippet'
+    | '/robots.txt'
     | '/signup'
+    | '/sitemap.xml'
     | '/terms'
     | '/api/block-rate'
     | '/api/health'
@@ -282,7 +304,9 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/privacy-snippet'
+    | '/robots.txt'
     | '/signup'
+    | '/sitemap.xml'
     | '/terms'
     | '/api/block-rate'
     | '/api/health'
@@ -308,7 +332,9 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   PrivacySnippetRoute: typeof PrivacySnippetRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
   SignupRoute: typeof SignupRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   ApiBlockRateRoute: typeof ApiBlockRateRoute
   ApiHealthRoute: typeof ApiHealthRoute
@@ -329,11 +355,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy-snippet': {
@@ -521,7 +561,9 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   PrivacySnippetRoute: PrivacySnippetRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
   SignupRoute: SignupRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   ApiBlockRateRoute: ApiBlockRateRoute,
   ApiHealthRoute: ApiHealthRoute,
