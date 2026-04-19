@@ -10,6 +10,12 @@ import { z } from "zod";
  * Optional for boot (validated lazily by their consumers):
  *   - DATABASE_URL         defaults to PGlite
  *   - BETTER_AUTH_URL      defaults to localhost:3000
+ *   - VITE_SITE_URL        public canonical origin (e.g. https://blockrate.app);
+ *                          read by seo() and sitemap/robots routes. When unset,
+ *                          canonical and og:url are omitted rather than emitted
+ *                          as localhost. VITE_-prefixed so client-side head()
+ *                          calls can read the same value during navigation
+ *                          without a server round-trip.
  *   - CRON_SECRET          retention endpoint refuses requests if unset (503)
  *   - RESEND_API_KEY       sendMagicLink falls back to console.log if unset
  *                          (only allowed in NODE_ENV !== production)
@@ -24,6 +30,7 @@ const schema = z.object({
   DATABASE_URL: z.string().default("pglite://./.local/blockrate.db"),
   BETTER_AUTH_SECRET: z.string().min(32, "≥32 chars; generate via `openssl rand -base64 32`"),
   BETTER_AUTH_URL: z.string().url().default("http://localhost:3000"),
+  VITE_SITE_URL: z.string().url().optional(),
 
   // Phase 4
   CRON_SECRET: z.string().min(32).optional(),
