@@ -17,13 +17,13 @@ export const Route = createFileRoute("/docs")({
 const PROVIDERS = [
   ["optimizely", "window.optimizely + cdn.optimizely.com probe"],
   ["posthog", "window.posthog + us.i.posthog.com / eu.i.posthog.com probe"],
-  ["ga4", "window.gtag / dataLayer + google-analytics.com probe"],
+  ["ga4", "window.gtag / dataLayer + google-analytics.com/g/collect probe"],
   ["gtm", "window.google_tag_manager + googletagmanager.com probe"],
   ["segment", "window.analytics + cdn.segment.com probe"],
-  ["hotjar", "window.hj + static.hotjar.com probe"],
+  ["hotjar", "window.hj + script.hotjar.com probe"],
   ["amplitude", "window.amplitude + cdn.amplitude.com probe"],
   ["mixpanel", "window.mixpanel + cdn.mxpnl.com probe"],
-  ["meta-pixel", "window.fbq + connect.facebook.net probe"],
+  ["meta-pixel", "window.fbq + facebook.com/tr image probe"],
   ["intercom", "window.Intercom + widget.intercom.io probe"],
 ];
 
@@ -336,7 +336,11 @@ export const POST = createBlockRateHandler({
             <code className="font-mono text-xs">fetch</code> HEAD probe to its CDN with{" "}
             <code className="font-mono text-xs">mode: "cors"</code>. If the ad blocker redirects to
             a local response (which lacks CORS headers), the fetch throws — correctly detected as
-            blocked.
+            blocked. One exception: <code className="font-mono text-xs">meta-pixel</code> uses an{" "}
+            <code className="font-mono text-xs">&lt;img&gt;</code> probe instead, since Meta
+            deliberately serves no CORS headers on their pixel endpoint — the pixel is an image
+            regardless, and ad blockers block the hostname, so{" "}
+            <code className="font-mono text-xs">onerror</code> is the accurate blocked signal.
           </p>
 
           <div className="overflow-hidden rounded-md border border-border">
