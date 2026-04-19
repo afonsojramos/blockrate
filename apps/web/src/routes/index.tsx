@@ -1,9 +1,31 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CodeBlock } from "@/components/code-block";
 import { HeroChart } from "@/components/hero-chart";
+import { seo } from "@/lib/seo";
 import { getHeroStats } from "@/server/hero-stats";
 
 export const Route = createFileRoute("/")({
+  head: () =>
+    seo({
+      title: "blockrate — know what your ad blockers are hiding",
+      description:
+        "A tiny client library that measures per-provider block rate of the third-party tools your app depends on. Drop it in, see exactly how much PostHog, Optimizely, GA4 and friends are costing you.",
+      path: "/",
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        name: "blockrate",
+        description:
+          "Per-provider block rate measurement for third-party analytics tools. OSS library and hosted dashboard.",
+        applicationCategory: "DeveloperApplication",
+        operatingSystem: "Any",
+        offers: {
+          "@type": "Offer",
+          price: "0",
+          priceCurrency: "EUR",
+        },
+      },
+    }),
   loader: () => getHeroStats(),
   component: Landing,
 });
