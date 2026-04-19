@@ -1,6 +1,6 @@
 {
   "name": "blockrate-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Self-hostable ingestion server and dashboard for block-rate.",
   "homepage": "https://blockrate.app",
   "bugs": "https://github.com/afonsojramos/blockrate/issues",
