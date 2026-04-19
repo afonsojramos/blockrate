@@ -46,4 +46,14 @@ describe("providers", () => {
     }) as any;
     expect(await ga4.detect()).toBe("blocked");
   });
+
+  it("ga4: probes the google-analytics collect endpoint when no globals", async () => {
+    let captured = "";
+    globalThis.fetch = (async (url: string | URL) => {
+      captured = url.toString();
+      return new Response(null);
+    }) as any;
+    await ga4.detect();
+    expect(captured).toBe("https://www.google-analytics.com/g/collect");
+  });
 });

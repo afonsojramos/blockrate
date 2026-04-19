@@ -10,6 +10,10 @@ export const ga4: Provider = {
         return "loaded";
       }
     }
-    return probe("https://www.google-analytics.com/analytics.js");
+    // /g/collect is the GA4 data-collection endpoint. Returns 204 + CORS.
+    // Distinct from googletagmanager.com (gtm probe) — EasyList often
+    // blocks google-analytics.com without blocking googletagmanager.com,
+    // so probing here gives the accurate "can GA4 send data?" signal.
+    return probe("https://www.google-analytics.com/g/collect");
   },
 };
