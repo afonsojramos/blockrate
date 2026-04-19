@@ -1,6 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { seo } from "@/lib/seo";
 
-export const Route = createFileRoute("/dpa")({ component: Dpa });
+export const Route = createFileRoute("/dpa")({
+  head: () =>
+    seo({
+      title: "data processing agreement — blockrate",
+      description:
+        "GDPR Article 28 Data Processing Agreement for blockrate.app customers. Covers subject matter, processor obligations, sub-processors, breach notification, and international transfers via SCCs.",
+      path: "/dpa",
+    }),
+  component: Dpa,
+});
 
 function Dpa() {
   return (

@@ -1,6 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { seo } from "@/lib/seo";
 
-export const Route = createFileRoute("/privacy")({ component: Privacy });
+export const Route = createFileRoute("/privacy")({
+  head: () =>
+    seo({
+      title: "privacy policy — blockrate",
+      description:
+        "What blockrate.app collects (page path, browser family, provider status) and what it deliberately doesn't (no IPs, no cookies, no fingerprints). Retention windows, your rights, and subprocessors.",
+      path: "/privacy",
+    }),
+  component: Privacy,
+});
 
 function Privacy() {
   return (

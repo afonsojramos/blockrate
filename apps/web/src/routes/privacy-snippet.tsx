@@ -1,6 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { seo } from "@/lib/seo";
 
-export const Route = createFileRoute("/privacy-snippet")({ component: PrivacySnippet });
+export const Route = createFileRoute("/privacy-snippet")({
+  head: () =>
+    seo({
+      title: "privacy policy snippet — blockrate",
+      description:
+        "Copy-paste privacy policy snippet for your own site, explaining what blockrate collects and why it operates without a cookie banner. Adjust retention to match your plan.",
+      path: "/privacy-snippet",
+    }),
+  component: PrivacySnippet,
+});
 
 const SNIPPET = `We use blockrate (blockrate.app) to measure whether the third-party
 analytics tools our site depends on are reachable from your browser.

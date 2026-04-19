@@ -1,6 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { seo } from "@/lib/seo";
 
-export const Route = createFileRoute("/terms")({ component: Terms });
+export const Route = createFileRoute("/terms")({
+  head: () =>
+    seo({
+      title: "terms of service — blockrate",
+      description:
+        "Terms governing use of blockrate.app: accounts, acceptable use, rate limits, pricing, data ownership, termination, warranty disclaimer, and limitation of liability.",
+      path: "/terms",
+    }),
+  component: Terms,
+});
 
 function Terms() {
   return (
