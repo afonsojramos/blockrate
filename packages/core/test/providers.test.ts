@@ -1,10 +1,16 @@
 import { describe, it, expect, afterEach, beforeEach } from "bun:test";
-import { optimizely, posthog, ga4, hotjar } from "../src/providers";
+import { optimizely, posthog, ga4, hotjar, metaPixel } from "../src/providers";
 
 const originalFetch = globalThis.fetch;
+const originalImage = (globalThis as any).Image;
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
+  if (originalImage === undefined) {
+    delete (globalThis as any).Image;
+  } else {
+    (globalThis as any).Image = originalImage;
+  }
   delete (globalThis as any).window;
 });
 
@@ -77,5 +83,49 @@ describe("providers", () => {
     }) as any;
     await hotjar.detect();
     expect(captured).toBe("https://script.hotjar.com/");
+  });
+
+  it("meta-pixel: loaded when window.fbq present", async () => {
+    (globalThis as any).window.fbq = () => {};
+    expect(await metaPixel.detect()).toBe("loaded");
+  });
+
+  it("meta-pixel: loaded when image probe fires onload", async () => {
+    class Img {
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      set src(_url: string) {
+        queueMicrotask(() => this.onload?.());
+      }
+    }
+    (globalThis as any).Image = Img;
+    expect(await metaPixel.detect()).toBe("loaded");
+  });
+
+  it("meta-pixel: blocked when image probe fires onerror", async () => {
+    class Img {
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      set src(_url: string) {
+        queueMicrotask(() => this.onerror?.());
+      }
+    }
+    (globalThis as any).Image = Img;
+    expect(await metaPixel.detect()).toBe("blocked");
+  });
+
+  it("meta-pixel: probes the facebook.com/tr pixel endpoint when no globals", async () => {
+    let captured = "";
+    class Img {
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      set src(url: string) {
+        captured = url;
+        queueMicrotask(() => this.onload?.());
+      }
+    }
+    (globalThis as any).Image = Img;
+    await metaPixel.detect();
+    expect(captured).toBe("https://www.facebook.com/tr?id=0&ev=PageView");
   });
 });
