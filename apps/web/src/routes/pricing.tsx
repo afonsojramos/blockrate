@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { seo } from "@/lib/seo";
 
 const getPricingSession = createServerFn({ method: "GET" }).handler(async () => {
   const { getRequest } = await import("@tanstack/react-start/server");
@@ -23,6 +24,13 @@ const getPricingSession = createServerFn({ method: "GET" }).handler(async () => 
 });
 
 export const Route = createFileRoute("/pricing")({
+  head: () =>
+    seo({
+      title: "pricing — blockrate",
+      description:
+        "Free forever tier with 100k events/month. Paid plans unlock longer retention and higher quotas. No hidden fees, no per-seat upcharges, no contact-sales walls.",
+      path: "/pricing",
+    }),
   loader: () => getPricingSession(),
   component: Pricing,
 });

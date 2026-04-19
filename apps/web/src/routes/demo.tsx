@@ -2,8 +2,18 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { seo } from "@/lib/seo";
 
-export const Route = createFileRoute("/demo")({ component: Demo });
+export const Route = createFileRoute("/demo")({
+  head: () =>
+    seo({
+      title: "live demo — blockrate",
+      description:
+        "Check which of 10 common third-party analytics tools (PostHog, Optimizely, GA4, Segment, Hotjar, Amplitude, Mixpanel, and more) are blocked by your browser right now.",
+      path: "/demo",
+    }),
+  component: Demo,
+});
 
 interface ProviderResult {
   name: string;

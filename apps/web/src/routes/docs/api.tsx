@@ -1,7 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CodeBlock as Code } from "@/components/code-block";
+import { seo } from "@/lib/seo";
 
-export const Route = createFileRoute("/docs/api")({ component: ApiDocs });
+export const Route = createFileRoute("/docs/api")({
+  head: () =>
+    seo({
+      title: "hosted api reference — blockrate",
+      description:
+        "HTTP ingest API reference for blockrate.app. Headers, request body schema, response codes, rate limits, quotas, and privacy guarantees.",
+      path: "/docs/api",
+    }),
+  component: ApiDocs,
+});
 
 function ApiDocs() {
   return (

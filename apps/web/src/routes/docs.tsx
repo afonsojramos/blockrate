@@ -1,8 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CodeBlock } from "@/components/code-block";
 import { DocsToc } from "@/components/docs-toc";
+import { seo } from "@/lib/seo";
 
-export const Route = createFileRoute("/docs")({ component: Docs });
+export const Route = createFileRoute("/docs")({
+  head: () =>
+    seo({
+      title: "docs — blockrate",
+      description:
+        "A 1.6 KB client library that measures per-provider block rate. Quick start, options, built-in providers, and framework guides for Next.js, SvelteKit, Nuxt, SolidStart, TanStack Start, and vanilla JS.",
+      path: "/docs",
+    }),
+  component: Docs,
+});
 
 const PROVIDERS = [
   ["optimizely", "window.optimizely + cdn.optimizely.com probe"],
