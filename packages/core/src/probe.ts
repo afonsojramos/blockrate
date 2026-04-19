@@ -34,3 +34,43 @@ export async function probe(url: string, timeoutMs = 3000): Promise<ProviderStat
     if (timer) clearTimeout(timer);
   }
 }
+
+/**
+ * Image-based probe for providers whose CDN does not serve CORS headers
+ * (Meta Pixel is the canonical case — `connect.facebook.net` and
+ * `facebook.com/tr` deliberately refuse CORS on HEAD). Image tags don't
+ * require CORS: any cross-origin image can `<img src>` load as long as
+ * the network request succeeds. Ad blockers block the network request
+ * itself (by hostname/path), so `onerror` is the correct signal.
+ *
+ * Guards against server-side import: `Image` is browser-only. If this
+ * runs in Node/Bun/SSR (no DOM), we return "blocked" rather than throw.
+ */
+export function probeImage(url: string, timeoutMs = 3000): Promise<ProviderStatus> {
+  return new Promise((resolve) => {
+    if (typeof Image === "undefined") {
+      resolve("blocked");
+      return;
+    }
+    const img = new Image();
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      resolve("blocked");
+    }, timeoutMs);
+    img.onload = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve("loaded");
+    };
+    img.onerror = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve("blocked");
+    };
+    img.src = url;
+  });
+}

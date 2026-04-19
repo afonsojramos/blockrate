@@ -8,7 +8,7 @@ export type { ServerReporterOptions } from "./reporter";
 export { createWebHandler } from "./handler";
 export type { BlockRateHandlerOptions, ForwardError, ForwardOptions } from "./handler";
 export { isValidBlockRateResult } from "./validate";
-export { probe } from "./probe";
+export { probe, probeImage } from "./probe";
 export {
   builtInProviders,
   optimizely,
