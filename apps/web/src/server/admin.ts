@@ -63,17 +63,25 @@ export const getAdminOverview = createServerFn({ method: "GET" }).handler(
       planRows,
       topAccountRows,
     ] = await Promise.all([
+      // Dates must be pre-stringified before inlining into a raw sql`` template:
+      // postgres.js's parameter binder runs Buffer.byteLength on the value and
+      // throws ERR_INVALID_ARG_TYPE on a raw Date. The typed `gte` helper below
+      // is fine because it carries encoder info; only the raw-template inlines
+      // need .toISOString().
       db
         .select({
-          last24h: sql<number>`COUNT(*) FILTER (WHERE ${events.timestamp} >= ${since24h})`.mapWith(
-            Number,
-          ),
-          last7d: sql<number>`COUNT(*) FILTER (WHERE ${events.timestamp} >= ${since7d})`.mapWith(
-            Number,
-          ),
-          last30d: sql<number>`COUNT(*) FILTER (WHERE ${events.timestamp} >= ${since30d})`.mapWith(
-            Number,
-          ),
+          last24h:
+            sql<number>`COUNT(*) FILTER (WHERE ${events.timestamp} >= ${since24h.toISOString()})`.mapWith(
+              Number,
+            ),
+          last7d:
+            sql<number>`COUNT(*) FILTER (WHERE ${events.timestamp} >= ${since7d.toISOString()})`.mapWith(
+              Number,
+            ),
+          last30d:
+            sql<number>`COUNT(*) FILTER (WHERE ${events.timestamp} >= ${since30d.toISOString()})`.mapWith(
+              Number,
+            ),
         })
         .from(events)
         .where(gte(events.timestamp, since30d)),
