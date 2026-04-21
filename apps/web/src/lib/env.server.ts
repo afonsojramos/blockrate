@@ -24,6 +24,8 @@ import { z } from "zod";
  *   - GITHUB_CLIENT_ID     OAuth provider hidden from /login if unset
  *   - GITHUB_CLIENT_SECRET
  *   - EMAIL_FROM           defaults to "blockrate <magic@blockrate.app>"
+ *   - ADMIN_EMAILS         comma-separated email allowlist for /app/admin;
+ *                          unset = no admins (fail-closed)
  */
 const schema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
@@ -52,6 +54,10 @@ const schema = z.object({
   STRIPE_PRO_ANNUAL_PRICE_ID: z.string().optional(),
   STRIPE_TEAM_MONTHLY_PRICE_ID: z.string().optional(),
   STRIPE_TEAM_ANNUAL_PRICE_ID: z.string().optional(),
+
+  // Operator admin route — comma-separated email allowlist for /app/admin.
+  // When unset, every user is a non-admin (fail-closed).
+  ADMIN_EMAILS: z.string().optional(),
 });
 
 function loadEnv() {
@@ -75,4 +81,5 @@ export const capabilities = {
   github: Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET),
   resend: Boolean(env.RESEND_API_KEY),
   stripe: Boolean(env.STRIPE_SECRET_KEY),
+  admin: Boolean(env.ADMIN_EMAILS),
 };
