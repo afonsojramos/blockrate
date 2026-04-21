@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "@tanstack/react-router";
+import { Link, useNavigate, useLocation, useRouter } from "@tanstack/react-router";
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import { Menu, X } from "lucide-react";
 import {
@@ -15,6 +15,7 @@ import type { NavSession } from "@/server/session";
 
 export function Nav({ session }: { session: NavSession }) {
   const navigate = useNavigate();
+  const router = useRouter();
   const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -26,6 +27,7 @@ export function Nav({ session }: { session: NavSession }) {
 
   async function onSignOut() {
     await authClient.signOut();
+    await router.invalidate();
     navigate({ to: "/" });
   }
 

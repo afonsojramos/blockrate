@@ -129,6 +129,7 @@ function Settings() {
       await deleteAccount();
       const { authClient } = await import("@/lib/auth-client");
       await authClient.signOut().catch(() => {});
+      await router.invalidate();
       navigate({ to: "/" });
     } catch (err) {
       alert(err instanceof Error ? err.message : "Delete failed");
