@@ -121,6 +121,7 @@ export const events = pgTable(
     byAccountService: index("idx_events_account_service").on(t.accountId, t.service, t.timestamp),
     byApiKey: index("idx_events_api_key").on(t.apiKeyId),
     byProvider: index("idx_events_provider").on(t.provider),
+    byTimestamp: index("idx_events_timestamp").on(t.timestamp),
   }),
 );
 
