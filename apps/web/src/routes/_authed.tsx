@@ -7,10 +7,18 @@ import { AppSubnav } from "@/components/app-subnav";
  * Session check via createServerFn so the import of auth never leaks into
  * the client bundle. From the client, this becomes an HTTP call to the
  * server; from the server (SSR), it's an in-process call.
+ *
+ * Returns a boolean, not the session object: Better Auth's session payload
+ * contains Date instances (expiresAt/createdAt/updatedAt) that crash the
+ * TanStack Start RPC deserializer on the client, which surfaces as a
+ * spurious errorComponent → redirect-to-/login for logged-in users. Child
+ * routes that need user fields should call their own server fn that
+ * projects to primitives (see server/session.ts).
  */
 const fetchSession = createServerFn({ method: "GET" }).handler(async () => {
   const { auth } = await import("@/lib/auth.server");
-  return auth.api.getSession({ headers: getRequest().headers });
+  const session = await auth.api.getSession({ headers: getRequest().headers });
+  return Boolean(session);
 });
 
 /**
@@ -27,9 +35,8 @@ export const Route = createFileRoute("/_authed")({
     meta: [{ title: "app — blockrate" }, { name: "robots", content: "noindex,nofollow" }],
   }),
   beforeLoad: async () => {
-    const session = await fetchSession();
-    if (!session) throw redirect({ to: "/login" });
-    return { user: session.user };
+    const loggedIn = await fetchSession();
+    if (!loggedIn) throw redirect({ to: "/login" });
   },
   errorComponent: () => <Navigate to="/login" />,
   component: () => (
