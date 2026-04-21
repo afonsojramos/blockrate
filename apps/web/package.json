@@ -7,12 +7,12 @@
     "#/*": "./src/*"
   },
   "scripts": {
-    "dev": "vite dev --port 3000",
+    "dev": "bun --bun vite dev --port 3000",
     "build": "NODE_ENV=production vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "start": "NODE_ENV=production bun run db:migrate && NODE_ENV=production node --env-file-if-exists=.env .output/server/index.mjs",
+    "start": "NODE_ENV=production bun run db:migrate && NODE_ENV=production bun .output/server/index.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "bun run src/lib/db/migrate.ts",
     "auth:generate": "bunx @better-auth/cli@latest generate --output src/lib/db/auth-schema.ts -y"
@@ -34,11 +34,10 @@
     "blockrate-server": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "drizzle-orm": "^0.36.0",
+    "drizzle-orm": "^0.41.0",
     "lucide-react": "^1.7.0",
     "next-themes": "^0.4.6",
     "nitro": "npm:nitro-nightly@latest",
-    "postgres": "^3.4.9",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "recharts": "3.8.0",
