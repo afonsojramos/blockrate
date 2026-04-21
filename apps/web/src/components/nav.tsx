@@ -110,6 +110,14 @@ export function Nav({ session }: { session: NavSession }) {
                 <DropdownMenuItem onClick={() => navigate({ to: "/app/settings" })}>
                   Settings
                 </DropdownMenuItem>
+                {session.isAdmin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate({ to: "/app/admin" })}>
+                      Admin
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onSignOut}>Sign out</DropdownMenuItem>
               </DropdownMenuContent>
