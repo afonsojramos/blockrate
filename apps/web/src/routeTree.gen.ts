@@ -34,6 +34,7 @@ import { Route as ApiInternalRetentionRouteImport } from './routes/api/internal/
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
 import { Route as AuthedAppSettingsRouteImport } from './routes/_authed/app/settings'
 import { Route as AuthedAppKeysRouteImport } from './routes/_authed/app/keys'
+import { Route as AuthedAppAdminIndexRouteImport } from './routes/_authed/app/admin/index'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -159,6 +160,11 @@ const AuthedAppKeysRoute = AuthedAppKeysRouteImport.update({
   path: '/app/keys',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedAppAdminIndexRoute = AuthedAppAdminIndexRouteImport.update({
+  id: '/app/admin/',
+  path: '/app/admin/',
+  getParentRoute: () => AuthedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -185,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/api/stripe/portal': typeof ApiStripePortalRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/app/': typeof AuthedAppIndexRoute
+  '/app/admin/': typeof AuthedAppAdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -211,6 +218,7 @@ export interface FileRoutesByTo {
   '/api/stripe/portal': typeof ApiStripePortalRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/app': typeof AuthedAppIndexRoute
+  '/app/admin': typeof AuthedAppAdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -239,6 +247,7 @@ export interface FileRoutesById {
   '/api/stripe/portal': typeof ApiStripePortalRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/_authed/app/': typeof AuthedAppIndexRoute
+  '/_authed/app/admin/': typeof AuthedAppAdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -267,6 +276,7 @@ export interface FileRouteTypes {
     | '/api/stripe/portal'
     | '/api/stripe/webhook'
     | '/app/'
+    | '/app/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -293,6 +303,7 @@ export interface FileRouteTypes {
     | '/api/stripe/portal'
     | '/api/stripe/webhook'
     | '/app'
+    | '/app/admin'
   id:
     | '__root__'
     | '/'
@@ -320,6 +331,7 @@ export interface FileRouteTypes {
     | '/api/stripe/portal'
     | '/api/stripe/webhook'
     | '/_authed/app/'
+    | '/_authed/app/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -523,6 +535,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAppKeysRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/app/admin/': {
+      id: '/_authed/app/admin/'
+      path: '/app/admin'
+      fullPath: '/app/admin/'
+      preLoaderRoute: typeof AuthedAppAdminIndexRouteImport
+      parentRoute: typeof AuthedRoute
+    }
   }
 }
 
@@ -530,12 +549,14 @@ interface AuthedRouteChildren {
   AuthedAppKeysRoute: typeof AuthedAppKeysRoute
   AuthedAppSettingsRoute: typeof AuthedAppSettingsRoute
   AuthedAppIndexRoute: typeof AuthedAppIndexRoute
+  AuthedAppAdminIndexRoute: typeof AuthedAppAdminIndexRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedAppKeysRoute: AuthedAppKeysRoute,
   AuthedAppSettingsRoute: AuthedAppSettingsRoute,
   AuthedAppIndexRoute: AuthedAppIndexRoute,
+  AuthedAppAdminIndexRoute: AuthedAppAdminIndexRoute,
 }
 
 const AuthedRouteWithChildren =
