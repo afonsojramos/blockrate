@@ -201,18 +201,13 @@ function Settings() {
             </Link>
           )}
           {data.plan.name !== "team" && (
-            <button
-              type="button"
-              onClick={onUpgrade}
-              disabled={upgrading}
-              className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-[background-color,transform] duration-150 ease-out active:scale-[0.96] disabled:opacity-50"
-            >
+            <Button onClick={onUpgrade} aria-disabled={upgrading}>
               {upgrading
                 ? "Upgrading..."
                 : data.plan.name === "free"
                   ? "Upgrade"
                   : "Upgrade to Team"}
-            </button>
+            </Button>
           )}
         </CardContent>
       </Card>
