@@ -1,17 +1,17 @@
 /**
- * Drizzle client. Switches between postgres-js (production) and PGlite
+ * Drizzle client. Switches between bun:sql (production) and PGlite
  * (local dev) based on the DATABASE_URL scheme:
  *
  *   pglite://./.local/blockrate.db   → PGlite, persistent file
  *   pglite://                        → PGlite, in-memory
- *   postgres://...                   → postgres-js with Railway-safe options
+ *   postgres://...                   → bun:sql with Railway-safe options
  *
  * Production deploys (Railway) MUST use a postgres:// URL. PGlite is dev-only.
  */
 
-import { drizzle as drizzlePostgres, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import { drizzle as drizzleBunSql, type BunSQLDatabase } from "drizzle-orm/bun-sql";
 import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
-import postgres from "postgres";
+import { SQL } from "bun";
 import { PGlite } from "@electric-sql/pglite";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
@@ -44,20 +44,21 @@ function createDb() {
     return drizzlePglite(client, { schema });
   }
 
-  const client = postgres(env.DATABASE_URL, {
-    ssl: env.NODE_ENV === "production" ? "require" : false,
+  const client = new SQL({
+    url: env.DATABASE_URL,
+    tls: env.NODE_ENV === "production",
     prepare: false, // PgBouncer / Railway pooler safe
     max: 5, // Phase 1 single instance; Phase 5 multi-instance: 8 per instance
     idle_timeout: 20,
-    connect_timeout: 10,
+    connection_timeout: 10,
   });
-  return drizzlePostgres(client, { schema });
+  return drizzleBunSql(client, { schema });
 }
 
 /**
- * The PGlite and postgres-js Drizzle adapters return slightly different
+ * The PGlite and bun:sql Drizzle adapters return slightly different
  * concrete types, but they share the same query API surface. Cast to the
- * postgres-js shape (the production target) so TypeScript exposes the full
+ * bun:sql shape (the production target) so TypeScript exposes the full
  * `.returning()` overloads on every consumer.
  */
-export const db = createDb() as unknown as PostgresJsDatabase<typeof schema>;
+export const db = createDb() as unknown as BunSQLDatabase<typeof schema>;

@@ -2,7 +2,7 @@
  * Migration runner. Runs at app start (via the `start` script in package.json)
  * and from `bun run db:migrate` for local dev.
  *
- * - postgres-js URL → uses drizzle-orm/postgres-js/migrator
+ * - postgres:// URL → uses drizzle-orm/bun-sql/migrator
  * - pglite:// URL   → uses drizzle-orm/pglite/migrator
  *
  * Drizzle's per-driver migrators handle the __drizzle_migrations bookkeeping
@@ -10,11 +10,11 @@
  * every start.
  */
 
-import { migrate as migratePostgres } from "drizzle-orm/postgres-js/migrator";
+import { migrate as migrateBunSql } from "drizzle-orm/bun-sql/migrator";
 import { migrate as migratePglite } from "drizzle-orm/pglite/migrator";
-import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js";
+import { drizzle as drizzleBunSql } from "drizzle-orm/bun-sql";
 import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
-import postgres from "postgres";
+import { SQL } from "bun";
 import { PGlite } from "@electric-sql/pglite";
 import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -40,14 +40,15 @@ async function main() {
     return;
   }
 
-  const client = postgres(url, {
-    ssl: env.NODE_ENV === "production" ? "require" : false,
+  const client = new SQL({
+    url,
+    tls: env.NODE_ENV === "production",
     prepare: false,
     max: 1,
   });
-  const db = drizzlePostgres(client);
-  await migratePostgres(db, { migrationsFolder: MIGRATIONS_FOLDER });
-  await client.end({ timeout: 2 });
+  const db = drizzleBunSql(client);
+  await migrateBunSql(db, { migrationsFolder: MIGRATIONS_FOLDER });
+  await client.close();
   console.log("[migrate] postgres migrations applied");
 }
 
