@@ -12,3 +12,4 @@ dist
 # Working docs — local only, not part of the shipped repo
 docs/brainstorms/
 docs/plans/
+todos/
