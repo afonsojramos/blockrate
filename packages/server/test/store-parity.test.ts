@@ -93,9 +93,15 @@ for (const [name, factory] of backends) {
       expect(optimizely.total).toBe(3);
       expect(optimizely.blocked).toBe(2);
       expect(optimizely.blockRate).toBeCloseTo(2 / 3);
+      // Latency averages over loaded events only — blocked events
+      // (latencies 12 and 8 above) are excluded so the metric reflects
+      // real probe timing rather than the 3000ms timeout constant. Of
+      // the optimizely rows, only the loaded one (latency 6) counts.
+      expect(optimizely.avgLatency).toBe(6);
       const posthog = stats.find((s) => s.provider === "posthog")!;
       expect(posthog.total).toBe(1);
       expect(posthog.blocked).toBe(0);
+      expect(posthog.avgLatency).toBe(5);
     });
 
     it("filters stats by service", async () => {
