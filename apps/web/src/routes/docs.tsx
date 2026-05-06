@@ -15,16 +15,16 @@ export const Route = createFileRoute("/docs")({
 });
 
 const PROVIDERS = [
-  ["optimizely", "window.optimizely + cdn.optimizely.com probe"],
-  ["posthog", "window.posthog + us.i.posthog.com / eu.i.posthog.com probe"],
-  ["ga4", "window.gtag / dataLayer + google-analytics.com/g/collect probe"],
+  ["optimizely", "non-array window.optimizely with .get() + cdn.optimizely.com probe"],
+  ["posthog", "posthog.__loaded === true + us.i.posthog.com / eu.i.posthog.com probe"],
+  ["ga4", "window.google_tag_data + google-analytics.com/g/collect probe"],
   ["gtm", "window.google_tag_manager + googletagmanager.com probe"],
-  ["segment", "window.analytics + cdn.segment.com probe"],
-  ["hotjar", "window.hj + script.hotjar.com probe"],
-  ["amplitude", "window.amplitude + cdn.amplitude.com probe"],
-  ["mixpanel", "window.mixpanel + cdn.mxpnl.com probe"],
-  ["meta-pixel", "window.fbq + facebook.com/tr image probe"],
-  ["intercom", "window.Intercom + widget.intercom.io probe"],
+  ["segment", "analytics.initialized === true + cdn.segment.com probe"],
+  ["hotjar", "script.hotjar.com probe (snippet stub indistinguishable)"],
+  ["amplitude", "cdn.amplitude.com probe (snippet stub varies across SDK majors)"],
+  ["mixpanel", "mixpanel.__loaded === true + cdn.mxpnl.com probe"],
+  ["meta-pixel", "facebook.com/tr image probe (fbq stub sets loaded=true itself)"],
+  ["intercom", "widget.intercom.io probe (snippet Intercom is callable stub)"],
 ];
 
 function Docs() {
