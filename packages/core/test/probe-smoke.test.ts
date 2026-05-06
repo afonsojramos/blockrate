@@ -29,7 +29,7 @@ type Strategy = "head" | "get-range";
 type Target = { name: string; url: string; strategy: Strategy };
 
 const TARGETS: Target[] = [
-  { name: "amplitude", url: "https://cdn.amplitude.com/libs/amplitude-8.js", strategy: "head" },
+  { name: "amplitude", url: "https://cdn.amplitude.com/libs/amplitude-9.js", strategy: "head" },
   { name: "ga4", url: "https://www.google-analytics.com/g/collect", strategy: "head" },
   { name: "gtm", url: "https://www.googletagmanager.com/gtag/js", strategy: "head" },
   { name: "hotjar", url: "https://script.hotjar.com/", strategy: "head" },
