@@ -185,21 +185,78 @@ describe("BlockRate", () => {
 
   it("handles detect() errors as blocked", async () => {
     let received: any = null;
-    const br = new BlockRate({
-      providers: [
-        {
-          name: "boom",
-          detect: async () => {
-            throw new Error("nope");
+    const origWarn = console.warn;
+    console.warn = () => {};
+    try {
+      const br = new BlockRate({
+        providers: [
+          {
+            name: "boom",
+            detect: async () => {
+              throw new Error("nope");
+            },
           },
+        ],
+        reporter: (r) => {
+          received = r;
         },
-      ],
-      reporter: (r) => {
-        received = r;
-      },
-      delay: 0,
-    });
-    await br.check();
+        delay: 0,
+      });
+      await br.check();
+    } finally {
+      console.warn = origWarn;
+    }
     expect(received.providers[0].status).toBe("blocked");
+  });
+
+  it("logs (does not silently swallow) when detect() throws", async () => {
+    const warnings: unknown[][] = [];
+    const origWarn = console.warn;
+    console.warn = (...args) => {
+      warnings.push(args);
+    };
+    try {
+      const br = new BlockRate({
+        providers: [
+          {
+            name: "boom",
+            detect: async () => {
+              throw new Error("kaboom");
+            },
+          },
+        ],
+        reporter: () => {},
+        delay: 0,
+      });
+      await br.check();
+    } finally {
+      console.warn = origWarn;
+    }
+    expect(warnings.length).toBe(1);
+    expect(String(warnings[0][0])).toContain("[blockrate]");
+    expect(String(warnings[0][0])).toContain("boom");
+  });
+
+  it("logs (does not silently swallow) when reporter throws", async () => {
+    const warnings: unknown[][] = [];
+    const origWarn = console.warn;
+    console.warn = (...args) => {
+      warnings.push(args);
+    };
+    try {
+      const br = new BlockRate({
+        providers: [{ name: "a", detect: async () => "loaded" }],
+        reporter: () => {
+          throw new Error("reporter exploded");
+        },
+        delay: 0,
+      });
+      await br.check();
+    } finally {
+      console.warn = origWarn;
+    }
+    expect(warnings.length).toBe(1);
+    expect(String(warnings[0][0])).toContain("[blockrate]");
+    expect(String(warnings[0][0])).toContain("reporter");
   });
 });

@@ -95,7 +95,7 @@ export const POST = createBlockRateHandler({
 
 ## Built-in providers
 
-`optimizely`, `posthog`, `ga4`, `gtm`, `segment`, `hotjar`, `amplitude`, `mixpanel`, `meta-pixel`, `intercom`. Each provider is checked first via a `window` global, then via a `HEAD` probe to its CDN.
+`optimizely`, `posthog`, `ga4`, `gtm`, `segment`, `hotjar`, `amplitude`, `mixpanel`, `meta-pixel`, `intercom`. Each provider is checked first via a **post-load global** (a property the real bundle sets, not the queueing stub the loader snippet creates), then via a probe to its CDN. Stub-only globals are ignored — the loader snippet runs even when the network request to the CDN is blocked, so checking for the stub would silently misclassify a blocked install as "loaded".
 
 ## Custom providers
 
@@ -288,10 +288,11 @@ Create a custom event `block_rate_check` and chart `unique sessions` segmented b
 
 ## How it works
 
-1. **Global check** — fast, synchronous-ish check for each provider's `window` global.
-2. **Probe fallback** — if no global, `fetch` a known CDN URL with `mode: "no-cors"`. A `TypeError` means blocked.
-3. **Dedup** — one check per session, tracked in `sessionStorage`.
-4. **Report** — your reporter is called once with all results.
+1. **Post-load global check** — fast, synchronous-ish. Each provider checks for a property that **only the real bundle sets**, never one the loader snippet creates (e.g. `posthog.__loaded`, `mixpanel.__loaded`, `analytics.initialized`, `google_tag_data`). Stub globals like `window.posthog`, `window.fbq`, or `window.amplitude` are deliberately ignored — they exist whether or not the CDN was reached.
+2. **CDN probe** — `fetch` the provider's CDN URL with `mode: "cors"` (so blockers' `nooptext` redirects, which strip CORS headers, surface as `TypeError` rather than opaque success). One retry on transient failure to tighten the signal.
+3. **Image-tag probe (Meta only)** — `connect.facebook.net` and `facebook.com/tr` deliberately serve no CORS headers, so we use an `<img>` and listen for `onerror` instead.
+4. **Dedup (opt-in)** — `sessionDedup: true` writes a flag to `sessionStorage` so the check runs once per session. Off by default to keep the library consent-free; enable it for accurate session-level rates.
+5. **Report** — your reporter is called once with all results.
 
 ## FAQ
 

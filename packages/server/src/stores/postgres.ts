@@ -141,7 +141,16 @@ export class PostgresStore implements BlockRateStore {
         blocked: sql<number>`SUM(CASE WHEN ${events.status} = 'blocked' THEN 1 ELSE 0 END)`.as(
           "blocked",
         ),
-        avgLatency: sql<number>`AVG(${events.latency})`.as("avg_latency"),
+        // Average over loaded events only — blocked events' latency is
+        // dominated by the 3000ms probe timeout constant, which would
+        // pull the average toward a meaningless number for any
+        // blocked-heavy provider. Matches the hosted dashboard
+        // (apps/web/src/server/stats.ts) so self-hosted and hosted
+        // surface the same metric.
+        avgLatency:
+          sql<number>`AVG(CASE WHEN ${events.status} = 'loaded' THEN ${events.latency} END)`.as(
+            "avg_latency",
+          ),
       })
       .from(events)
       .where(where)
