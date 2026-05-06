@@ -75,7 +75,19 @@ export class BlockRate {
     const providerResults = await Promise.all(
       this.providers.map(async (p): Promise<ProviderResult> => {
         const start = typeof performance !== "undefined" ? performance.now() : Date.now();
-        const status = await p.detect().catch((): "blocked" => "blocked");
+        // A throwing `detect()` is treated as "blocked" because that is the
+        // closest defensible classification — but a probe bug (or a custom
+        // provider crash) inflating the numerator silently is a debugging
+        // hole, so log the underlying error. Use console.warn so it lands
+        // in DevTools without escalating to the page's error pipeline.
+        const status = await p.detect().catch((err): "blocked" => {
+          try {
+            console.warn(`[blockrate] provider "${p.name}" detect() threw:`, err);
+          } catch {
+            // ignore environments where console.warn is itself broken
+          }
+          return "blocked";
+        });
         const end = typeof performance !== "undefined" ? performance.now() : Date.now();
         return { name: p.name, status, latency: Math.round(end - start) };
       }),
@@ -94,8 +106,16 @@ export class BlockRate {
 
     try {
       this.reporter(result);
-    } catch {
-      // Silently fail
+    } catch (err) {
+      // A throwing reporter means the entire measurement pipeline is dark
+      // — no events reach the dashboard, and the customer has no signal
+      // about why. Surface it via console.warn so the failure is visible
+      // in DevTools rather than swallowed silently.
+      try {
+        console.warn("[blockrate] reporter threw:", err);
+      } catch {
+        // ignore environments where console.warn is itself broken
+      }
     }
 
     return result;
