@@ -16,22 +16,14 @@ import type { ProviderStatus } from "./types";
  * though the real CDN was never reached. `cors` mode catches this because
  * the redirect target has no CORS headers → TypeError.
  *
- * Retries: the first attempt may legitimately fail on a transient network
- * blip (DNS, TCP RST, captive portal redirect during sign-in). We retry
- * once after a short backoff. Genuinely blocked URLs throw immediately
- * (the CORS-stripped redirect is fast), so the retry adds ~`backoffMs` to
- * the blocked path; reachable CDNs succeed on the first attempt and never
- * retry. Net: tighter signal, no meaningful latency cost in the common
- * case.
+ * Single attempt by design — earlier versions retried once on transient
+ * failure, but that pinned every blocked-event latency to the backoff
+ * constant, destroying the dashboard's ability to distinguish hostname-
+ * blocked (~5ms TypeError) from timeout-blocked (~3000ms abort). Honest
+ * latency is more valuable than a marginal-impact retry; in practice ad
+ * blocker rejections are deterministic, not transient.
  */
 export async function probe(url: string, timeoutMs = 3000): Promise<ProviderStatus> {
-  const first = await probeOnce(url, timeoutMs);
-  if (first === "loaded") return "loaded";
-  await new Promise((r) => setTimeout(r, 100));
-  return probeOnce(url, timeoutMs);
-}
-
-async function probeOnce(url: string, timeoutMs: number): Promise<ProviderStatus> {
   const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
   const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
   try {
