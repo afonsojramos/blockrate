@@ -14,7 +14,7 @@ afterEach(() => {
 });
 
 describe("probe", () => {
-  it("returns loaded on successful fetch (no retry)", async () => {
+  it("returns loaded on successful fetch", async () => {
     let calls = 0;
     globalThis.fetch = (async () => {
       calls++;
@@ -24,25 +24,17 @@ describe("probe", () => {
     expect(calls).toBe(1);
   });
 
-  it("returns blocked when both attempts fail", async () => {
+  it("returns blocked on fetch error", async () => {
     let calls = 0;
     globalThis.fetch = (async () => {
       calls++;
       throw new TypeError("blocked");
     }) as any;
     expect(await probe("https://example.com")).toBe("blocked");
-    expect(calls).toBe(2);
-  });
-
-  it("returns loaded when a transient first failure is followed by a success", async () => {
-    let calls = 0;
-    globalThis.fetch = (async () => {
-      calls++;
-      if (calls === 1) throw new TypeError("transient");
-      return new Response(null);
-    }) as any;
-    expect(await probe("https://example.com")).toBe("loaded");
-    expect(calls).toBe(2);
+    // Single attempt only — retrying would pin blocked-event latency to
+    // a backoff constant and destroy the fast-blocked vs timeout-blocked
+    // diagnostic. Lock that in here so a retry can't sneak back.
+    expect(calls).toBe(1);
   });
 });
 
