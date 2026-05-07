@@ -173,7 +173,8 @@ function Demo() {
                 {done ? `${loaded} loaded · ${blocked} blocked` : running ? "Checking..." : "Ready"}
               </CardTitle>
               <CardDescription>
-                Each provider is checked via a window global + a HEAD probe to its CDN.
+                Each provider is checked via a CDN probe and, where reliable, a post-load window
+                flag set only after the real bundle executes.
               </CardDescription>
             </div>
             {done && (
