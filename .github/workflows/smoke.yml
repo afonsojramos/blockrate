@@ -1,0 +1,33 @@
+name: Smoke (live CDNs)
+
+# Hits every built-in provider's CDN URL with a real fetch and asserts
+# the response carries the CORS header the runtime probe relies on. This
+# is the only check that catches a CDN silently dropping CORS support
+# or rotating a path — unit tests mock fetch and can't see it.
+#
+# Failures here mean every customer using that provider would suddenly
+# see "blocked" for users who aren't actually blocked. Treat as a Sev-2.
+
+on:
+  schedule:
+    # Daily at 13:00 UTC. Late enough that overnight CDN rollouts have
+    # stabilised, early enough to land before European business hours.
+    - cron: "0 13 * * *"
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.11"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+      - run: bun install
+      - name: Run live-CDN smoke probe
+        run: cd packages/core && bun run test:smoke
