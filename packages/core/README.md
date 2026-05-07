@@ -289,7 +289,7 @@ Create a custom event `block_rate_check` and chart `unique sessions` segmented b
 ## How it works
 
 1. **Post-load global check** — fast, synchronous-ish. Each provider checks for a property that **only the real bundle sets**, never one the loader snippet creates (e.g. `posthog.__loaded`, `mixpanel.__loaded`, `analytics.initialized`, `google_tag_data`). Stub globals like `window.posthog`, `window.fbq`, or `window.amplitude` are deliberately ignored — they exist whether or not the CDN was reached.
-2. **CDN probe** — `fetch` the provider's CDN URL with `mode: "cors"` (so blockers' `nooptext` redirects, which strip CORS headers, surface as `TypeError` rather than opaque success). One retry on transient failure to tighten the signal.
+2. **CDN probe** — `fetch` the provider's CDN URL with `mode: "cors"` (so blockers' `nooptext` redirects, which strip CORS headers, surface as `TypeError` rather than opaque success). Single attempt — honest fast-blocked vs timeout-blocked latency is more valuable than a retry that would pin every blocked-event latency to a backoff constant.
 3. **Image-tag probe (Meta only)** — `connect.facebook.net` and `facebook.com/tr` deliberately serve no CORS headers, so we use an `<img>` and listen for `onerror` instead.
 4. **Dedup (opt-in)** — `sessionDedup: true` writes a flag to `sessionStorage` so the check runs once per session. Off by default to keep the library consent-free; enable it for accurate session-level rates.
 5. **Report** — your reporter is called once with all results.
