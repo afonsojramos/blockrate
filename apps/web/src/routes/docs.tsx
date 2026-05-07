@@ -331,9 +331,21 @@ export const POST = createBlockRateHandler({
         <section id="providers" className="mt-16 space-y-4 scroll-mt-20">
           <h2 className="text-2xl font-semibold tracking-tight">Built-in providers</h2>
           <p className="text-sm text-muted-foreground">
-            Each provider is checked first via a <code className="font-mono text-xs">window</code>{" "}
-            global (fast — the script already loaded), then via a{" "}
-            <code className="font-mono text-xs">fetch</code> HEAD probe to its CDN with{" "}
+            Each provider is checked first via a{" "}
+            <strong className="font-medium text-foreground">post-load window flag</strong> — a
+            property only the real bundle sets (e.g.{" "}
+            <code className="font-mono text-xs">posthog.__loaded</code>,{" "}
+            <code className="font-mono text-xs">analytics.initialized</code>,{" "}
+            <code className="font-mono text-xs">google_tag_data</code>), never one the loader
+            snippet creates. Stub globals like <code className="font-mono text-xs">window.fbq</code>{" "}
+            and <code className="font-mono text-xs">window.amplitude</code> are deliberately ignored
+            because the inline snippet runs even when the network request to the CDN is blocked, so
+            checking for them would silently misclassify a blocked install as loaded.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            When no reliable post-load flag is available (some providers' loaded shape is too
+            similar to their queueing stub), detection falls through to a{" "}
+            <code className="font-mono text-xs">fetch</code> HEAD probe to the provider's CDN with{" "}
             <code className="font-mono text-xs">mode: "cors"</code>. If the ad blocker redirects to
             a local response (which lacks CORS headers), the fetch throws — correctly detected as
             blocked. One exception: <code className="font-mono text-xs">meta-pixel</code> uses an{" "}
