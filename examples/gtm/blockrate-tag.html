@@ -1,0 +1,94 @@
+<!--
+  blockrate Custom HTML tag for Google Tag Manager.
+
+  Paste the contents of this file (between the <script> tags) into a new
+  GTM "Custom HTML" tag, and trigger it on "All Pages" or "Initialization
+  - All Pages". Set the {{Block Rate Reporter Endpoint}} GTM variable to
+  the first-party URL of your Cloudflare Worker (or equivalent), e.g.
+  https://metrics.example.com/block-rate.
+
+  Why this works:
+
+    GTM injects this script inline on every page. The blockrate library
+    is loaded from esm.sh (a public CDN), runs `check()`, and beacons
+    the result to YOUR first-party endpoint. The endpoint forwards to
+    blockrate.app server-side with your API key attached.
+
+    The reporter URL must be on YOUR domain, never blockrate.app. See
+    the cloudflare-worker example for how to set up the endpoint with
+    no app code changes.
+
+  Why esm.sh, not your app bundle?
+
+    GTM's no-code premise is that you don't ship app code. Loading
+    blockrate from a public ESM CDN at tag-fire time keeps the install
+    truly no-code. The library is small (~1.6 KB) and the request is
+    cached aggressively, so the cost is minimal after the first page
+    in a session.
+
+    If you want zero third-party dependencies in the install path,
+    skip GTM and bundle blockrate into your app directly via npm.
+    GTM is the no-code path; bundling is the strict-first-party path.
+-->
+<script type="module">
+  // Tag-manager evaluates the GTM variable substitution before this
+  // runs, so the literal string is what we see at runtime.
+  const ENDPOINT = "{{Block Rate Reporter Endpoint}}";
+
+  if (!ENDPOINT || ENDPOINT.startsWith("{{")) {
+    // Fail loudly if the variable wasn't substituted — otherwise the
+    // beacon would silently post to a literal "{{...}}" URL.
+    console.error("[blockrate-gtm] Block Rate Reporter Endpoint variable is not set");
+  } else {
+    import("https://esm.sh/blockrate@1")
+      .then(({ BlockRate }) => {
+        new BlockRate({
+          providers: [
+            "optimizely",
+            "posthog",
+            "ga4",
+            "gtm",
+            "segment",
+            "hotjar",
+            "amplitude",
+            "mixpanel",
+            "meta-pixel",
+            "intercom",
+          ],
+          // sampleRate: 0.1 keeps cost low at high traffic. Bump to 1
+          // while validating the install, then drop once you see events
+          // arriving in the dashboard.
+          sampleRate: 0.1,
+          reporter: (result) => {
+            // sendBeacon survives page unload — important for SPAs and
+            // for users who navigate away before the probe completes.
+            // Falls back to fetch() with keepalive if sendBeacon fails.
+            try {
+              if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+                navigator.sendBeacon(ENDPOINT, JSON.stringify(result));
+                return;
+              }
+            } catch {
+              // ignore; fall through to fetch
+            }
+            fetch(ENDPOINT, {
+              method: "POST",
+              body: JSON.stringify(result),
+              headers: { "content-type": "application/json" },
+              keepalive: true,
+            }).catch(() => {
+              // Reporter failures are silent by design at the tag level
+              // — there's no UI to surface them in. The Worker's logs
+              // are the diagnostic surface.
+            });
+          },
+        }).check();
+      })
+      .catch((err) => {
+        // If the customer's CSP forbids esm.sh, the import will throw.
+        // Surface in the GTM debug console rather than silently doing
+        // nothing — silent install failures are the worst kind.
+        console.error("[blockrate-gtm] failed to load blockrate from esm.sh:", err);
+      });
+  }
+</script>

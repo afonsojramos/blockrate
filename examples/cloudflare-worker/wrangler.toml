@@ -1,0 +1,33 @@
+name = "blockrate-reporter"
+main = "worker.ts"
+compatibility_date = "2026-01-01"
+
+# Replace with your Cloudflare account_id (find it in dash.cloudflare.com → right sidebar).
+# account_id = "your-account-id"
+
+# Bind the worker to a route on YOUR domain. The route must be on a domain
+# Cloudflare manages (i.e. the domain's nameservers point to Cloudflare).
+# Example: if your app is at app.example.com, host the reporter at
+# metrics.example.com/block-rate so it shares the same registered domain
+# (first-party for cookie/origin purposes) but a distinct subdomain.
+#
+# routes = [
+#   { pattern = "metrics.example.com/block-rate", zone_name = "example.com" }
+# ]
+
+# Bun-style TypeScript imports work because workers-types is shipped
+# alongside the wrangler runtime.
+
+# Required at deploy time:
+#   wrangler secret put BLOCKRATE_API_KEY
+#
+# Optional environment variables (set via wrangler.toml [vars] or `wrangler secret put`):
+#
+#   BLOCKRATE_ENDPOINT          Override the upstream ingest URL. Default
+#                                is https://blockrate.app/api. Use this to
+#                                target a self-hosted blockrate-server.
+#   BLOCKRATE_ALLOWED_ORIGINS   Comma-separated list of allowed origins
+#                                for CORS. If unset, the worker mirrors
+#                                the request Origin (safe because no
+#                                cookies + server-side API key, but tighter
+#                                posture is to allowlist explicitly).
