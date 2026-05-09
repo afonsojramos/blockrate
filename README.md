@@ -28,6 +28,8 @@ blockrate/
 │   └── plans/                phased build plans
 └── examples/                 minimal integration snippets per framework
     ├── nextjs, tanstack-start, sveltekit, nuxt, solidstart, vanilla
+    ├── cloudflare-worker     drop-in worker = first-party reporter at YOUR domain
+    └── gtm                   Google Tag Manager Custom HTML tag (no app code)
 ```
 
 ## Quick start (OSS library)
