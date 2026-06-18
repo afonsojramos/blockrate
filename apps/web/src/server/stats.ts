@@ -47,7 +47,7 @@ export const getOverviewData = createServerFn({ method: "GET" })
     const { db } = await import("@/lib/db/index.server");
     const { events } = await import("@/lib/db/schema");
     const { getPlan } = await import("@/lib/plans");
-    const { and, eq, gte, sql } = await import("drizzle-orm");
+    const { and, count, eq, gte, sql } = await import("drizzle-orm");
 
     const plan = getPlan(account.plan);
     // Cap requested window at plan's dashboardHistoryDays
@@ -62,18 +62,24 @@ export const getOverviewData = createServerFn({ method: "GET" })
         )
       : and(eq(events.accountId, account.id), gte(events.timestamp, since));
 
-    // Per-provider aggregation
+    // Per-provider aggregation.
+    //
+    // Postgres COUNT/SUM return bigint and AVG returns numeric — all of which
+    // the pg/pglite drivers surface as *strings*. `.mapWith(Number)` (and the
+    // drizzle `count()` helper, which applies it internally) coerces at the
+    // driver boundary so the headline block rate is computed on real numbers,
+    // never on a string the `<number>` annotation merely claims to be. AVG is
+    // null for a provider with no loaded events, so it is typed `number | null`.
     const statsRows = await db
       .select({
         provider: events.provider,
-        total: sql<number>`COUNT(*)`.as("total"),
-        blocked: sql<number>`SUM(CASE WHEN ${events.status} = 'blocked' THEN 1 ELSE 0 END)`.as(
-          "blocked",
+        total: count(),
+        blocked: sql<number>`SUM(CASE WHEN ${events.status} = 'blocked' THEN 1 ELSE 0 END)`.mapWith(
+          Number,
         ),
-        avgLatency:
-          sql<number>`AVG(CASE WHEN ${events.status} = 'loaded' THEN ${events.latency} END)`.as(
-            "avg_latency",
-          ),
+        avgLatency: sql<
+          number | null
+        >`AVG(CASE WHEN ${events.status} = 'loaded' THEN ${events.latency} END)`.mapWith(Number),
       })
       .from(events)
       .where(where)
@@ -82,10 +88,10 @@ export const getOverviewData = createServerFn({ method: "GET" })
     const stats = statsRows
       .map((r) => ({
         provider: r.provider,
-        total: Number(r.total),
-        blocked: Number(r.blocked),
-        blockRate: Number(r.total) > 0 ? Number(r.blocked) / Number(r.total) : 0,
-        avgLatency: Math.round(Number(r.avgLatency) || 0),
+        total: r.total,
+        blocked: r.blocked,
+        blockRate: r.total > 0 ? r.blocked / r.total : 0,
+        avgLatency: Math.round(r.avgLatency ?? 0),
       }))
       .sort((a, b) => b.blockRate - a.blockRate);
 
