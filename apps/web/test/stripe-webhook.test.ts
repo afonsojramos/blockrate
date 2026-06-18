@@ -8,7 +8,7 @@
  * runs for real (no network). The only branch that touches the Stripe network
  * is checkout.session.completed's subscriptions.retrieve — here we cover its
  * pre-network guard (missing data → 400); the full provisioning path is
- * exercised by the SHIP.md per-customer integration checklist.
+ * exercised manually against Stripe, not in unit tests.
  *
  * Env (DATABASE_URL, Stripe secrets, price IDs) is set by test/setup.ts, the
  * bun test preload, before any module that reads it is imported.
