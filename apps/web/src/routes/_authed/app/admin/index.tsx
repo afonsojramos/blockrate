@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -9,11 +10,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getAdminOverview } from "@/server/admin";
+import { assertAdmin, getAdminOverview } from "@/server/admin";
 
 export const Route = createFileRoute("/_authed/app/admin/")({
+  // Authorize before loading: non-operators are redirected to /app here, so the
+  // loader below only ever runs for admins. Genuine query failures then surface
+  // through errorComponent as real errors rather than a misleading redirect.
+  beforeLoad: () => assertAdmin(),
   loader: () => getAdminOverview(),
   pendingComponent: AdminOverviewPending,
+  errorComponent: AdminOverviewError,
   component: AdminOverview,
 });
 
@@ -60,6 +66,30 @@ function AdminOverviewPending() {
       </section>
       <Card className="mt-6 h-[120px] animate-pulse" aria-hidden="true" />
       <Card className="mt-6 h-[240px] animate-pulse" aria-hidden="true" />
+    </main>
+  );
+}
+
+function AdminOverviewError({ reset }: { reset: () => void }) {
+  // Fails closed: no platform data is rendered. Surfaces the failure honestly
+  // instead of letting it bubble up as a misleading redirect to /login.
+  return (
+    <main className="mx-auto max-w-5xl px-6 py-12">
+      <AdminHeader />
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle className="text-base">Couldn’t load the admin overview</CardTitle>
+          <CardDescription>
+            The platform stats failed to load. This is a server-side error, not a sign-out — your
+            session is still valid. Retry, and if it persists check the database and server logs.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button variant="outline" onClick={() => reset()}>
+            Try again
+          </Button>
+        </CardContent>
+      </Card>
     </main>
   );
 }

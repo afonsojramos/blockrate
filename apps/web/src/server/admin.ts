@@ -14,16 +14,34 @@ import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 
-const requireAdmin = async () => {
+// Shared operator gate. Verifies an admin session or throws the SAME opaque
+// redirect for both "not logged in" and "logged in but not admin" — no
+// enumeration oracle. An unauth'd request lands on /app first, which the
+// _authed layout bounces to /login. Returns the session for callers that need it.
+const adminSessionOrRedirect = async () => {
   const { auth } = await import("@/lib/auth.server");
   const { isAdminEmail } = await import("@/lib/admin.server");
 
   const session = await auth.api.getSession({ headers: getRequest().headers });
-  // Non-admins and unauth'd callers get the same redirect — no enumeration oracle.
-  // An unauth'd request lands on /app first, which the _authed layout bounces to /login.
   if (!session || !isAdminEmail(session.user.email)) {
     throw redirect({ to: "/app", search: { since: 7 } });
   }
+  return session;
+};
+
+/**
+ * Route-level authorization gate for /_authed/app/admin, used in the route's
+ * beforeLoad. Redirecting non-operators here — before the loader runs — keeps
+ * the authz redirect (handled by the router as navigation) separate from
+ * genuine query failures in the loader, which surface as real errors through
+ * the route's errorComponent instead of being swallowed as a fake logout.
+ */
+export const assertAdmin = createServerFn({ method: "GET" }).handler(async () => {
+  await adminSessionOrRedirect();
+});
+
+const requireAdmin = async () => {
+  const session = await adminSessionOrRedirect();
   console.info("[admin] overview access", {
     event: "admin.overview.access",
     userId: session.user.id,
