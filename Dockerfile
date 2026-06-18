@@ -44,10 +44,16 @@ COPY . .
 RUN cd packages/core && bun run build
 
 # VITE_* env vars must be available at build time for Vite to bake them
-# into the client bundle. Railway passes service variables as Docker
-# build args automatically — we just need to declare + export them.
+# into the bundle. Railway passes service variables as Docker build args
+# automatically — we just need to declare + export them. VITE_SITE_URL is
+# load-bearing for SEO: if it is empty at build time, robots.txt serves
+# `Disallow: /`, sitemap.xml returns 204, and canonical tags are omitted —
+# i.e. the whole site is non-indexable. Keep this list in sync with every
+# VITE_-prefixed variable read via import.meta.env.
 ARG VITE_BLOCKRATE_PUBLIC_KEY
 ENV VITE_BLOCKRATE_PUBLIC_KEY=$VITE_BLOCKRATE_PUBLIC_KEY
+ARG VITE_SITE_URL
+ENV VITE_SITE_URL=$VITE_SITE_URL
 
 # Build apps/web — production Vite + Nitro bundle
 RUN cd apps/web && NODE_ENV=production bun run build
