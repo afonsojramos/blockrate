@@ -1,0 +1,4 @@
+[test]
+# Set a consistent env before any test file loads (env.server freezes its env
+# singleton on first import; integration tests need the Stripe/CRON/DB vars).
+preload = ["./test/setup.ts"]
