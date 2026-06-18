@@ -14,6 +14,8 @@ import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 
+import { DAY_MS } from "@/lib/time";
+
 // Shared operator gate. Verifies an admin session or throws the SAME opaque
 // redirect for both "not logged in" and "logged in but not admin" — no
 // enumeration oracle. An unauth'd request lands on /app first, which the
@@ -67,9 +69,9 @@ export const getAdminOverview = createServerFn({ method: "GET" }).handler(
     const { count, countDistinct, desc, eq, gte, sql } = await import("drizzle-orm");
 
     const now = Date.now();
-    const since24h = new Date(now - 86_400_000);
-    const since7d = new Date(now - 7 * 86_400_000);
-    const since30d = new Date(now - 30 * 86_400_000);
+    const since24h = new Date(now - DAY_MS);
+    const since7d = new Date(now - 7 * DAY_MS);
+    const since30d = new Date(now - 30 * DAY_MS);
 
     const eventCount = sql<number>`COUNT(*)`.mapWith(Number);
 

@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { DAY_MS } from "@/lib/time";
+
 /**
  * Nightly retention sweep. Deletes events older than each plan's
  * retentionDays. Triggered by Railway Cron via:
@@ -90,7 +92,7 @@ export const Route = createFileRoute("/api/internal/retention")({
         for (const [planName, accountIds] of byPlan) {
           if (accountIds.length === 0) continue;
           const plan = PLANS[planName as keyof typeof PLANS] ?? PLANS.free;
-          const cutoff = new Date(Date.now() - plan.retentionDays * 86_400_000);
+          const cutoff = new Date(Date.now() - plan.retentionDays * DAY_MS);
 
           const deleted = await db
             .delete(events)

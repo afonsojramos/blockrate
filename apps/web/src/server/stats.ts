@@ -14,6 +14,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 
+import { DAY_MS } from "@/lib/time";
+
 const requireAccount = async () => {
   const { auth } = await import("@/lib/auth.server");
   const { db } = await import("@/lib/db/index.server");
@@ -52,7 +54,7 @@ export const getOverviewData = createServerFn({ method: "GET" })
     const plan = getPlan(account.plan);
     // Cap requested window at plan's dashboardHistoryDays
     const sinceDays = Math.min(data.sinceDays, plan.dashboardHistoryDays);
-    const since = new Date(Date.now() - sinceDays * 86_400_000);
+    const since = new Date(Date.now() - sinceDays * DAY_MS);
 
     const where = data.service
       ? and(

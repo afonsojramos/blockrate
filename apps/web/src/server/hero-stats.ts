@@ -6,6 +6,8 @@
 
 import { createServerFn } from "@tanstack/react-start";
 
+import { DAY_MS } from "@/lib/time";
+
 export interface HeroProvider {
   name: string;
   rates: (number | null)[]; // null for days with no data
@@ -24,7 +26,7 @@ export const getHeroStats = createServerFn({ method: "GET" }).handler(
     const { dailyProviderStats } = await import("@/lib/db/schema");
     const { gte } = await import("drizzle-orm");
 
-    const since = new Date(Date.now() - 7 * 86_400_000);
+    const since = new Date(Date.now() - 7 * DAY_MS);
     const sinceStr = since.toISOString().slice(0, 10);
 
     const rows = await db
