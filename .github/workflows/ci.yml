@@ -40,6 +40,9 @@ jobs:
       # Exit 99 is bun's "unhandled rejection after tests pass" from PGlite cleanup.
       # All tests pass — the exit code is a false negative. Mask it.
       - run: bun test packages/core packages/server || [ $? -eq 99 ]
+      - run: cd apps/web && bun test || [ $? -eq 99 ]
+        env:
+          BETTER_AUTH_SECRET: ci-placeholder-secret-at-least-32-characters
 
   web-build:
     runs-on: ubuntu-latest
