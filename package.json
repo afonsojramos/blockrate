@@ -19,7 +19,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "nitro": "npm:nitro-nightly@latest",
+    "nitro": "npm:nitro-nightly@3.0.1-20260409-145609-ab30376e",
     "postgres": "^3.4.9"
   },
   "devDependencies": {
