@@ -2,11 +2,22 @@
   "name": "blockrate-monorepo",
   "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "packages/*",
-    "apps/*",
-    "examples/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "packages/*",
+      "apps/*",
+      "examples/*"
+    ],
+    "catalog": {
+      "@electric-sql/pglite": "^0.5.3",
+      "@types/react": "^19.2.17",
+      "drizzle-kit": "^0.28.0",
+      "drizzle-orm": "^0.41.0",
+      "nitro": "npm:nitro-nightly@3.0.1-20260420-010726-8c3f16b2",
+      "react": "^19.2.7",
+      "react-dom": "^19.2.7"
+    }
+  },
   "scripts": {
     "build": "bun run --filter '*' build",
     "bump": "bun scripts/bump.ts",
@@ -19,17 +30,17 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "nitro": "npm:nitro-nightly@3.0.1-20260409-145609-ab30376e",
+    "nitro": "catalog:",
     "postgres": "^3.4.9"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.5.3",
+    "@electric-sql/pglite": "catalog:",
     "@types/bun": "latest",
-    "@types/react": "^19.2.17",
+    "@types/react": "catalog:",
     "husky": "^9.1.7",
     "oxfmt": "^0.55.0",
     "oxlint": "^1.70.0",
-    "react": "^19.2.7",
+    "react": "catalog:",
     "typescript": "^6.0.3"
   }
 }
