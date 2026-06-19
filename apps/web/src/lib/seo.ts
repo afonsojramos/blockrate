@@ -32,10 +32,14 @@ export type SeoInput = {
   noindex?: boolean;
   type?: "website" | "article";
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  /** Path to the share image, relative to the origin. Defaults to /og.png. */
+  image?: string;
 };
 
 const SITE_NAME = "blockrate";
 const SITE_URL = (import.meta.env.VITE_SITE_URL as string | undefined) ?? "";
+const DEFAULT_OG_IMAGE = "/og.png";
+const OG_IMAGE_ALT = "blockrate.app — per-provider block rates for your analytics tools";
 
 function absoluteUrl(path: string): string | null {
   if (!SITE_URL) return null;
@@ -58,6 +62,9 @@ function stableStringify(value: unknown): string {
 export function seo(input: SeoInput): SeoHead {
   const { title, description, path, noindex, type = "website", jsonLd } = input;
   const canonical = absoluteUrl(path);
+  // og:image / twitter:image require absolute URLs, so they only emit when
+  // VITE_SITE_URL is set — same fail-closed behaviour as the canonical tag.
+  const image = absoluteUrl(input.image ?? DEFAULT_OG_IMAGE);
 
   const meta: MetaEntry[] = [
     { title },
@@ -66,13 +73,23 @@ export function seo(input: SeoInput): SeoHead {
     { property: "og:description", content: description },
     { property: "og:type", content: type },
     { property: "og:site_name", content: SITE_NAME },
-    { name: "twitter:card", content: "summary" },
+    { name: "twitter:card", content: image ? "summary_large_image" : "summary" },
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },
   ];
 
   if (canonical) {
     meta.push({ property: "og:url", content: canonical });
+  }
+
+  if (image) {
+    meta.push(
+      { property: "og:image", content: image },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: OG_IMAGE_ALT },
+      { name: "twitter:image", content: image },
+    );
   }
 
   if (noindex) {

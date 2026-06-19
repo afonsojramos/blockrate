@@ -67,6 +67,17 @@ describe("seo()", () => {
     expect(findMeta(head, "property", "og:url")).toBeUndefined();
   });
 
+  it("omits og:image/twitter:image when VITE_SITE_URL is unset (no relative image)", () => {
+    const head = seo({ title: "t", description: "d", path: "/some" });
+
+    // Social image tags require an absolute URL; without VITE_SITE_URL we must
+    // not emit a relative /og.png that crawlers would resolve against their own
+    // host. twitter:card falls back to "summary".
+    expect(findMeta(head, "property", "og:image")).toBeUndefined();
+    expect(findMeta(head, "name", "twitter:image")).toBeUndefined();
+    expect(findMeta(head, "name", "twitter:card")?.content).toBe("summary");
+  });
+
   it("stringifies JSON-LD deterministically (stable key order)", () => {
     const a = seo({
       title: "t",
