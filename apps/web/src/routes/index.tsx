@@ -109,16 +109,21 @@ function Landing() {
       </section>
 
       <section className="mt-16">
-        <CodeBlock>{`import { BlockRate, serverReporter } from "blockrate";
+        <CodeBlock>{`// Client — drop in. Posts to YOUR route; no API key in the browser.
+import { BlockRate, beaconReporter } from "blockrate";
 
 new BlockRate({
   providers: ["optimizely", "posthog", "ga4"],
   service: "web-app",
-  reporter: serverReporter({
-    endpoint: "https://blockrate.app",
-    apiKey: process.env.NEXT_PUBLIC_BR_KEY!,
-  }),
-}).check();`}</CodeBlock>
+  reporter: beaconReporter("/api/block-rate"),
+}).check();
+
+// Server (app/api/block-rate/route.ts) — forward with your key, server-side.
+import { createBlockRateHandler } from "blockrate/next";
+
+export const POST = createBlockRateHandler({
+  forward: { apiKey: process.env.BLOCKRATE_API_KEY! },
+});`}</CodeBlock>
       </section>
 
       <section className="mt-16 grid gap-6 sm:grid-cols-3">

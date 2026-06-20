@@ -98,7 +98,7 @@ function PrivacySnippet() {
             {`new BlockRate({
   consentGiven: () => window.CookieConsent?.accepted("analytics"),
   providers: ["posthog", "ga4"],
-  reporter: serverReporter({ ... }),
+  reporter: beaconReporter("/api/block-rate"),
 })`}
           </pre>
           <p>
