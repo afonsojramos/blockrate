@@ -130,6 +130,21 @@ function ApiDocs() {
   }'`}</Code>
       </section>
 
+      {/* ─── Public data API ─────────────────────────────────────────── */}
+      <section className="mt-12 space-y-4">
+        <h2 className="text-2xl font-semibold tracking-tight">
+          GET /block-rate.json{" "}
+          <span className="text-base font-normal text-muted-foreground">(no key required)</span>
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          The aggregate per-provider block rate across blockrate, as JSON. Public, no key, and
+          CORS-open, so you can fetch it from anywhere to build your own charts or badges. Providers
+          below a minimum sample size return{" "}
+          <code className="font-mono text-xs">blockRate: null</code> rather than a noisy number.
+        </p>
+        <Code>{`curl https://blockrate.app/block-rate.json`}</Code>
+      </section>
+
       {/* ─── Privacy ────────────────────────────────────────────────── */}
       <section className="mt-12 space-y-3">
         <h2 className="text-2xl font-semibold tracking-tight">Privacy guarantees</h2>

@@ -100,6 +100,13 @@ function BlockRateIndex() {
         <Link to="/demo" className="font-medium text-foreground underline underline-offset-4">
           Try the live demo
         </Link>
+        . Prefer raw data?{" "}
+        <a
+          href="/block-rate.json"
+          className="font-medium text-foreground underline underline-offset-4"
+        >
+          Get it as JSON
+        </a>
         .
       </p>
     </main>

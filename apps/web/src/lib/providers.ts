@@ -164,3 +164,37 @@ export function buildProviderRows(
     (a, b) => (b.rate ?? -1) - (a.rate ?? -1),
   );
 }
+
+/** One provider's public stats-API entry. */
+export type ProviderStat = {
+  slug: string;
+  label: string;
+  /** Floored block rate (0..1), or null when below the sample floor / no data. */
+  blockRate: number | null;
+  // blocked/total are the raw, UN-floored counts even when blockRate is null,
+  // so a consumer below the floor can compute its own confidence. Deliberate —
+  // do not zero these out to match the null rate.
+  blocked: number;
+  total: number;
+};
+
+/**
+ * Build the public `/block-rate.json` payload rows: every provider, floored,
+ * worst-first, with sample sizes exposed so consumers can judge confidence.
+ * Same floor + sort as the HTML index, so the API can never disagree with it.
+ */
+export function buildProviderStats(
+  stats: { name: string; rate: number; blocked: number; total: number }[],
+): ProviderStat[] {
+  const bySlug = new Map(stats.map((s) => [s.name, s]));
+  return PROVIDER_META.map((m) => {
+    const entry = bySlug.get(m.slug);
+    return {
+      slug: m.slug,
+      label: m.label,
+      blockRate: entry ? applyFloor(entry.rate, entry.total) : null,
+      blocked: entry?.blocked ?? 0,
+      total: entry?.total ?? 0,
+    };
+  }).sort((a, b) => (b.blockRate ?? -1) - (a.blockRate ?? -1));
+}

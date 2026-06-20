@@ -21,6 +21,7 @@ import {
   applyFloor,
   badgeColor,
   MIN_SAMPLE_CHECKS,
+  buildProviderStats,
 } from "@/lib/providers";
 
 describe("PROVIDER_META parity with core", () => {
@@ -113,6 +114,34 @@ describe("buildProviderRows", () => {
     const rows = buildProviderRows([]);
     expect(rows).toHaveLength(PROVIDER_META.length);
     expect(rows.every((r) => r.rate === null)).toBe(true);
+  });
+});
+
+describe("buildProviderStats (public /block-rate.json payload)", () => {
+  it("includes every provider with slug/label/blockRate/blocked/total, worst-first", () => {
+    const rows = buildProviderStats([
+      { name: "posthog", rate: 0.1, blocked: 100, total: 1000 },
+      { name: "ga4", rate: 0.4, blocked: 2000, total: 5000 },
+    ]);
+    expect(rows).toHaveLength(PROVIDER_META.length);
+    expect(rows[0]).toMatchObject({ slug: "ga4", label: "Google Analytics 4", blockRate: 0.4 });
+    const ga4 = rows.find((r) => r.slug === "ga4")!;
+    expect(ga4).toMatchObject({ blocked: 2000, total: 5000 });
+  });
+
+  it("floors low-sample providers to null blockRate but preserves the sample size", () => {
+    const rows = buildProviderStats([
+      { name: "posthog", rate: 0.33, blocked: 1, total: 3 }, // below floor
+    ]);
+    const posthog = rows.find((r) => r.slug === "posthog")!;
+    expect(posthog.blockRate).toBeNull();
+    expect(posthog.total).toBe(3);
+  });
+
+  it("reports absent providers as null blockRate with zero counts", () => {
+    const rows = buildProviderStats([]);
+    expect(rows).toHaveLength(PROVIDER_META.length);
+    expect(rows.every((r) => r.blockRate === null && r.total === 0 && r.blocked === 0)).toBe(true);
   });
 });
 

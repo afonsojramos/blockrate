@@ -20,6 +20,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DpaRouteImport } from './routes/dpa'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DemoRouteImport } from './routes/demo'
+import { Route as BlockRateDotjsonRouteImport } from './routes/block-rate[.]json'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlockRateIndexRouteImport } from './routes/block-rate/index'
@@ -92,6 +93,11 @@ const DocsRoute = DocsRouteImport.update({
 const DemoRoute = DemoRouteImport.update({
   id: '/demo',
   path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlockRateDotjsonRoute = BlockRateDotjsonRouteImport.update({
+  id: '/block-rate.json',
+  path: '/block-rate.json',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthedRoute = AuthedRouteImport.update({
@@ -187,6 +193,7 @@ const AuthedAppAdminIndexRoute = AuthedAppAdminIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/block-rate.json': typeof BlockRateDotjsonRoute
   '/demo': typeof DemoRoute
   '/docs': typeof DocsRouteWithChildren
   '/dpa': typeof DpaRoute
@@ -217,6 +224,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/block-rate.json': typeof BlockRateDotjsonRoute
   '/demo': typeof DemoRoute
   '/docs': typeof DocsRouteWithChildren
   '/dpa': typeof DpaRoute
@@ -249,6 +257,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteWithChildren
+  '/block-rate.json': typeof BlockRateDotjsonRoute
   '/demo': typeof DemoRoute
   '/docs': typeof DocsRouteWithChildren
   '/dpa': typeof DpaRoute
@@ -281,6 +290,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/block-rate.json'
     | '/demo'
     | '/docs'
     | '/dpa'
@@ -311,6 +321,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/block-rate.json'
     | '/demo'
     | '/docs'
     | '/dpa'
@@ -342,6 +353,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authed'
+    | '/block-rate.json'
     | '/demo'
     | '/docs'
     | '/dpa'
@@ -374,6 +386,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthedRoute: typeof AuthedRouteWithChildren
+  BlockRateDotjsonRoute: typeof BlockRateDotjsonRoute
   DemoRoute: typeof DemoRoute
   DocsRoute: typeof DocsRouteWithChildren
   DpaRoute: typeof DpaRoute
@@ -475,6 +488,13 @@ declare module '@tanstack/react-router' {
       path: '/demo'
       fullPath: '/demo'
       preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/block-rate.json': {
+      id: '/block-rate.json'
+      path: '/block-rate.json'
+      fullPath: '/block-rate.json'
+      preLoaderRoute: typeof BlockRateDotjsonRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authed': {
@@ -636,6 +656,7 @@ const DocsRouteWithChildren = DocsRoute._addFileChildren(DocsRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthedRoute: AuthedRouteWithChildren,
+  BlockRateDotjsonRoute: BlockRateDotjsonRoute,
   DemoRoute: DemoRoute,
   DocsRoute: DocsRouteWithChildren,
   DpaRoute: DpaRoute,
