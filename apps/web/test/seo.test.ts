@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { seo } from "@/lib/seo";
+import { seo, PUBLIC_ROUTES } from "@/lib/seo";
+import { PROVIDER_META } from "@/lib/providers";
 
 function findMeta(head: ReturnType<typeof seo>, key: "name" | "property", value: string) {
   return head.meta.find((m) => key in m && (m as Record<string, string>)[key] === value) as
@@ -110,5 +111,23 @@ describe("seo()", () => {
     expect(head.scripts).toHaveLength(2);
     expect(head.scripts[0]?.children).toContain("Organization");
     expect(head.scripts[1]?.children).toContain("WebSite");
+  });
+});
+
+describe("PUBLIC_ROUTES (sitemap allowlist)", () => {
+  const paths = PUBLIC_ROUTES.map((r) => r.path);
+
+  it("includes the block-rate index", () => {
+    expect(paths).toContain("/block-rate");
+  });
+
+  it("includes one page per provider, in sync with PROVIDER_META", () => {
+    for (const p of PROVIDER_META) {
+      expect(paths).toContain(`/block-rate/${p.slug}`);
+    }
+  });
+
+  it("has no duplicate paths", () => {
+    expect(new Set(paths).size).toBe(paths.length);
   });
 });
