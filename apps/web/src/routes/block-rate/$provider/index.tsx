@@ -1,21 +1,24 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 
+import { CodeBlock } from "@/components/code-block";
 import {
+  applyFloor,
   formatRatePercent,
   getProviderMeta,
   providerPageDescription,
   providerPageTitle,
   rateColor,
 } from "@/lib/providers";
-import { seo } from "@/lib/seo";
+import { seo, siteUrl } from "@/lib/seo";
 import { getHeroStats } from "@/server/hero-stats";
 
-export const Route = createFileRoute("/block-rate/$provider")({
+export const Route = createFileRoute("/block-rate/$provider/")({
   loader: async ({ params }) => {
     const meta = getProviderMeta(params.provider);
     if (!meta) throw notFound();
     const stats = await getHeroStats();
-    const rate = stats?.providers.find((p) => p.name === meta.slug)?.rate ?? null;
+    const entry = stats?.providers.find((p) => p.name === meta.slug);
+    const rate = entry ? applyFloor(entry.rate, entry.total) : null;
     return { meta, rate };
   },
   head: ({ loaderData }) => {
@@ -52,6 +55,12 @@ export const Route = createFileRoute("/block-rate/$provider")({
   component: ProviderPage,
 });
 
+/** Markdown embed snippet for a provider's badge, using the absolute origin. */
+function badgeSnippet(slug: string, label: string): string {
+  const origin = siteUrl()?.replace(/\/$/, "") ?? "https://blockrate.app";
+  return `[![${label} block rate](${origin}/block-rate/${slug}/badge.svg)](${origin}/block-rate/${slug})`;
+}
+
 function ProviderPage() {
   const { meta, rate } = Route.useLoaderData();
 
@@ -85,7 +94,27 @@ function ProviderPage() {
 
       <p className="mt-6 text-muted-foreground">{meta.blurb}</p>
 
-      <p className="mt-6 text-sm text-muted-foreground">
+      <section className="mt-10">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Embed this badge
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Drop the live {meta.label} block rate into a README or status page:
+        </p>
+        <div className="mt-3">
+          <img
+            src={`/block-rate/${meta.slug}/badge.svg`}
+            alt={`${meta.label} block rate badge`}
+            width={160}
+            height={20}
+          />
+        </div>
+        <div className="mt-3">
+          <CodeBlock>{badgeSnippet(meta.slug, meta.label)}</CodeBlock>
+        </div>
+      </section>
+
+      <p className="mt-10 text-sm text-muted-foreground">
         Measured directly across engaged visitors by{" "}
         <Link to="/" className="font-medium text-foreground underline underline-offset-4">
           blockrate

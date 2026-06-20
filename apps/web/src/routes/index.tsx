@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CodeBlock } from "@/components/code-block";
 import { HeroChart } from "@/components/hero-chart";
+import { applyFloor } from "@/lib/providers";
 import { seo } from "@/lib/seo";
 import { getHeroStats } from "@/server/hero-stats";
 
@@ -32,6 +33,18 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   const heroStats = Route.useLoaderData();
+
+  // Mobile summary: a true volume-weighted population rate (Σblocked / Σchecks)
+  // over only the providers that clear the min-sample floor, so it never
+  // disagrees with the floored radar or the /block-rate pages.
+  const flooredProviders = heroStats
+    ? heroStats.providers.filter((p) => applyFloor(p.rate, p.total) !== null)
+    : [];
+  const totalChecks = flooredProviders.reduce((sum, p) => sum + p.total, 0);
+  const weightedBlockedPct =
+    totalChecks > 0
+      ? (flooredProviders.reduce((sum, p) => sum + p.blocked, 0) / totalChecks) * 100
+      : 0;
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-16">
@@ -87,18 +100,19 @@ function Landing() {
             <div className="hidden lg:block lg:w-[400px] lg:flex-shrink-0">
               <HeroChart data={heroStats} />
             </div>
-            <p className="text-sm text-muted-foreground lg:hidden">
-              Across all time,{" "}
-              <span className="font-semibold tabular-nums text-foreground">
-                {(
-                  (heroStats.providers.reduce((sum, p) => sum + p.rate, 0) /
-                    heroStats.providers.length) *
-                  100
-                ).toFixed(1)}
-                %
-              </span>{" "}
-              of checks are blocked on average across {heroStats.providers.length} providers.
-            </p>
+            {flooredProviders.length > 0 ? (
+              <p className="text-sm text-muted-foreground lg:hidden">
+                Across all time,{" "}
+                <span className="font-semibold tabular-nums text-foreground">
+                  {weightedBlockedPct.toFixed(1)}%
+                </span>{" "}
+                of measured checks are blocked across {flooredProviders.length} providers.
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground lg:hidden">
+                Measurement is just getting started.
+              </p>
+            )}
           </>
         )}
       </section>

@@ -18,6 +18,9 @@ import {
   buildProviderRows,
   providerPageTitle,
   providerPageDescription,
+  applyFloor,
+  badgeColor,
+  MIN_SAMPLE_CHECKS,
 } from "@/lib/providers";
 
 describe("PROVIDER_META parity with core", () => {
@@ -60,11 +63,32 @@ describe("formatRatePercent", () => {
   });
 });
 
+describe("applyFloor", () => {
+  it("returns the rate when the sample meets the floor", () => {
+    expect(applyFloor(0.38, MIN_SAMPLE_CHECKS)).toBe(0.38);
+    expect(applyFloor(0.38, MIN_SAMPLE_CHECKS + 1000)).toBe(0.38);
+  });
+
+  it("returns null when the sample is below the floor (never publishes a noisy rate)", () => {
+    expect(applyFloor(0.38, MIN_SAMPLE_CHECKS - 1)).toBeNull();
+    expect(applyFloor(1, 3)).toBeNull();
+  });
+});
+
+describe("badgeColor", () => {
+  it("maps rate bands to hex, gray for no data", () => {
+    expect(badgeColor(null)).toBe("#9f9f9f");
+    expect(badgeColor(0.02)).toBe("#3fb950"); // green
+    expect(badgeColor(0.1)).toBe("#d29922"); // amber
+    expect(badgeColor(0.4)).toBe("#f85149"); // red
+  });
+});
+
 describe("buildProviderRows", () => {
   it("includes every provider, sorted worst-first, no-data last", () => {
     const rows = buildProviderRows([
-      { name: "posthog", rate: 0.1 },
-      { name: "ga4", rate: 0.4 },
+      { name: "posthog", rate: 0.1, total: 1000 },
+      { name: "ga4", rate: 0.4, total: 1000 },
     ]);
     expect(rows).toHaveLength(PROVIDER_META.length);
     // ga4 (0.4) before posthog (0.1); providers with no data carry null and sort last.
@@ -73,6 +97,15 @@ describe("buildProviderRows", () => {
     const noDataIndex = rows.findIndex((r) => r.rate === null);
     expect(ga4Index).toBeLessThan(posthogIndex);
     expect(posthogIndex).toBeLessThan(noDataIndex);
+    expect(rows.find((r) => r.slug === "ga4")?.rate).toBe(0.4);
+  });
+
+  it("floors low-sample providers to no-data (never fabricates a noisy rate)", () => {
+    const rows = buildProviderRows([
+      { name: "posthog", rate: 0.33, total: 3 }, // below floor → null
+      { name: "ga4", rate: 0.4, total: 5000 }, // above floor → kept
+    ]);
+    expect(rows.find((r) => r.slug === "posthog")?.rate).toBeNull();
     expect(rows.find((r) => r.slug === "ga4")?.rate).toBe(0.4);
   });
 

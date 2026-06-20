@@ -107,6 +107,28 @@ export function rateColor(rate: number): string {
   return "text-rate-high";
 }
 
+/**
+ * Minimum measured checks before a per-provider rate is trustworthy enough to
+ * publish on a public, crawlable, embeddable surface. Below this we render
+ * "no data" rather than a confident-looking but noisy percentage — the same
+ * "the one number must never be wrong" discipline applied to small samples.
+ * Tunable; a product call, deliberately a single constant.
+ */
+export const MIN_SAMPLE_CHECKS = 100;
+
+/** Returns the rate, or null when the sample is too small to publish. */
+export function applyFloor(rate: number, total: number): number | null {
+  return total >= MIN_SAMPLE_CHECKS ? rate : null;
+}
+
+/** Literal hex (SVG can't use Tailwind classes) for a badge's value segment. */
+export function badgeColor(rate: number | null): string {
+  if (rate === null) return "#9f9f9f"; // gray — no data
+  if (rate < 0.05) return "#3fb950"; // green
+  if (rate < 0.15) return "#d29922"; // amber
+  return "#f85149"; // red
+}
+
 /** SEO `<title>` for a provider page. Includes the live rate when available. */
 export function providerPageTitle(meta: ProviderMeta, rate: number | null): string {
   return rate === null
@@ -134,8 +156,10 @@ export type ProviderRow = ProviderMeta & {
  * null rate so the UI can show an honest "not enough data yet" state instead
  * of a fabricated 0%.
  */
-export function buildProviderRows(stats: { name: string; rate: number }[]): ProviderRow[] {
-  const rateBySlug = new Map(stats.map((s) => [s.name, s.rate]));
+export function buildProviderRows(
+  stats: { name: string; rate: number; total: number }[],
+): ProviderRow[] {
+  const rateBySlug = new Map(stats.map((s) => [s.name, applyFloor(s.rate, s.total)]));
   return PROVIDER_META.map((m) => ({ ...m, rate: rateBySlug.get(m.slug) ?? null })).sort(
     (a, b) => (b.rate ?? -1) - (a.rate ?? -1),
   );

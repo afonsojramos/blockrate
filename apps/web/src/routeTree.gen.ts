@@ -24,11 +24,12 @@ import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlockRateIndexRouteImport } from './routes/block-rate/index'
 import { Route as DocsApiRouteImport } from './routes/docs/api'
-import { Route as BlockRateProviderRouteImport } from './routes/block-rate/$provider'
 import { Route as ApiIngestRouteImport } from './routes/api/ingest'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiBlockRateRouteImport } from './routes/api/block-rate'
+import { Route as BlockRateProviderIndexRouteImport } from './routes/block-rate/$provider/index'
 import { Route as AuthedAppIndexRouteImport } from './routes/_authed/app/index'
+import { Route as BlockRateProviderBadgeDotsvgRouteImport } from './routes/block-rate/$provider/badge[.]svg'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
 import { Route as ApiStripePortalRouteImport } from './routes/api/stripe/portal'
 import { Route as ApiStripeCheckoutRouteImport } from './routes/api/stripe/checkout'
@@ -112,11 +113,6 @@ const DocsApiRoute = DocsApiRouteImport.update({
   path: '/api',
   getParentRoute: () => DocsRoute,
 } as any)
-const BlockRateProviderRoute = BlockRateProviderRouteImport.update({
-  id: '/block-rate/$provider',
-  path: '/block-rate/$provider',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiIngestRoute = ApiIngestRouteImport.update({
   id: '/api/ingest',
   path: '/api/ingest',
@@ -132,11 +128,22 @@ const ApiBlockRateRoute = ApiBlockRateRouteImport.update({
   path: '/api/block-rate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlockRateProviderIndexRoute = BlockRateProviderIndexRouteImport.update({
+  id: '/block-rate/$provider/',
+  path: '/block-rate/$provider/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthedAppIndexRoute = AuthedAppIndexRouteImport.update({
   id: '/app/',
   path: '/app/',
   getParentRoute: () => AuthedRoute,
 } as any)
+const BlockRateProviderBadgeDotsvgRoute =
+  BlockRateProviderBadgeDotsvgRouteImport.update({
+    id: '/block-rate/$provider/badge.svg',
+    path: '/block-rate/$provider/badge.svg',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
   id: '/api/stripe/webhook',
   path: '/api/stripe/webhook',
@@ -194,7 +201,6 @@ export interface FileRoutesByFullPath {
   '/api/block-rate': typeof ApiBlockRateRoute
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
-  '/block-rate/$provider': typeof BlockRateProviderRoute
   '/docs/api': typeof DocsApiRoute
   '/block-rate/': typeof BlockRateIndexRoute
   '/app/keys': typeof AuthedAppKeysRoute
@@ -204,7 +210,9 @@ export interface FileRoutesByFullPath {
   '/api/stripe/checkout': typeof ApiStripeCheckoutRoute
   '/api/stripe/portal': typeof ApiStripePortalRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
+  '/block-rate/$provider/badge.svg': typeof BlockRateProviderBadgeDotsvgRoute
   '/app/': typeof AuthedAppIndexRoute
+  '/block-rate/$provider/': typeof BlockRateProviderIndexRoute
   '/app/admin/': typeof AuthedAppAdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -223,7 +231,6 @@ export interface FileRoutesByTo {
   '/api/block-rate': typeof ApiBlockRateRoute
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
-  '/block-rate/$provider': typeof BlockRateProviderRoute
   '/docs/api': typeof DocsApiRoute
   '/block-rate': typeof BlockRateIndexRoute
   '/app/keys': typeof AuthedAppKeysRoute
@@ -233,7 +240,9 @@ export interface FileRoutesByTo {
   '/api/stripe/checkout': typeof ApiStripeCheckoutRoute
   '/api/stripe/portal': typeof ApiStripePortalRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
+  '/block-rate/$provider/badge.svg': typeof BlockRateProviderBadgeDotsvgRoute
   '/app': typeof AuthedAppIndexRoute
+  '/block-rate/$provider': typeof BlockRateProviderIndexRoute
   '/app/admin': typeof AuthedAppAdminIndexRoute
 }
 export interface FileRoutesById {
@@ -254,7 +263,6 @@ export interface FileRoutesById {
   '/api/block-rate': typeof ApiBlockRateRoute
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
-  '/block-rate/$provider': typeof BlockRateProviderRoute
   '/docs/api': typeof DocsApiRoute
   '/block-rate/': typeof BlockRateIndexRoute
   '/_authed/app/keys': typeof AuthedAppKeysRoute
@@ -264,7 +272,9 @@ export interface FileRoutesById {
   '/api/stripe/checkout': typeof ApiStripeCheckoutRoute
   '/api/stripe/portal': typeof ApiStripePortalRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
+  '/block-rate/$provider/badge.svg': typeof BlockRateProviderBadgeDotsvgRoute
   '/_authed/app/': typeof AuthedAppIndexRoute
+  '/block-rate/$provider/': typeof BlockRateProviderIndexRoute
   '/_authed/app/admin/': typeof AuthedAppAdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -285,7 +295,6 @@ export interface FileRouteTypes {
     | '/api/block-rate'
     | '/api/health'
     | '/api/ingest'
-    | '/block-rate/$provider'
     | '/docs/api'
     | '/block-rate/'
     | '/app/keys'
@@ -295,7 +304,9 @@ export interface FileRouteTypes {
     | '/api/stripe/checkout'
     | '/api/stripe/portal'
     | '/api/stripe/webhook'
+    | '/block-rate/$provider/badge.svg'
     | '/app/'
+    | '/block-rate/$provider/'
     | '/app/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -314,7 +325,6 @@ export interface FileRouteTypes {
     | '/api/block-rate'
     | '/api/health'
     | '/api/ingest'
-    | '/block-rate/$provider'
     | '/docs/api'
     | '/block-rate'
     | '/app/keys'
@@ -324,7 +334,9 @@ export interface FileRouteTypes {
     | '/api/stripe/checkout'
     | '/api/stripe/portal'
     | '/api/stripe/webhook'
+    | '/block-rate/$provider/badge.svg'
     | '/app'
+    | '/block-rate/$provider'
     | '/app/admin'
   id:
     | '__root__'
@@ -344,7 +356,6 @@ export interface FileRouteTypes {
     | '/api/block-rate'
     | '/api/health'
     | '/api/ingest'
-    | '/block-rate/$provider'
     | '/docs/api'
     | '/block-rate/'
     | '/_authed/app/keys'
@@ -354,7 +365,9 @@ export interface FileRouteTypes {
     | '/api/stripe/checkout'
     | '/api/stripe/portal'
     | '/api/stripe/webhook'
+    | '/block-rate/$provider/badge.svg'
     | '/_authed/app/'
+    | '/block-rate/$provider/'
     | '/_authed/app/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -375,13 +388,14 @@ export interface RootRouteChildren {
   ApiBlockRateRoute: typeof ApiBlockRateRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiIngestRoute: typeof ApiIngestRoute
-  BlockRateProviderRoute: typeof BlockRateProviderRoute
   BlockRateIndexRoute: typeof BlockRateIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiInternalRetentionRoute: typeof ApiInternalRetentionRoute
   ApiStripeCheckoutRoute: typeof ApiStripeCheckoutRoute
   ApiStripePortalRoute: typeof ApiStripePortalRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
+  BlockRateProviderBadgeDotsvgRoute: typeof BlockRateProviderBadgeDotsvgRoute
+  BlockRateProviderIndexRoute: typeof BlockRateProviderIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -491,13 +505,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocsApiRouteImport
       parentRoute: typeof DocsRoute
     }
-    '/block-rate/$provider': {
-      id: '/block-rate/$provider'
-      path: '/block-rate/$provider'
-      fullPath: '/block-rate/$provider'
-      preLoaderRoute: typeof BlockRateProviderRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/ingest': {
       id: '/api/ingest'
       path: '/api/ingest'
@@ -519,12 +526,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiBlockRateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/block-rate/$provider/': {
+      id: '/block-rate/$provider/'
+      path: '/block-rate/$provider'
+      fullPath: '/block-rate/$provider/'
+      preLoaderRoute: typeof BlockRateProviderIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authed/app/': {
       id: '/_authed/app/'
       path: '/app'
       fullPath: '/app/'
       preLoaderRoute: typeof AuthedAppIndexRouteImport
       parentRoute: typeof AuthedRoute
+    }
+    '/block-rate/$provider/badge.svg': {
+      id: '/block-rate/$provider/badge.svg'
+      path: '/block-rate/$provider/badge.svg'
+      fullPath: '/block-rate/$provider/badge.svg'
+      preLoaderRoute: typeof BlockRateProviderBadgeDotsvgRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/stripe/webhook': {
       id: '/api/stripe/webhook'
@@ -629,13 +650,14 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBlockRateRoute: ApiBlockRateRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiIngestRoute: ApiIngestRoute,
-  BlockRateProviderRoute: BlockRateProviderRoute,
   BlockRateIndexRoute: BlockRateIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiInternalRetentionRoute: ApiInternalRetentionRoute,
   ApiStripeCheckoutRoute: ApiStripeCheckoutRoute,
   ApiStripePortalRoute: ApiStripePortalRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
+  BlockRateProviderBadgeDotsvgRoute: BlockRateProviderBadgeDotsvgRoute,
+  BlockRateProviderIndexRoute: BlockRateProviderIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
