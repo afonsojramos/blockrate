@@ -8,6 +8,8 @@ import {
   providerPageDescription,
   providerPageTitle,
   rateColor,
+  remediationColor,
+  remediationLabel,
 } from "@/lib/providers";
 import { seo, siteUrl } from "@/lib/seo";
 import { getHeroStats } from "@/server/hero-stats";
@@ -93,6 +95,39 @@ function ProviderPage() {
       </header>
 
       <p className="mt-6 text-muted-foreground">{meta.blurb}</p>
+
+      <section className="mt-10">
+        <div className="flex items-center gap-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            How to reduce this
+          </h2>
+          <span
+            className={
+              "rounded-full border border-border px-2 py-0.5 text-xs font-medium " +
+              remediationColor(meta.remediation.supportLevel)
+            }
+          >
+            {remediationLabel(meta.remediation.supportLevel)}
+          </span>
+        </div>
+        <p className="mt-3 text-muted-foreground">{meta.remediation.approach}</p>
+        <p className="mt-3 text-sm text-muted-foreground">
+          <a
+            href={meta.remediation.docsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Official ${meta.label} docs (opens in a new tab)`}
+            className="font-medium text-foreground underline underline-offset-4"
+          >
+            Official {meta.label} docs →
+          </a>{" "}
+          blockrate's own{" "}
+          <Link to="/docs" className="font-medium text-foreground underline underline-offset-4">
+            first-party reporter
+          </Link>{" "}
+          already forwards events from your domain.
+        </p>
+      </section>
 
       <section className="mt-10">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">

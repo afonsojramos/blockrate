@@ -42,6 +42,15 @@ describe("PROVIDER_META parity with core", () => {
       expect(p.blurb.length).toBeGreaterThan(0);
     }
   });
+
+  it("every entry has remediation: non-empty approach, https docs URL, valid support level", () => {
+    const levels = new Set(["official", "partial", "server-side-only", "none"]);
+    for (const p of PROVIDER_META) {
+      expect(p.remediation.approach.length).toBeGreaterThan(0);
+      expect(p.remediation.docsUrl).toMatch(/^https:\/\//);
+      expect(levels.has(p.remediation.supportLevel)).toBe(true);
+    }
+  });
 });
 
 describe("getProviderMeta", () => {
