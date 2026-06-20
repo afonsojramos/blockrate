@@ -103,7 +103,8 @@ function Demo() {
         <p className="text-lg text-muted-foreground">
           This page checks 10 common third-party analytics tools from your browser, right now, using
           the same <code className="font-mono text-sm">blockrate</code> library your app would use.
-          No data leaves your browser — this is purely client-side.
+          The detection runs entirely client-side. We log only the result (provider, status, and
+          browser family, with no personal data) to our own dashboard.
         </p>
       </header>
 
