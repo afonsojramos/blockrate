@@ -15,21 +15,16 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function HeroChart({ data }: { data: HeroStats }) {
-  const chartData = data.providers.map((p) => {
-    const valid = p.rates.filter((r): r is number => r !== null);
-    const avg = valid.length > 0 ? valid.reduce((a, b) => a + b, 0) / valid.length : 0;
-    return {
-      provider: p.name,
-      blockRate: Math.round(avg * 1000) / 10,
-    };
-  });
+  const chartData = data.providers.map((p) => ({
+    provider: p.name,
+    blockRate: Math.round(p.rate * 1000) / 10,
+  }));
 
   return (
     <div className="p-4">
       {data.worstProvider && (
         <p className="mb-2 text-center text-sm text-muted-foreground">
-          Avg block rate across {data.providers.length} providers over {data.days.length} day
-          {data.days.length !== 1 && "s"}
+          Avg block rate across {data.providers.length} providers of all time
         </p>
       )}
       <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[280px]">

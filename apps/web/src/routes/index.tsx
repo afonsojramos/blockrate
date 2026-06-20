@@ -88,15 +88,10 @@ function Landing() {
               <HeroChart data={heroStats} />
             </div>
             <p className="text-sm text-muted-foreground lg:hidden">
-              Right now,{" "}
+              Across all time,{" "}
               <span className="font-semibold tabular-nums text-foreground">
                 {(
-                  (heroStats.providers.reduce((sum, p) => {
-                    const valid = p.rates.filter((r): r is number => r !== null);
-                    return (
-                      sum + (valid.length > 0 ? valid.reduce((a, b) => a + b, 0) / valid.length : 0)
-                    );
-                  }, 0) /
+                  (heroStats.providers.reduce((sum, p) => sum + p.rate, 0) /
                     heroStats.providers.length) *
                   100
                 ).toFixed(1)}
