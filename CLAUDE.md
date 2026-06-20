@@ -69,8 +69,10 @@ two deploys).
   keeps the consent-free promise (no `sessionStorage` writes). See `types.ts`.
 - **/demo latency uniformity** — browsers batch blocked-fetch rejections into one
   microtask flush, so blocked providers share a latency. A browser artifact, not a bug.
-- **meta-pixel uses an Image probe** — `fbq` sets `loaded` on its own stub, so the global
-  can't be gated; image-onerror is the only ground-truth signal.
+- **meta-pixel uses a CORS GET probe** — `fbq` sets `loaded` on its own stub, so the
+  global can't be gated. `facebook.com/tr` serves CORS on GET (not HEAD), so detection is a
+  CORS GET fetch. It used an `<img>` probe until Meta switched `/tr` from a 1x1 gif to an
+  empty `text/plain` 200, which made onerror fire for every visitor (100% false-blocked).
 
 ## Conventions
 

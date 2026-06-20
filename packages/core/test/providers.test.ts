@@ -13,15 +13,9 @@ import {
 } from "../src/providers";
 
 const originalFetch = globalThis.fetch;
-const originalImage = (globalThis as any).Image;
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
-  if (originalImage === undefined) {
-    delete (globalThis as any).Image;
-  } else {
-    (globalThis as any).Image = originalImage;
-  }
   delete (globalThis as any).window;
 });
 
@@ -209,48 +203,34 @@ describe("providers", () => {
 
   // ─── meta-pixel ─────────────────────────────────────────────────────
   describe("meta-pixel", () => {
-    it("loaded when image probe fires onload (ignores window.fbq stub)", async () => {
+    it("loaded when the CORS GET probe resolves (ignores window.fbq stub)", async () => {
       // Mirrors the real Meta Pixel base code, which sets fbq.loaded=true
       // on its own stub; this would have been a false positive in the old
       // global check.
       (globalThis as any).window.fbq = Object.assign(() => {}, { loaded: true, queue: [] });
-      class Img {
-        onload: (() => void) | null = null;
-        onerror: (() => void) | null = null;
-        set src(_url: string) {
-          queueMicrotask(() => this.onload?.());
-        }
-      }
-      (globalThis as any).Image = Img;
+      globalThis.fetch = (async () => new Response(null)) as any;
       expect(await metaPixel.detect()).toBe("loaded");
     });
 
-    it("blocked when image probe fires onerror, even with window.fbq stub present", async () => {
+    it("blocked when the probe throws, even with window.fbq stub present", async () => {
       (globalThis as any).window.fbq = Object.assign(() => {}, { loaded: true, queue: [] });
-      class Img {
-        onload: (() => void) | null = null;
-        onerror: (() => void) | null = null;
-        set src(_url: string) {
-          queueMicrotask(() => this.onerror?.());
-        }
-      }
-      (globalThis as any).Image = Img;
+      globalThis.fetch = (async () => {
+        throw new TypeError();
+      }) as any;
       expect(await metaPixel.detect()).toBe("blocked");
     });
 
-    it("probes the facebook.com/tr pixel endpoint", async () => {
-      let captured = "";
-      class Img {
-        onload: (() => void) | null = null;
-        onerror: (() => void) | null = null;
-        set src(url: string) {
-          captured = url;
-          queueMicrotask(() => this.onload?.());
-        }
-      }
-      (globalThis as any).Image = Img;
+    it("probes facebook.com/tr with a CORS GET (HEAD has no CORS; /tr is not an image)", async () => {
+      let capturedUrl = "";
+      let capturedMethod = "";
+      globalThis.fetch = (async (url: string | URL, init?: RequestInit) => {
+        capturedUrl = url.toString();
+        capturedMethod = (init?.method as string) ?? "";
+        return new Response(null);
+      }) as any;
       await metaPixel.detect();
-      expect(captured).toBe("https://www.facebook.com/tr?id=0&ev=PageView");
+      expect(capturedUrl).toBe("https://www.facebook.com/tr?id=0&ev=PageView");
+      expect(capturedMethod).toBe("GET");
     });
   });
 

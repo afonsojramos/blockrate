@@ -45,15 +45,9 @@ import {
 import type { Provider } from "../src/types";
 
 const originalFetch = globalThis.fetch;
-const originalImage = (globalThis as any).Image;
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
-  if (originalImage === undefined) {
-    delete (globalThis as any).Image;
-  } else {
-    (globalThis as any).Image = originalImage;
-  }
   delete (globalThis as any).window;
 });
 
@@ -69,21 +63,6 @@ function trackingFetch(): { fetchedUrls: string[]; restore: () => void } {
     return new Response(null);
   }) as any;
   return { fetchedUrls, restore: () => (globalThis.fetch = originalFetch) };
-}
-
-// Image-loading mock for meta-pixel.
-function trackingImage(outcome: "load" | "error" = "load"): { fetchedUrls: string[] } {
-  const fetchedUrls: string[] = [];
-  class FakeImage {
-    onload: (() => void) | null = null;
-    onerror: (() => void) | null = null;
-    set src(url: string) {
-      fetchedUrls.push(url);
-      queueMicrotask(() => (outcome === "load" ? this.onload?.() : this.onerror?.()));
-    }
-  }
-  (globalThis as any).Image = FakeImage;
-  return { fetchedUrls };
 }
 
 // ─── Providers WITH a meaningful post-load global ──────────────────────
@@ -248,9 +227,8 @@ interface ProbeOnlyFixture {
   windowKey: string;
   snippet: () => unknown;
   loaded: () => unknown;
-  // For amplitude/intercom/hotjar: HEAD probe.
-  // For meta-pixel: image probe.
-  probeKind: "fetch" | "image";
+  // All probe-only providers use a CORS fetch probe (meta-pixel uses GET
+  // because Meta serves CORS only on GET; the rest use HEAD).
   expectedProbeUrl: string;
 }
 
@@ -267,7 +245,6 @@ const PROBE_ONLY: ProbeOnlyFixture[] = [
       getInstance: () => ({ _isInitialized: true, options: { apiKey: "x" } }),
       _isInitialized: true,
     }),
-    probeKind: "fetch",
     expectedProbeUrl: "cdn.amplitude.com",
   },
   {
@@ -276,7 +253,6 @@ const PROBE_ONLY: ProbeOnlyFixture[] = [
     windowKey: "Intercom",
     snippet: () => Object.assign(() => {}, { q: [] }),
     loaded: () => Object.assign(() => {}, { booted: true }),
-    probeKind: "fetch",
     expectedProbeUrl: "widget.intercom.io",
   },
   {
@@ -285,7 +261,6 @@ const PROBE_ONLY: ProbeOnlyFixture[] = [
     windowKey: "hj",
     snippet: () => Object.assign(() => {}, { q: [] }),
     loaded: () => () => {},
-    probeKind: "fetch",
     expectedProbeUrl: "script.hotjar.com",
   },
   {
@@ -297,7 +272,6 @@ const PROBE_ONLY: ProbeOnlyFixture[] = [
     // check would have failed on.
     snippet: () => Object.assign(() => {}, { loaded: true, queue: [], version: "2.0" }),
     loaded: () => Object.assign(() => {}, { loaded: true, version: "2.0", callMethod: () => {} }),
-    probeKind: "image",
     expectedProbeUrl: "facebook.com/tr",
   },
 ];
@@ -306,28 +280,16 @@ describe("provider-shapes: probe-only detectors (no global gate)", () => {
   for (const f of PROBE_ONLY) {
     describe(f.name, () => {
       it("with no global → fires probe", async () => {
-        if (f.probeKind === "fetch") {
-          const { fetchedUrls } = trackingFetch();
-          await f.provider.detect();
-          expect(fetchedUrls.some((u) => u.includes(f.expectedProbeUrl))).toBe(true);
-        } else {
-          const { fetchedUrls } = trackingImage("load");
-          await f.provider.detect();
-          expect(fetchedUrls.some((u) => u.includes(f.expectedProbeUrl))).toBe(true);
-        }
+        const { fetchedUrls } = trackingFetch();
+        await f.provider.detect();
+        expect(fetchedUrls.some((u) => u.includes(f.expectedProbeUrl))).toBe(true);
       });
 
       it("with snippet stub → STILL fires probe (does not short-circuit)", async () => {
         (globalThis as any).window[f.windowKey] = f.snippet();
-        if (f.probeKind === "fetch") {
-          const { fetchedUrls } = trackingFetch();
-          await f.provider.detect();
-          expect(fetchedUrls.length).toBeGreaterThan(0);
-        } else {
-          const { fetchedUrls } = trackingImage("load");
-          await f.provider.detect();
-          expect(fetchedUrls.length).toBeGreaterThan(0);
-        }
+        const { fetchedUrls } = trackingFetch();
+        await f.provider.detect();
+        expect(fetchedUrls.length).toBeGreaterThan(0);
       });
 
       it("with real loaded shape → STILL fires probe (probe is ground truth)", async () => {
@@ -335,15 +297,9 @@ describe("provider-shapes: probe-only detectors (no global gate)", () => {
         // even when it looks "real" — there's no reliable cross-version
         // discriminator. The probe is the source of truth.
         (globalThis as any).window[f.windowKey] = f.loaded();
-        if (f.probeKind === "fetch") {
-          const { fetchedUrls } = trackingFetch();
-          await f.provider.detect();
-          expect(fetchedUrls.length).toBeGreaterThan(0);
-        } else {
-          const { fetchedUrls } = trackingImage("load");
-          await f.provider.detect();
-          expect(fetchedUrls.length).toBeGreaterThan(0);
-        }
+        const { fetchedUrls } = trackingFetch();
+        await f.provider.detect();
+        expect(fetchedUrls.length).toBeGreaterThan(0);
       });
     });
   }

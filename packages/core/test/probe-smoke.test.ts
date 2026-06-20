@@ -14,10 +14,12 @@
  *
  * Strategy per provider matches packages/core/src/providers/*.ts:
  *   - Most providers: HEAD + Origin, expect 2xx/3xx/4xx + CORS header.
- *   - meta-pixel: Meta refuses CORS on HEAD but serves it on GET; and
- *     since meta-pixel uses probeImage() at runtime, the smoke test
- *     also verifies GET returns CORS (the closest Bun-runnable proxy
- *     for an <img> that loads in a real browser).
+ *   - meta-pixel: Meta refuses CORS on HEAD but serves it on GET, so the
+ *     runtime detector probes `facebook.com/tr` with a CORS GET. This smoke
+ *     check uses the same GET + Origin and asserts the CORS header is
+ *     present — a revoked CORS policy here would silently break detection.
+ *     (The old <img> probe broke when Meta switched /tr from a 1x1 gif to
+ *     an empty text/plain 200, reporting every visitor as blocked.)
  */
 
 import { describe, it, expect } from "bun:test";

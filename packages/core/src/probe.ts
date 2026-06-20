@@ -22,13 +22,21 @@ import type { ProviderStatus } from "./types";
  * blocked (~5ms TypeError) from timeout-blocked (~3000ms abort). Honest
  * latency is more valuable than a marginal-impact retry; in practice ad
  * blocker rejections are deterministic, not transient.
+ *
+ * `method` defaults to HEAD (cheapest). Pass "GET" for endpoints that serve
+ * CORS only on GET, not HEAD — Meta's `facebook.com/tr` is the canonical
+ * case (it reflects the Origin on GET but returns no CORS headers on HEAD).
  */
-export async function probe(url: string, timeoutMs = 3000): Promise<ProviderStatus> {
+export async function probe(
+  url: string,
+  timeoutMs = 3000,
+  method: "HEAD" | "GET" = "HEAD",
+): Promise<ProviderStatus> {
   const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
   const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
   try {
     await fetch(url, {
-      method: "HEAD",
+      method,
       mode: "cors",
       cache: "no-store",
       signal: controller?.signal,
@@ -43,12 +51,14 @@ export async function probe(url: string, timeoutMs = 3000): Promise<ProviderStat
 }
 
 /**
- * Image-based probe for providers whose CDN does not serve CORS headers
- * (Meta Pixel is the canonical case — `connect.facebook.net` and
- * `facebook.com/tr` deliberately refuse CORS on HEAD). Image tags don't
- * require CORS: any cross-origin image can `<img src>` load as long as
- * the network request succeeds. Ad blockers block the network request
- * itself (by hostname/path), so `onerror` is the correct signal.
+ * Image-based probe for endpoints that genuinely serve a decodable image
+ * and refuse CORS entirely. `onload` means the network request reached a
+ * real image; `onerror` means it was blocked OR the response was not an
+ * image. That second case is a footgun: Meta's `facebook.com/tr` used to
+ * return a 1x1 gif but now returns an empty `text/plain` 200, so this probe
+ * reported every visitor as blocked. meta-pixel therefore uses the CORS GET
+ * `probe()` instead (Meta serves CORS on GET). Keep that in mind before
+ * pointing this at any endpoint whose body is not a guaranteed image.
  *
  * Guards against server-side import: `Image` is browser-only. If this
  * runs in Node/Bun/SSR (no DOM), we return "blocked" rather than throw.
