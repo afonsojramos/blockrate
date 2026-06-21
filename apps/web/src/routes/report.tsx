@@ -37,6 +37,7 @@ export const Route = createFileRoute("/report")({
       description: DESCRIPTION,
       path: "/report",
       type: "article",
+      image: "/og-report.png",
       ...(jsonLd ? { jsonLd } : {}),
     });
   },

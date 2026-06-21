@@ -21,6 +21,7 @@ import wawoff from "wawoff2";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WEB_ROOT = join(HERE, "..");
 const OUT = join(WEB_ROOT, "public", "og.png");
+const OUT_REPORT = join(WEB_ROOT, "public", "og-report.png");
 
 const W = 1200;
 const H = 630;
@@ -78,7 +79,9 @@ function chartRow(r: (typeof ROWS)[number], y: number): string {
 
 const rowsSvg = ROWS.map((r, i) => chartRow(r, 405 + i * 70)).join("");
 
-const svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+/** Build the card SVG with a two-line headline (rest of the layout is shared). */
+function buildSvg(line1: string, line2: string): string {
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="${C.bgTop}"/>
@@ -97,8 +100,8 @@ const svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http
   <text x="${PAD}" y="108" font-family="Geist" font-weight="600" font-size="30" fill="${C.muted}">blockrate.app</text>
 
   <!-- headline -->
-  <text x="${PAD}" y="210" font-family="Geist" font-weight="700" font-size="62" fill="${C.text}">Know what your ad blockers</text>
-  <text x="${PAD}" y="282" font-family="Geist" font-weight="700" font-size="62" fill="${C.text}">are hiding from your analytics.</text>
+  <text x="${PAD}" y="210" font-family="Geist" font-weight="700" font-size="62" fill="${C.text}">${line1}</text>
+  <text x="${PAD}" y="282" font-family="Geist" font-weight="700" font-size="62" fill="${C.text}">${line2}</text>
 
   <!-- per-provider block rate (the green→amber→red brand gradient) -->
   ${rowsSvg}
@@ -106,12 +109,20 @@ const svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http
   <!-- gradient signature strip -->
   <rect x="0" y="${H - 10}" width="${W}" height="10" fill="url(#rate)"/>
 </svg>`;
+}
 
 const fontFiles = await prepareFonts();
-const resvg = new Resvg(svg, {
-  font: { fontFiles, defaultFontFamily: "Geist", loadSystemFonts: false },
-  fitTo: { mode: "original" },
-});
-await mkdir(dirname(OUT), { recursive: true });
-await writeFile(OUT, resvg.render().asPng());
-console.log(`Wrote ${OUT} (${W}×${H})`);
+
+async function renderCard(line1: string, line2: string, outPath: string): Promise<void> {
+  const resvg = new Resvg(buildSvg(line1, line2), {
+    font: { fontFiles, defaultFontFamily: "Geist", loadSystemFonts: false },
+    fitTo: { mode: "original" },
+  });
+  await mkdir(dirname(outPath), { recursive: true });
+  await writeFile(outPath, resvg.render().asPng());
+  console.log(`Wrote ${outPath} (${W}×${H})`);
+}
+
+// Default site card (unchanged content) + the /report launch-asset card.
+await renderCard("Know what your ad blockers", "are hiding from your analytics.", OUT);
+await renderCard("Which analytics tools are", "actually blocked, by provider.", OUT_REPORT);
