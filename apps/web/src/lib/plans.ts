@@ -18,6 +18,8 @@ export interface Plan {
   retentionDays: number;
   /** Days of event history visible in the dashboard. */
   dashboardHistoryDays: number;
+  /** Maximum alert rules. 0 disables alerting entirely (the Free gate). */
+  maxAlertRules: number;
 }
 
 export const PLANS: Record<PlanName, Plan> = {
@@ -28,6 +30,7 @@ export const PLANS: Record<PlanName, Plan> = {
     maxKeys: 3,
     retentionDays: 30,
     dashboardHistoryDays: 30,
+    maxAlertRules: 0,
   },
   pro: {
     name: "pro",
@@ -36,6 +39,7 @@ export const PLANS: Record<PlanName, Plan> = {
     maxKeys: 50,
     retentionDays: 90,
     dashboardHistoryDays: 90,
+    maxAlertRules: 10,
   },
   team: {
     name: "team",
@@ -44,6 +48,7 @@ export const PLANS: Record<PlanName, Plan> = {
     maxKeys: 500,
     retentionDays: 365,
     dashboardHistoryDays: 365,
+    maxAlertRules: 50,
   },
 };
 

@@ -35,9 +35,11 @@ import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhoo
 import { Route as ApiStripePortalRouteImport } from './routes/api/stripe/portal'
 import { Route as ApiStripeCheckoutRouteImport } from './routes/api/stripe/checkout'
 import { Route as ApiInternalRetentionRouteImport } from './routes/api/internal/retention'
+import { Route as ApiInternalAlertsRouteImport } from './routes/api/internal/alerts'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
 import { Route as AuthedAppSettingsRouteImport } from './routes/_authed/app/settings'
 import { Route as AuthedAppKeysRouteImport } from './routes/_authed/app/keys'
+import { Route as AuthedAppAlertsRouteImport } from './routes/_authed/app/alerts'
 import { Route as AuthedAppAdminIndexRouteImport } from './routes/_authed/app/admin/index'
 
 const TermsRoute = TermsRouteImport.update({
@@ -170,6 +172,11 @@ const ApiInternalRetentionRoute = ApiInternalRetentionRouteImport.update({
   path: '/api/internal/retention',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiInternalAlertsRoute = ApiInternalAlertsRouteImport.update({
+  id: '/api/internal/alerts',
+  path: '/api/internal/alerts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -183,6 +190,11 @@ const AuthedAppSettingsRoute = AuthedAppSettingsRouteImport.update({
 const AuthedAppKeysRoute = AuthedAppKeysRouteImport.update({
   id: '/app/keys',
   path: '/app/keys',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedAppAlertsRoute = AuthedAppAlertsRouteImport.update({
+  id: '/app/alerts',
+  path: '/app/alerts',
   getParentRoute: () => AuthedRoute,
 } as any)
 const AuthedAppAdminIndexRoute = AuthedAppAdminIndexRouteImport.update({
@@ -210,9 +222,11 @@ export interface FileRoutesByFullPath {
   '/api/ingest': typeof ApiIngestRoute
   '/docs/api': typeof DocsApiRoute
   '/block-rate/': typeof BlockRateIndexRoute
+  '/app/alerts': typeof AuthedAppAlertsRoute
   '/app/keys': typeof AuthedAppKeysRoute
   '/app/settings': typeof AuthedAppSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/internal/alerts': typeof ApiInternalAlertsRoute
   '/api/internal/retention': typeof ApiInternalRetentionRoute
   '/api/stripe/checkout': typeof ApiStripeCheckoutRoute
   '/api/stripe/portal': typeof ApiStripePortalRoute
@@ -241,9 +255,11 @@ export interface FileRoutesByTo {
   '/api/ingest': typeof ApiIngestRoute
   '/docs/api': typeof DocsApiRoute
   '/block-rate': typeof BlockRateIndexRoute
+  '/app/alerts': typeof AuthedAppAlertsRoute
   '/app/keys': typeof AuthedAppKeysRoute
   '/app/settings': typeof AuthedAppSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/internal/alerts': typeof ApiInternalAlertsRoute
   '/api/internal/retention': typeof ApiInternalRetentionRoute
   '/api/stripe/checkout': typeof ApiStripeCheckoutRoute
   '/api/stripe/portal': typeof ApiStripePortalRoute
@@ -274,9 +290,11 @@ export interface FileRoutesById {
   '/api/ingest': typeof ApiIngestRoute
   '/docs/api': typeof DocsApiRoute
   '/block-rate/': typeof BlockRateIndexRoute
+  '/_authed/app/alerts': typeof AuthedAppAlertsRoute
   '/_authed/app/keys': typeof AuthedAppKeysRoute
   '/_authed/app/settings': typeof AuthedAppSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/internal/alerts': typeof ApiInternalAlertsRoute
   '/api/internal/retention': typeof ApiInternalRetentionRoute
   '/api/stripe/checkout': typeof ApiStripeCheckoutRoute
   '/api/stripe/portal': typeof ApiStripePortalRoute
@@ -307,9 +325,11 @@ export interface FileRouteTypes {
     | '/api/ingest'
     | '/docs/api'
     | '/block-rate/'
+    | '/app/alerts'
     | '/app/keys'
     | '/app/settings'
     | '/api/auth/$'
+    | '/api/internal/alerts'
     | '/api/internal/retention'
     | '/api/stripe/checkout'
     | '/api/stripe/portal'
@@ -338,9 +358,11 @@ export interface FileRouteTypes {
     | '/api/ingest'
     | '/docs/api'
     | '/block-rate'
+    | '/app/alerts'
     | '/app/keys'
     | '/app/settings'
     | '/api/auth/$'
+    | '/api/internal/alerts'
     | '/api/internal/retention'
     | '/api/stripe/checkout'
     | '/api/stripe/portal'
@@ -370,9 +392,11 @@ export interface FileRouteTypes {
     | '/api/ingest'
     | '/docs/api'
     | '/block-rate/'
+    | '/_authed/app/alerts'
     | '/_authed/app/keys'
     | '/_authed/app/settings'
     | '/api/auth/$'
+    | '/api/internal/alerts'
     | '/api/internal/retention'
     | '/api/stripe/checkout'
     | '/api/stripe/portal'
@@ -403,6 +427,7 @@ export interface RootRouteChildren {
   ApiIngestRoute: typeof ApiIngestRoute
   BlockRateIndexRoute: typeof BlockRateIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiInternalAlertsRoute: typeof ApiInternalAlertsRoute
   ApiInternalRetentionRoute: typeof ApiInternalRetentionRoute
   ApiStripeCheckoutRoute: typeof ApiStripeCheckoutRoute
   ApiStripePortalRoute: typeof ApiStripePortalRoute
@@ -595,6 +620,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiInternalRetentionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/internal/alerts': {
+      id: '/api/internal/alerts'
+      path: '/api/internal/alerts'
+      fullPath: '/api/internal/alerts'
+      preLoaderRoute: typeof ApiInternalAlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -616,6 +648,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAppKeysRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/app/alerts': {
+      id: '/_authed/app/alerts'
+      path: '/app/alerts'
+      fullPath: '/app/alerts'
+      preLoaderRoute: typeof AuthedAppAlertsRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/app/admin/': {
       id: '/_authed/app/admin/'
       path: '/app/admin'
@@ -627,6 +666,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthedRouteChildren {
+  AuthedAppAlertsRoute: typeof AuthedAppAlertsRoute
   AuthedAppKeysRoute: typeof AuthedAppKeysRoute
   AuthedAppSettingsRoute: typeof AuthedAppSettingsRoute
   AuthedAppIndexRoute: typeof AuthedAppIndexRoute
@@ -634,6 +674,7 @@ interface AuthedRouteChildren {
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
+  AuthedAppAlertsRoute: AuthedAppAlertsRoute,
   AuthedAppKeysRoute: AuthedAppKeysRoute,
   AuthedAppSettingsRoute: AuthedAppSettingsRoute,
   AuthedAppIndexRoute: AuthedAppIndexRoute,
@@ -673,6 +714,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiIngestRoute: ApiIngestRoute,
   BlockRateIndexRoute: BlockRateIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiInternalAlertsRoute: ApiInternalAlertsRoute,
   ApiInternalRetentionRoute: ApiInternalRetentionRoute,
   ApiStripeCheckoutRoute: ApiStripeCheckoutRoute,
   ApiStripePortalRoute: ApiStripePortalRoute,

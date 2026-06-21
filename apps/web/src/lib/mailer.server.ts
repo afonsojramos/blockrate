@@ -62,3 +62,37 @@ will be created or modified.
 — blockrate.app
 `;
 }
+
+/**
+ * Alert notification body. Plain text, one CTA to the alerts page. Describes
+ * which scope crossed which threshold so the email stands on its own without
+ * opening the dashboard.
+ */
+export function alertEmailBody(args: {
+  ruleName: string;
+  provider: string | null;
+  service: string | null;
+  ratePct: number;
+  comparator: "gte" | "lte";
+  threshold: number;
+  windowHours: number;
+}): string {
+  const scope = args.provider ?? "all providers";
+  const where = args.service ? ` (service "${args.service}")` : "";
+  const direction = args.comparator === "gte" ? "at or above" : "at or below";
+  const rate = `${args.ratePct.toFixed(1)}%`;
+  const siteUrl = (env.VITE_SITE_URL ?? "https://blockrate.app").replace(/\/$/, "");
+
+  return `Heads up — your blockrate alert "${args.ruleName}" just fired.
+
+${scope}${where} is now ${rate} blocked over the last ${args.windowHours}h,
+which is ${direction} your ${args.threshold}% threshold.
+
+Review the rule or adjust the threshold:
+${siteUrl}/app/alerts
+
+You'll only get one email per rule until its cooldown elapses.
+
+— blockrate.app
+`;
+}
