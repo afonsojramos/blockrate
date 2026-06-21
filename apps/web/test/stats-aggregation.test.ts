@@ -12,7 +12,7 @@
  * loudly if the `.mapWith(Number)` / `count()` coercion regresses.
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
@@ -117,6 +117,12 @@ describe("per-provider stats aggregation", () => {
   let db: TestDb;
   beforeEach(async () => {
     db = await freshDb();
+  });
+
+  // Close the per-test PGlite so its WASM heap is reclaimed (prevents the
+  // single bun-test process from OOMing as instances accumulate).
+  afterEach(async () => {
+    await db.$client.close();
   });
 
   it("returns counts as real numbers, not driver strings", async () => {

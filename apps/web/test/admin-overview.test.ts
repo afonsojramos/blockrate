@@ -11,7 +11,7 @@
  *      covered by other tests).
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
@@ -218,6 +218,12 @@ describe("admin overview queries", () => {
 
   beforeEach(async () => {
     db = await freshDb();
+  });
+
+  // Close the per-test PGlite so its WASM heap is reclaimed; otherwise instances
+  // accumulate across the single bun-test process and OOM intermittently.
+  afterEach(async () => {
+    await db.$client.close();
   });
 
   it("returns all zeros on an empty database", async () => {

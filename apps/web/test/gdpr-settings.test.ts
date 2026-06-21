@@ -21,7 +21,7 @@
  * and constraints are the production shape, not an SQLite knockoff.
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
@@ -153,6 +153,12 @@ describe("GDPR: exportEventsCsv", () => {
     db = await freshDb();
   });
 
+  // Close the per-test PGlite so its WASM heap is reclaimed (prevents the
+  // single bun-test process from OOMing as instances accumulate).
+  afterEach(async () => {
+    await db.$client.close();
+  });
+
   it("returns every event for the account in a valid CSV", async () => {
     const { account } = await seedAccount(db, {
       userId: "u1",
@@ -221,6 +227,12 @@ describe("GDPR: deleteAccount cascade", () => {
 
   beforeEach(async () => {
     db = await freshDb();
+  });
+
+  // Close the per-test PGlite so its WASM heap is reclaimed (prevents the
+  // single bun-test process from OOMing as instances accumulate).
+  afterEach(async () => {
+    await db.$client.close();
   });
 
   it("deletes all account data when the user row is deleted", async () => {

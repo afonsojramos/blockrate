@@ -5,7 +5,7 @@
  * mocks the DB.
  */
 
-import { beforeEach, describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
@@ -36,6 +36,12 @@ beforeEach(async () => {
   const client = new PGlite();
   db = drizzle(client, { schema }) as unknown as RealDb;
   await migrate(db as never, { migrationsFolder: MIGRATIONS_FOLDER });
+});
+
+// Close the per-test PGlite so its WASM heap is reclaimed; otherwise instances
+// accumulate across the single bun-test process and OOM intermittently.
+afterEach(async () => {
+  await (db as unknown as { $client: { close: () => Promise<void> } }).$client.close();
 });
 
 describe("computeProviderTrend", () => {
