@@ -23,7 +23,7 @@ const PROVIDERS = [
   ["hotjar", "script.hotjar.com probe (snippet stub indistinguishable)"],
   ["amplitude", "cdn.amplitude.com probe (snippet stub varies across SDK majors)"],
   ["mixpanel", "mixpanel.__loaded === true + cdn.mxpnl.com probe"],
-  ["meta-pixel", "facebook.com/tr image probe (fbq stub sets loaded=true itself)"],
+  ["meta-pixel", "facebook.com/tr CORS GET probe (fbq stub sets loaded=true itself)"],
   ["intercom", "widget.intercom.io probe (snippet Intercom is callable stub)"],
 ];
 
@@ -348,11 +348,12 @@ export const POST = createBlockRateHandler({
             <code className="font-mono text-xs">fetch</code> HEAD probe to the provider's CDN with{" "}
             <code className="font-mono text-xs">mode: "cors"</code>. If the ad blocker redirects to
             a local response (which lacks CORS headers), the fetch throws — correctly detected as
-            blocked. One exception: <code className="font-mono text-xs">meta-pixel</code> uses an{" "}
-            <code className="font-mono text-xs">&lt;img&gt;</code> probe instead, since Meta
-            deliberately serves no CORS headers on their pixel endpoint — the pixel is an image
-            regardless, and ad blockers block the hostname, so{" "}
-            <code className="font-mono text-xs">onerror</code> is the accurate blocked signal.
+            blocked. One exception: <code className="font-mono text-xs">meta-pixel</code> uses a
+            CORS <code className="font-mono text-xs">GET</code> fetch (not HEAD), because{" "}
+            <code className="font-mono text-xs">fbq</code> sets its own loaded flag on the stub (so
+            the global can't be gated) and{" "}
+            <code className="font-mono text-xs">facebook.com/tr</code> only serves CORS headers on
+            GET — a blocked request lacks them and throws, the accurate blocked signal.
           </p>
 
           <div className="overflow-hidden rounded-md border border-border">
