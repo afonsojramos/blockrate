@@ -1,6 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import type { AlertRule } from "@/lib/db/schema";
 import { DAY_MS } from "@/lib/time";
+import { isBlockedWebhookHost } from "@/lib/webhook";
+
+/** Outbound webhook timeout — a hung endpoint must not stall the sweep. */
+const WEBHOOK_TIMEOUT_MS = 5_000;
 
 /**
  * Alert evaluation sweep. For every enabled alert rule, computes the block
@@ -33,15 +38,76 @@ function jsonError(message: string, status: number): Response {
   });
 }
 
+/**
+ * Deliver a fired alert via the rule's channel. Throws on any failure
+ * (no owner email, missing URL, non-2xx) so the caller's per-rule try/catch
+ * leaves `lastFiredAt` unset and the rule retries next sweep.
+ *   email   → the account owner, via Resend.
+ *   slack   → POST { text } (Slack incoming-webhook shape).
+ *   webhook → POST a structured JSON payload for programmatic consumers.
+ */
+async function deliverAlert(rule: AlertRule, ownerEmail: string | null, ratePct: number) {
+  const mailer = await import("@/lib/mailer.server");
+  const text = mailer.alertEmailBody({
+    ruleName: rule.name,
+    provider: rule.provider,
+    service: rule.service,
+    ratePct,
+    comparator: rule.comparator,
+    threshold: rule.threshold,
+    windowHours: rule.windowHours,
+  });
+
+  if (rule.channel === "email") {
+    if (!ownerEmail) throw new Error("email channel but no owner email");
+    await mailer.sendEmail({
+      to: ownerEmail,
+      subject: `blockrate alert: ${rule.provider ?? "block rate"} at ${ratePct.toFixed(0)}%`,
+      text,
+    });
+    return;
+  }
+
+  if (!rule.webhookUrl) throw new Error(`${rule.channel} channel but no webhookUrl`);
+  // Defense in depth: re-check the host even though create-time validation
+  // already blocked internal targets (in case a rule predates the guard).
+  if (isBlockedWebhookHost(new URL(rule.webhookUrl).hostname)) {
+    throw new Error("webhookUrl host is not allowed");
+  }
+  const payload =
+    rule.channel === "slack"
+      ? { text }
+      : {
+          rule: rule.name,
+          provider: rule.provider,
+          service: rule.service,
+          ratePct,
+          blockRate: ratePct / 100,
+          threshold: rule.threshold,
+          comparator: rule.comparator,
+          windowHours: rule.windowHours,
+        };
+  // redirect:"manual" → a 3xx surfaces as a non-ok opaque response, so an https
+  // URL can't bounce to an internal http target (the https-only check would
+  // otherwise be defeated by a redirect). Timeout bounds a hung endpoint.
+  const res = await fetch(rule.webhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    redirect: "manual",
+    signal: AbortSignal.timeout(WEBHOOK_TIMEOUT_MS),
+  });
+  if (!res.ok) throw new Error(`${rule.channel} POST failed: ${res.status}`);
+}
+
 export const Route = createFileRoute("/api/internal/alerts")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const [{ env }, { db }, schema, mailer, { getPlan }, drizzle] = await Promise.all([
+        const [{ env }, { db }, schema, { getPlan }, drizzle] = await Promise.all([
           import("@/lib/env.server"),
           import("@/lib/db/index.server"),
           import("@/lib/db/schema"),
-          import("@/lib/mailer.server"),
           import("@/lib/plans"),
           import("drizzle-orm"),
         ]);
@@ -116,25 +182,13 @@ export const Route = createFileRoute("/api/internal/alerts")({
               !rule.lastFiredAt || now - rule.lastFiredAt.getTime() >= rule.cooldownHours * HOUR_MS;
             if (!cooldownOk) {
               skippedCooldown++;
-            } else if (email) {
+            } else {
               try {
-                await mailer.sendEmail({
-                  to: email,
-                  subject: `blockrate alert: ${rule.provider ?? "block rate"} at ${ratePct.toFixed(0)}%`,
-                  text: mailer.alertEmailBody({
-                    ruleName: rule.name,
-                    provider: rule.provider,
-                    service: rule.service,
-                    ratePct,
-                    comparator: rule.comparator,
-                    threshold: rule.threshold,
-                    windowHours: rule.windowHours,
-                  }),
-                });
+                await deliverAlert(rule, email, ratePct);
                 didFire = true;
               } catch (err) {
                 // Don't stamp lastFiredAt — leave the rule to retry next sweep.
-                console.error("[alerts] send failed for rule", rule.id, err);
+                console.error("[alerts] delivery failed for rule", rule.id, err);
               }
             }
           }

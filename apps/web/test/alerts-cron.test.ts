@@ -6,7 +6,7 @@
  * test/setup.ts, so sendEmail logs instead of sending — no network.
  */
 
-import { beforeEach, describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { eq } from "drizzle-orm";
 import { resolve } from "node:path";
@@ -284,6 +284,85 @@ describe("alerts cron — edge triggering & re-gating", () => {
     await seedRule(accountId, { threshold: 30, comparator: "lte" });
     await insertEvents(accountId, apiKeyId, { blocked: 3, loaded: 7 }); // exactly 30%
     expect((await run()).fired).toBe(1);
+  });
+});
+
+describe("alerts cron — delivery channels", () => {
+  let fetchCalls: { url: string; body: unknown }[];
+  let nextOk = true;
+  const realFetch = globalThis.fetch;
+
+  beforeEach(async () => {
+    await reset();
+    fetchCalls = [];
+    nextOk = true;
+    globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
+      const raw = init?.body;
+      fetchCalls.push({ url: String(url), body: raw ? JSON.parse(raw as string) : null });
+      return new Response(nextOk ? "ok" : "fail", { status: nextOk ? 200 : 500 });
+    }) as typeof fetch;
+  });
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+  });
+
+  it("delivers a webhook POST with a JSON payload on a crossing", async () => {
+    const { accountId, apiKeyId } = await seedAccount("w1");
+    await seedRule(accountId, {
+      channel: "webhook",
+      webhookUrl: "https://hooks.test/x",
+      threshold: 30,
+    });
+    await insertEvents(accountId, apiKeyId, { blocked: 4, loaded: 6 }); // 40%
+
+    expect((await run()).fired).toBe(1);
+    expect(fetchCalls.length).toBe(1);
+    expect(fetchCalls[0]!.url).toBe("https://hooks.test/x");
+    expect(fetchCalls[0]!.body).toMatchObject({
+      provider: "ga4",
+      threshold: 30,
+      comparator: "gte",
+    });
+  });
+
+  it("delivers a slack POST shaped as { text }", async () => {
+    const { accountId, apiKeyId } = await seedAccount("s1");
+    await seedRule(accountId, {
+      channel: "slack",
+      webhookUrl: "https://hooks.slack.com/x",
+      threshold: 30,
+    });
+    await insertEvents(accountId, apiKeyId, { blocked: 5, loaded: 5 }); // 50%
+
+    await run();
+    expect(fetchCalls.length).toBe(1);
+    expect(typeof (fetchCalls[0]!.body as { text?: unknown }).text).toBe("string");
+  });
+
+  it("does not POST for an email-channel rule (uses sendEmail)", async () => {
+    const { accountId, apiKeyId } = await seedAccount("e9");
+    await seedRule(accountId, { channel: "email", threshold: 30 });
+    await insertEvents(accountId, apiKeyId, { blocked: 4, loaded: 6 }); // 40%
+
+    expect((await run()).fired).toBe(1);
+    expect(fetchCalls.length).toBe(0);
+  });
+
+  it("does not stamp lastFiredAt when the webhook POST fails (retries next sweep)", async () => {
+    const { accountId, apiKeyId } = await seedAccount("f1");
+    const rule = await seedRule(accountId, {
+      channel: "webhook",
+      webhookUrl: "https://hooks.test/x",
+      threshold: 30,
+    });
+    await insertEvents(accountId, apiKeyId, { blocked: 9, loaded: 1 }); // 90%
+    nextOk = false; // webhook responds 500
+
+    expect((await run()).fired).toBe(0);
+    const fresh = (
+      await db.select().from(schema.alertRules).where(eq(schema.alertRules.id, rule.id))
+    )[0]!;
+    expect(fresh.lastFiredAt).toBeNull();
   });
 });
 

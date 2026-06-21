@@ -54,6 +54,8 @@ const validRule = {
   windowHours: 24,
   minSample: 100,
   cooldownHours: 24,
+  channel: "email" as const,
+  webhookUrl: null,
 };
 
 beforeEach(async () => {
@@ -154,5 +156,84 @@ describe("alertRuleInput validation", () => {
   it("normalises an empty provider string to null (any provider)", () => {
     const parsed = alertRuleInput.parse({ ...validRule, provider: "" });
     expect(parsed.provider).toBeNull();
+  });
+});
+
+describe("alertRuleInput — delivery channel validation", () => {
+  it("defaults to the email channel with no webhook URL", () => {
+    const { channel, ...noChannel } = validRule;
+    void channel;
+    const parsed = alertRuleInput.parse(noChannel);
+    expect(parsed.channel).toBe("email");
+    expect(parsed.webhookUrl).toBeNull();
+  });
+
+  it("rejects an email rule that carries a webhook URL", () => {
+    expect(() =>
+      alertRuleInput.parse({ ...validRule, channel: "email", webhookUrl: "https://x.test/h" }),
+    ).toThrow();
+  });
+
+  it("accepts a webhook rule with an https URL", () => {
+    const parsed = alertRuleInput.parse({
+      ...validRule,
+      channel: "webhook",
+      webhookUrl: "https://hooks.example.com/abc",
+    });
+    expect(parsed.channel).toBe("webhook");
+    expect(parsed.webhookUrl).toBe("https://hooks.example.com/abc");
+  });
+
+  it("accepts a slack rule with an https URL", () => {
+    const parsed = alertRuleInput.parse({
+      ...validRule,
+      channel: "slack",
+      webhookUrl: "https://hooks.slack.com/services/T/B/x",
+    });
+    expect(parsed.channel).toBe("slack");
+  });
+
+  it("rejects a webhook rule with a non-https URL", () => {
+    expect(() =>
+      alertRuleInput.parse({
+        ...validRule,
+        channel: "webhook",
+        webhookUrl: "http://insecure.test",
+      }),
+    ).toThrow();
+  });
+
+  it("rejects a webhook/slack rule with no URL", () => {
+    expect(() =>
+      alertRuleInput.parse({ ...validRule, channel: "webhook", webhookUrl: null }),
+    ).toThrow();
+    expect(() =>
+      alertRuleInput.parse({ ...validRule, channel: "slack", webhookUrl: null }),
+    ).toThrow();
+  });
+
+  it("rejects a webhook rule pointed at an internal/loopback host (SSRF guard)", () => {
+    for (const url of [
+      "https://localhost/h",
+      "https://169.254.169.254/latest",
+      "https://10.0.0.5/h",
+      "https://192.168.1.1/h",
+    ]) {
+      expect(() =>
+        alertRuleInput.parse({ ...validRule, channel: "webhook", webhookUrl: url }),
+      ).toThrow();
+    }
+  });
+
+  it("persists channel + webhookUrl on create and returns them via list", async () => {
+    const accountId = await seedAccount("chan1", "pro");
+    await createAlertRuleForAccount(db, accountId, PLANS.pro, {
+      ...validRule,
+      channel: "slack",
+      webhookUrl: "https://hooks.slack.com/services/T/B/x",
+    });
+    const [rule] = await listAlertRulesForAccount(db, accountId);
+    expect(rule!.channel).toBe("slack");
+    expect(rule!.webhookUrl).toBe("https://hooks.slack.com/services/T/B/x");
   });
 });

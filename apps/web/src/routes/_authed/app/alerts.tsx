@@ -52,6 +52,8 @@ function AlertsPage() {
   const [windowHours, setWindowHours] = useState("24");
   const [minSample, setMinSample] = useState("100");
   const [cooldownHours, setCooldownHours] = useState("24");
+  const [channel, setChannel] = useState<"email" | "webhook" | "slack">("email");
+  const [webhookUrl, setWebhookUrl] = useState("");
 
   const ctrlRef = useRef<AbortController | null>(null);
   useEffect(() => () => ctrlRef.current?.abort(), []);
@@ -82,6 +84,8 @@ function AlertsPage() {
           windowHours: Number(windowHours),
           minSample: Number(minSample),
           cooldownHours: Number(cooldownHours),
+          channel,
+          webhookUrl: channel === "email" ? null : webhookUrl.trim() || null,
         },
       });
       if (ctrlRef.current.signal.aborted) return;
@@ -89,6 +93,8 @@ function AlertsPage() {
       setName("");
       setProvider("");
       setService("");
+      setChannel("email");
+      setWebhookUrl("");
       await refresh();
     } catch (err) {
       if (!ctrlRef.current.signal.aborted) {
@@ -183,6 +189,7 @@ function AlertsPage() {
                     <th className="px-2 py-3 font-medium">Scope</th>
                     <th className="px-2 py-3 font-medium">Condition</th>
                     <th className="px-2 py-3 font-medium">Window</th>
+                    <th className="px-2 py-3 font-medium">Notify</th>
                     <th className="px-2 py-3 font-medium">Last fired</th>
                     <th className="px-2 py-3 font-medium">Status</th>
                     <th className="px-2 py-3"></th>
@@ -197,6 +204,7 @@ function AlertsPage() {
                         {r.comparator === "gte" ? "≥" : "≤"} {r.threshold}% blocked
                       </td>
                       <td className="px-2 py-3 text-muted-foreground">{r.windowHours}h</td>
+                      <td className="px-2 py-3 text-muted-foreground">{r.channel}</td>
                       <td className="px-2 py-3 text-muted-foreground">
                         {r.lastFiredAt ? new Date(r.lastFiredAt).toLocaleDateString() : "never"}
                       </td>
@@ -350,6 +358,41 @@ function AlertsPage() {
                 />
               </div>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="channel">Notify via</Label>
+              <select
+                id="channel"
+                className={SELECT_CLASS}
+                value={channel}
+                onChange={(e) => setChannel(e.target.value as "email" | "webhook" | "slack")}
+                disabled={creating}
+              >
+                <option value="email">Email (account owner)</option>
+                <option value="slack">Slack</option>
+                <option value="webhook">Webhook</option>
+              </select>
+            </div>
+            {channel !== "email" && (
+              <div className="space-y-2">
+                <Label htmlFor="webhookUrl">
+                  {channel === "slack" ? "Slack incoming-webhook URL" : "Webhook URL"}
+                </Label>
+                <Input
+                  id="webhookUrl"
+                  type="url"
+                  value={webhookUrl}
+                  onChange={(e) => setWebhookUrl(e.target.value)}
+                  placeholder="https://…"
+                  required
+                  disabled={creating}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {channel === "slack"
+                    ? "We POST { text } to this URL — paste a Slack incoming-webhook URL."
+                    : "We POST a JSON payload (provider, rate, threshold) to this URL."}
+                </p>
+              </div>
+            )}
             <div className="min-h-5 text-sm text-destructive" role="alert">
               {createError}
             </div>

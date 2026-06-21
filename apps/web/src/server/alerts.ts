@@ -19,6 +19,7 @@ import { z } from "zod";
 import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
 import type * as schema from "@/lib/db/schema";
 import type { Plan } from "@/lib/plans";
+import { isBlockedWebhookHost } from "@/lib/webhook";
 
 type Db = BunSQLDatabase<typeof schema>;
 
@@ -27,7 +28,7 @@ type Db = BunSQLDatabase<typeof schema>;
 /** Trailing window cap: 30 days. Beyond that, use the dashboard, not an alert. */
 const MAX_WINDOW_HOURS = 24 * 30;
 
-export const alertRuleInput = z.object({
+const alertRuleObject = z.object({
   name: z.string().min(1).max(64),
   /** null / omitted = any provider. Empty string is normalised to null. */
   provider: z
@@ -45,11 +46,71 @@ export const alertRuleInput = z.object({
   windowHours: z.number().int().min(1).max(MAX_WINDOW_HOURS),
   minSample: z.number().int().min(1).max(1_000_000).default(100),
   cooldownHours: z.number().int().min(0).max(MAX_WINDOW_HOURS).default(24),
+  /** Delivery target. email → account owner; webhook/slack → POST to webhookUrl. */
+  channel: z.enum(["email", "webhook", "slack"]).default("email"),
+  webhookUrl: z
+    .string()
+    .max(2048)
+    .nullish()
+    .transform((v) => v?.trim() || null),
+});
+
+/**
+ * Cross-field rule: webhook/slack channels require an https URL; email forbids
+ * one. superRefine (object-level) is the only place this is expressible, so it
+ * wraps the raw object — `updateInput` derives from the raw object below since
+ * `.partial()` is unavailable on the refined (ZodEffects) schema.
+ */
+export const alertRuleInput = alertRuleObject.superRefine((val, ctx) => {
+  if (val.channel === "email") {
+    if (val.webhookUrl) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "webhookUrl must be empty for the email channel",
+        path: ["webhookUrl"],
+      });
+    }
+    return;
+  }
+  if (!val.webhookUrl) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `webhookUrl is required for the ${val.channel} channel`,
+      path: ["webhookUrl"],
+    });
+    return;
+  }
+  let parsed: URL | null = null;
+  try {
+    parsed = new URL(val.webhookUrl);
+  } catch {
+    parsed = null;
+  }
+  if (!parsed || parsed.protocol !== "https:") {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "webhookUrl must be a valid https:// URL",
+      path: ["webhookUrl"],
+    });
+    return;
+  }
+  if (isBlockedWebhookHost(parsed.hostname)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "webhookUrl host is not allowed (internal/loopback addresses are blocked)",
+      path: ["webhookUrl"],
+    });
+  }
 });
 
 export type AlertRuleInput = z.infer<typeof alertRuleInput>;
 
-const updateInput = alertRuleInput.partial().extend({
+// `channel`/`webhookUrl` are intentionally omitted from the update path: the
+// cross-field https + host refinement lives only on `alertRuleInput` (a
+// ZodEffects, so it can't be `.partial()`-ed). Dropping the delivery fields
+// here means an update can never set an unvalidated webhook target. When an
+// edit-delivery feature ships, re-add them with the same refinement applied.
+const updateInput = alertRuleObject.omit({ channel: true, webhookUrl: true }).partial().extend({
   id: z.number().int().positive(),
 });
 
@@ -100,6 +161,8 @@ export async function createAlertRuleForAccount(
       windowHours: input.windowHours,
       minSample: input.minSample,
       cooldownHours: input.cooldownHours,
+      channel: input.channel,
+      webhookUrl: input.webhookUrl,
     })
     .returning();
   if (!rule) throw new Error("failed to create alert rule");
