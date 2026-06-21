@@ -17,7 +17,7 @@ import { z } from "zod";
 import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
 import type * as schema from "@/lib/db/schema";
 import { DAY_MS } from "@/lib/time";
-import { applyFloor, PROVIDER_META } from "@/lib/providers";
+import { applyFloor, deltaToPoints, PROVIDER_META } from "@/lib/providers";
 
 export interface HeroProvider {
   name: string;
@@ -120,7 +120,7 @@ export function summarizeTrend(points: TrendPoint[]): TrendSummary | null {
   return {
     first: { date: first.date, rate: first.rate },
     last: { date: last.date, rate: last.rate },
-    changePoints: Math.round((last.rate - first.rate) * 100 * 10) / 10,
+    changePoints: deltaToPoints(last.rate - first.rate),
   };
 }
 

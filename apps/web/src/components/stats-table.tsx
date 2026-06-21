@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { deltaToPoints, formatRatePercent } from "@/lib/providers";
 
 export interface StatsRow {
   provider: string;
@@ -22,6 +23,10 @@ export interface StatsRow {
   blocked: number;
   blockRate: number;
   avgLatency: number;
+  /** Public all-time benchmark rate (floored), or null when unavailable. */
+  benchmarkRate: number | null;
+  /** own blockRate − benchmarkRate (rate units), or null. */
+  benchmarkDelta: number | null;
 }
 
 export function StatsTable({ stats }: { stats: StatsRow[] }) {
@@ -46,6 +51,7 @@ export function StatsTable({ stats }: { stats: StatsRow[] }) {
           <TableHead className="text-right tabular-nums">Checks</TableHead>
           <TableHead className="text-right tabular-nums">Blocked</TableHead>
           <TableHead>Block rate</TableHead>
+          <TableHead className="text-right tabular-nums">All sites</TableHead>
           <TableHead className="text-right tabular-nums">Loaded latency</TableHead>
         </TableRow>
       </TableHeader>
@@ -93,6 +99,34 @@ export function StatsTable({ stats }: { stats: StatsRow[] }) {
                     />
                   </div>
                 </div>
+              </TableCell>
+              <TableCell className="text-right tabular-nums">
+                {s.benchmarkRate === null ? (
+                  <span className="text-muted-foreground">—</span>
+                ) : (
+                  <div className="flex flex-col items-end">
+                    <span className="text-muted-foreground">
+                      {formatRatePercent(s.benchmarkRate)}
+                    </span>
+                    {s.benchmarkDelta !== null &&
+                      (() => {
+                        const pts = deltaToPoints(s.benchmarkDelta);
+                        const tone =
+                          pts > 0
+                            ? "var(--rate-high)"
+                            : pts < 0
+                              ? "var(--rate-low)"
+                              : "var(--muted-foreground)";
+                        // Positive = worse than the benchmark; negative = better.
+                        return (
+                          <span className="text-xs" style={{ color: tone }}>
+                            {pts > 0 ? "+" : ""}
+                            {pts} pts
+                          </span>
+                        );
+                      })()}
+                  </div>
+                )}
               </TableCell>
               <TableCell className="text-right tabular-nums text-muted-foreground">
                 {s.avgLatency > 0 ? `${s.avgLatency}ms` : "—"}

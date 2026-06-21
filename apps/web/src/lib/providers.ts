@@ -177,6 +177,15 @@ export function formatRatePercent(rate: number): string {
 }
 
 /**
+ * A rate delta (0..1) → signed percentage points, one decimal. Single source of
+ * truth for the rate→points conversion so the sign/precision can't drift across
+ * the surfaces that show "X pts" (benchmark delta, trend change).
+ */
+export function deltaToPoints(delta: number): number {
+  return Math.round(delta * 1000) / 10;
+}
+
+/**
  * Tailwind text color for a block rate, matching the dashboard thresholds
  * (green < 5%, amber 5-15%, red ≥ 15%). Single source of truth so the
  * threshold semantics can't drift between the pages that render rates.

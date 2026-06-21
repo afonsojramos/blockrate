@@ -15,6 +15,43 @@ import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 
 import { DAY_MS } from "@/lib/time";
+import { applyFloor } from "@/lib/providers";
+
+export interface BenchmarkedRow {
+  provider: string;
+  total: number;
+  blocked: number;
+  blockRate: number;
+  avgLatency: number;
+  /** Public all-time rate for this provider, floored — null below the publish
+   *  sample floor or when there's no public data. The account's own rate is
+   *  never floored; only this benchmark is. */
+  benchmarkRate: number | null;
+  /** own blockRate − benchmarkRate (rate units), or null when no benchmark. */
+  benchmarkDelta: number | null;
+}
+
+/**
+ * Merge the public per-provider benchmark onto an account's own stat rows.
+ * Pure (no DB): the account's own blockRate is shown as-is; the public
+ * benchmark is gated by applyFloor so the dashboard never compares against a
+ * noisy below-floor public number.
+ */
+export function attachBenchmark(
+  stats: Omit<BenchmarkedRow, "benchmarkRate" | "benchmarkDelta">[],
+  heroProviders: { name: string; rate: number; total: number }[],
+): BenchmarkedRow[] {
+  const byName = new Map(heroProviders.map((h) => [h.name, h]));
+  return stats.map((s) => {
+    const hero = byName.get(s.provider);
+    const benchmarkRate = hero ? applyFloor(hero.rate, hero.total) : null;
+    return {
+      ...s,
+      benchmarkRate,
+      benchmarkDelta: benchmarkRate === null ? null : s.blockRate - benchmarkRate,
+    };
+  });
+}
 
 const requireAccount = async () => {
   const { auth } = await import("@/lib/auth.server");
@@ -104,8 +141,14 @@ export const getOverviewData = createServerFn({ method: "GET" })
       .where(eq(events.accountId, account.id));
     const services = serviceRows.map((r) => r.service).sort();
 
+    // Attach the public per-provider benchmark (cached, floored) so each row
+    // can show "you vs all sites".
+    const { getHeroStats } = await import("@/server/hero-stats");
+    const hero = await getHeroStats();
+    const benchmarked = attachBenchmark(stats, hero?.providers ?? []);
+
     return {
-      stats,
+      stats: benchmarked,
       services,
       sinceDays,
       service: data.service ?? null,
