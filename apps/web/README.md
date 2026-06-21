@@ -42,19 +42,19 @@ Open `http://localhost:3000`. Sign in via `/login` — the magic link URL prints
 
 **Do not set `NODE_ENV` in `.env`.** Vite reads `.env` at build time, and a hardcoded `NODE_ENV=development` causes `vite build` to bundle a dev-mode build. Mode is determined by the script you run (`bun run dev` vs `bun run start`, the latter sets `NODE_ENV=production`).
 
-| Variable               | Required  | Default                           | Notes                                                         |
-| ---------------------- | --------- | --------------------------------- | ------------------------------------------------------------- |
-| `DATABASE_URL`         | no        | `pglite://./.local/blockrate.db`  | Either `pglite://...` (dev) or `postgres://...` (prod)        |
-| `BETTER_AUTH_SECRET`   | **yes**   | —                                 | ≥32 chars; `openssl rand -base64 32`                          |
-| `BETTER_AUTH_URL`      | no        | `http://localhost:3000`           | Set to `https://blockrate.app` in prod                        |
-| `CRON_SECRET`          | prod only | —                                 | ≥32 chars; bearer for `/api/internal/retention`               |
-| `RESEND_API_KEY`       | prod only | —                                 | sendMagicLink falls back to console.log when unset (dev only) |
-| `EMAIL_FROM`           | no        | `blockrate <magic@blockrate.app>` | From address for transactional email                          |
-| `GOOGLE_CLIENT_ID`     | optional  | —                                 | Enables Google OAuth button when set with secret              |
-| `GOOGLE_CLIENT_SECRET` | optional  | —                                 |                                                               |
-| `GITHUB_CLIENT_ID`     | optional  | —                                 | Enables GitHub OAuth button when set with secret              |
-| `GITHUB_CLIENT_SECRET` | optional  | —                                 | Required scope: `user:email`                                  |
-| `BLOCKRATE_API_KEY`    | optional  | —                                 | Dogfood key — server-only. When unset `/api/block-rate` 204s  |
+| Variable               | Required  | Default                           | Notes                                                                      |
+| ---------------------- | --------- | --------------------------------- | -------------------------------------------------------------------------- |
+| `DATABASE_URL`         | no        | `pglite://./.local/blockrate.db`  | Either `pglite://...` (dev) or `postgres://...` (prod)                     |
+| `BETTER_AUTH_SECRET`   | **yes**   | —                                 | ≥32 chars; `openssl rand -base64 32`                                       |
+| `BETTER_AUTH_URL`      | no        | `http://localhost:3000`           | Set to `https://blockrate.app` in prod                                     |
+| `CRON_SECRET`          | prod only | —                                 | ≥32 chars; bearer for `/api/internal/retention` and `/api/internal/alerts` |
+| `RESEND_API_KEY`       | prod only | —                                 | sendMagicLink falls back to console.log when unset (dev only)              |
+| `EMAIL_FROM`           | no        | `blockrate <magic@blockrate.app>` | From address for transactional email                                       |
+| `GOOGLE_CLIENT_ID`     | optional  | —                                 | Enables Google OAuth button when set with secret                           |
+| `GOOGLE_CLIENT_SECRET` | optional  | —                                 |                                                                            |
+| `GITHUB_CLIENT_ID`     | optional  | —                                 | Enables GitHub OAuth button when set with secret                           |
+| `GITHUB_CLIENT_SECRET` | optional  | —                                 | Required scope: `user:email`                                               |
+| `BLOCKRATE_API_KEY`    | optional  | —                                 | Dogfood key — server-only. When unset `/api/block-rate` 204s               |
 
 ## Retention sweep (Phase 4)
 
@@ -101,6 +101,44 @@ curl -X POST -H "Authorization: Bearer <secret>" \
 ```
 
 The implementation groups accounts by plan name and runs **one DELETE per plan tier** with `IN (account_ids)` — N queries where N is the number of plans (currently 3), not N accounts. Scales fine to thousands of users.
+
+## Alerts evaluation
+
+`/api/internal/alerts` evaluates every **enabled** alert rule and emails the account
+owner when a provider's block rate crosses the rule's threshold over its trailing
+window. Same bearer auth and fail-closed behaviour as the retention sweep (503 if
+`CRON_SECRET` is unset, 401 on a missing/wrong bearer). Alerting is a Pro/Team
+capability — Free accounts have `maxAlertRules = 0` and cannot create rules.
+
+Spam control is built in: a rule is skipped when it has fewer than `minSample` checks
+in its window, or when it fired within `cooldownHours`. On a fire the rule's
+`lastFiredAt` is stamped, which arms the cooldown.
+
+Add a second Railway "Cron" service (separate from the retention sweep), scheduled
+hourly at `0 * * * *`:
+
+```bash
+curl -fsS -X POST \
+  -H "Authorization: Bearer $CRON_SECRET" \
+  https://blockrate.app/api/internal/alerts
+```
+
+Response shape:
+
+```json
+{
+  "ok": true,
+  "rulesEvaluated": 8,
+  "fired": 1,
+  "skippedCooldown": 2,
+  "skippedMinSample": 3,
+  "ranAt": "2026-06-21T14:00:00.123Z"
+}
+```
+
+Until this cron is wired the rules simply never evaluate — no incorrect behaviour,
+just inert. Sending requires `RESEND_API_KEY`; without it the alert email is logged to
+stdout (same fallback as magic-link email).
 
 ## OAuth (Phase 5)
 
@@ -158,7 +196,7 @@ The `nixpacks.toml` shipped with the TanStack Start scaffold + the `start` scrip
 1. **Create a Railway project** with three services:
    - `web` — this directory, deploys via Nixpacks
    - `Postgres` — managed addon
-   - `Cron` — separate service for the nightly retention sweep
+   - `Cron` — separate service(s) for the nightly retention sweep and the hourly alerts evaluation
 2. **Set web service env vars** (in Railway → Variables):
    ```
    DATABASE_URL=${{Postgres.DATABASE_URL}}
@@ -172,9 +210,11 @@ The `nixpacks.toml` shipped with the TanStack Start scaffold + the `start` scrip
    GITHUB_CLIENT_SECRET=...
    ```
 3. **Custom domain**: Railway → Settings → Domains, add `blockrate.app` and `www.blockrate.app`. TLS auto-provisioned via Let's Encrypt.
-4. **Cron service** (separate Railway service, same project):
-   - Schedule: `0 3 * * *`
-   - Command: `curl -fsS -X POST -H "Authorization: Bearer $CRON_SECRET" https://blockrate.app/api/internal/retention`
+4. **Cron services** (separate Railway services, same project):
+   - Retention sweep — schedule `0 3 * * *`, command:
+     `curl -fsS -X POST -H "Authorization: Bearer $CRON_SECRET" https://blockrate.app/api/internal/retention`
+   - Alerts evaluation — schedule `0 * * * *`, command:
+     `curl -fsS -X POST -H "Authorization: Bearer $CRON_SECRET" https://blockrate.app/api/internal/alerts`
 5. **Bootstrap dogfood key**: see "Dogfooding" above. Then add `BLOCKRATE_API_KEY` to the web service vars and redeploy.
 6. **Smoke tests** post-deploy:
    ```bash
