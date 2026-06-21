@@ -5,7 +5,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { deleteAccount, exportEventsCsv, getUsageSnapshot } from "@/server/stats";
+import { deleteAccount, exportEventsCsv, getUsageSnapshot, setWeeklyDigest } from "@/server/stats";
 
 const settingsSearch = z.object({
   session_id: z.string().optional(),
@@ -26,6 +26,20 @@ function Settings() {
   const [deleting, setDeleting] = useState(false);
   const [managingSubscription, setManagingSubscription] = useState(false);
   const [upgrading, setUpgrading] = useState(false);
+  const [savingDigest, setSavingDigest] = useState(false);
+
+  async function onToggleDigest() {
+    if (savingDigest) return;
+    setSavingDigest(true);
+    try {
+      await setWeeklyDigest({ data: { enabled: !data.weeklyDigest } });
+      await router.invalidate();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to update notifications");
+    } finally {
+      setSavingDigest(false);
+    }
+  }
 
   // After Stripe Checkout redirect or inline upgrade, poll until the
   // webhook updates the plan, then clear the session_id from the URL.
@@ -230,6 +244,32 @@ function Settings() {
               {usagePct.toFixed(1)}% of {data.plan.label}
             </span>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Notifications</CardTitle>
+          <CardDescription>
+            A weekly email digest of your per-provider block rates, every Monday.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center justify-between gap-4">
+          <span className="text-sm text-muted-foreground">Weekly digest</span>
+          <button
+            type="button"
+            onClick={onToggleDigest}
+            aria-disabled={savingDigest}
+            aria-pressed={data.weeklyDigest}
+            className="rounded-full px-3 py-1 text-xs font-medium"
+            style={{
+              background: data.weeklyDigest
+                ? "color-mix(in oklch, var(--rate-low) 15%, transparent)"
+                : "var(--muted)",
+            }}
+          >
+            {data.weeklyDigest ? "On" : "Off"}
+          </button>
         </CardContent>
       </Card>
 

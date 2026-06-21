@@ -13,6 +13,7 @@
  */
 
 import { env, capabilities } from "./env.server";
+import { formatRatePercent } from "./providers";
 
 interface SendArgs {
   to: string;
@@ -92,6 +93,35 @@ Review the rule or adjust the threshold:
 ${siteUrl}/app/alerts
 
 You'll only get one email per rule until its cooldown elapses.
+
+— blockrate.app
+`;
+}
+
+/**
+ * Weekly digest body. Plain text, one worst-first line per provider, a link to
+ * the dashboard, and a one-line opt-out. No HTML, no tracking.
+ */
+export function digestEmailBody(args: {
+  providers: { label: string; rate: number; total: number }[];
+  windowDays: number;
+}): string {
+  const siteUrl = (env.VITE_SITE_URL ?? "https://blockrate.app").replace(/\/$/, "");
+  const lines = args.providers
+    .map(
+      (p) =>
+        `  • ${p.label} — ${formatRatePercent(p.rate)} blocked over ${p.total.toLocaleString()} ${p.total === 1 ? "check" : "checks"}`,
+    )
+    .join("\n");
+
+  return `Your blockrate digest — block rates over the last ${args.windowDays} days:
+
+${lines}
+
+See the full dashboard:
+${siteUrl}/app
+
+You can turn this weekly digest off in Settings.
 
 — blockrate.app
 `;

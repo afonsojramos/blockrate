@@ -37,6 +37,7 @@ import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhoo
 import { Route as ApiStripePortalRouteImport } from './routes/api/stripe/portal'
 import { Route as ApiStripeCheckoutRouteImport } from './routes/api/stripe/checkout'
 import { Route as ApiInternalRetentionRouteImport } from './routes/api/internal/retention'
+import { Route as ApiInternalDigestRouteImport } from './routes/api/internal/digest'
 import { Route as ApiInternalAlertsRouteImport } from './routes/api/internal/alerts'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
 import { Route as AuthedAppSettingsRouteImport } from './routes/_authed/app/settings'
@@ -186,6 +187,11 @@ const ApiInternalRetentionRoute = ApiInternalRetentionRouteImport.update({
   path: '/api/internal/retention',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiInternalDigestRoute = ApiInternalDigestRouteImport.update({
+  id: '/api/internal/digest',
+  path: '/api/internal/digest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiInternalAlertsRoute = ApiInternalAlertsRouteImport.update({
   id: '/api/internal/alerts',
   path: '/api/internal/alerts',
@@ -248,6 +254,7 @@ export interface FileRoutesByFullPath {
   '/app/settings': typeof AuthedAppSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/internal/alerts': typeof ApiInternalAlertsRoute
+  '/api/internal/digest': typeof ApiInternalDigestRoute
   '/api/internal/retention': typeof ApiInternalRetentionRoute
   '/api/stripe/checkout': typeof ApiStripeCheckoutRoute
   '/api/stripe/portal': typeof ApiStripePortalRoute
@@ -284,6 +291,7 @@ export interface FileRoutesByTo {
   '/app/settings': typeof AuthedAppSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/internal/alerts': typeof ApiInternalAlertsRoute
+  '/api/internal/digest': typeof ApiInternalDigestRoute
   '/api/internal/retention': typeof ApiInternalRetentionRoute
   '/api/stripe/checkout': typeof ApiStripeCheckoutRoute
   '/api/stripe/portal': typeof ApiStripePortalRoute
@@ -322,6 +330,7 @@ export interface FileRoutesById {
   '/_authed/app/settings': typeof AuthedAppSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/internal/alerts': typeof ApiInternalAlertsRoute
+  '/api/internal/digest': typeof ApiInternalDigestRoute
   '/api/internal/retention': typeof ApiInternalRetentionRoute
   '/api/stripe/checkout': typeof ApiStripeCheckoutRoute
   '/api/stripe/portal': typeof ApiStripePortalRoute
@@ -360,6 +369,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/api/auth/$'
     | '/api/internal/alerts'
+    | '/api/internal/digest'
     | '/api/internal/retention'
     | '/api/stripe/checkout'
     | '/api/stripe/portal'
@@ -396,6 +406,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/api/auth/$'
     | '/api/internal/alerts'
+    | '/api/internal/digest'
     | '/api/internal/retention'
     | '/api/stripe/checkout'
     | '/api/stripe/portal'
@@ -433,6 +444,7 @@ export interface FileRouteTypes {
     | '/_authed/app/settings'
     | '/api/auth/$'
     | '/api/internal/alerts'
+    | '/api/internal/digest'
     | '/api/internal/retention'
     | '/api/stripe/checkout'
     | '/api/stripe/portal'
@@ -466,6 +478,7 @@ export interface RootRouteChildren {
   BlockRateIndexRoute: typeof BlockRateIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiInternalAlertsRoute: typeof ApiInternalAlertsRoute
+  ApiInternalDigestRoute: typeof ApiInternalDigestRoute
   ApiInternalRetentionRoute: typeof ApiInternalRetentionRoute
   ApiStripeCheckoutRoute: typeof ApiStripeCheckoutRoute
   ApiStripePortalRoute: typeof ApiStripePortalRoute
@@ -673,6 +686,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiInternalRetentionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/internal/digest': {
+      id: '/api/internal/digest'
+      path: '/api/internal/digest'
+      fullPath: '/api/internal/digest'
+      preLoaderRoute: typeof ApiInternalDigestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/internal/alerts': {
       id: '/api/internal/alerts'
       path: '/api/internal/alerts'
@@ -778,6 +798,7 @@ const rootRouteChildren: RootRouteChildren = {
   BlockRateIndexRoute: BlockRateIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiInternalAlertsRoute: ApiInternalAlertsRoute,
+  ApiInternalDigestRoute: ApiInternalDigestRoute,
   ApiInternalRetentionRoute: ApiInternalRetentionRoute,
   ApiStripeCheckoutRoute: ApiStripeCheckoutRoute,
   ApiStripePortalRoute: ApiStripePortalRoute,

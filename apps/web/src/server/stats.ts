@@ -14,6 +14,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 
+import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
+import type * as schema from "@/lib/db/schema";
 import { DAY_MS } from "@/lib/time";
 import { applyFloor } from "@/lib/providers";
 
@@ -175,8 +177,31 @@ export const getUsageSnapshot = createServerFn({ method: "GET" }).handler(async 
       subscriptionStatus: account.stripeSubscriptionStatus,
       currentPeriodEnd: account.stripeCurrentPeriodEnd?.toISOString() ?? null,
     },
+    weeklyDigest: account.weeklyDigest,
   };
 });
+
+// ─── setWeeklyDigest ──────────────────────────────────────────────────────
+
+/** Toggle the caller's weekly-digest opt-out. Account-parameterized core so
+ *  it's DB-real testable without a session. */
+export async function setWeeklyDigestForAccount(
+  db: BunSQLDatabase<typeof schema>,
+  accountId: number,
+  enabled: boolean,
+): Promise<{ enabled: boolean }> {
+  const { appAccounts } = await import("@/lib/db/schema");
+  const { eq } = await import("drizzle-orm");
+  await db.update(appAccounts).set({ weeklyDigest: enabled }).where(eq(appAccounts.id, accountId));
+  return { enabled };
+}
+
+export const setWeeklyDigest = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => z.object({ enabled: z.boolean() }).parse(input))
+  .handler(async ({ data }) => {
+    const { account, db } = await requireAccount();
+    return setWeeklyDigestForAccount(db, account.id, data.enabled);
+  });
 
 // ─── exportEventsCsv ────────────────────────────────────────────────────
 
