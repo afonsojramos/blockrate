@@ -104,11 +104,15 @@ The implementation groups accounts by plan name and runs **one DELETE per plan t
 
 ## Alerts evaluation
 
-`/api/internal/alerts` evaluates every **enabled** alert rule and emails the account
-owner when a provider's block rate crosses the rule's threshold over its trailing
-window. Same bearer auth and fail-closed behaviour as the retention sweep (503 if
-`CRON_SECRET` is unset, 401 on a missing/wrong bearer). Alerting is a Pro/Team
-capability — Free accounts have `maxAlertRules = 0` and cannot create rules.
+`/api/internal/alerts` evaluates every **enabled** alert rule and notifies when a
+provider's block rate crosses the rule's threshold over its trailing window. Delivery
+is per-rule: `email` (the account owner, via Resend), `slack` (POST `{ text }` to a
+Slack incoming-webhook URL), or `webhook` (POST a JSON payload to any https URL).
+Webhook/Slack URLs are validated to https and blocked from internal/loopback hosts, and
+delivery uses `redirect: "manual"` + a timeout (SSRF/hang hardening). Same bearer auth
+and fail-closed behaviour as the retention sweep (503 if `CRON_SECRET` is unset, 401 on
+a missing/wrong bearer). Alerting is a Pro/Team capability — Free accounts have
+`maxAlertRules = 0` and cannot create rules.
 
 Spam control is built in: a rule is skipped when it has fewer than `minSample` checks
 in its window, or when it fired within `cooldownHours`. On a fire the rule's
