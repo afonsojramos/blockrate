@@ -12,6 +12,12 @@
  */
 
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+
+import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
+import type * as schema from "@/lib/db/schema";
+import { DAY_MS } from "@/lib/time";
+import { applyFloor, PROVIDER_META } from "@/lib/providers";
 
 export interface HeroProvider {
   name: string;
@@ -71,3 +77,82 @@ export const getHeroStats = createServerFn({ method: "GET" }).handler(
     return value;
   },
 );
+
+// ─── Per-provider daily trend ──────────────────────────────────────────────
+
+/** One day in a provider's block-rate trend. `rate` is null when the day's
+ *  sample is below the publish floor — a gap, never a noisy headline number. */
+export interface TrendPoint {
+  date: string; // YYYY-MM-DD (UTC)
+  total: number;
+  blocked: number;
+  rate: number | null;
+}
+
+export interface ProviderTrend {
+  slug: string;
+  days: number;
+  points: TrendPoint[];
+}
+
+const TREND_MAX_DAYS = 365;
+// Bound `slug` to the known provider set, not an arbitrary 1–64 char string.
+// The fn is public and account-free, and its result is cached per (slug, days);
+// an open string slug would let any caller mint unbounded distinct cache keys
+// (a slow memory-growth vector). The enum caps keys at PROVIDER_META × days and
+// rejects junk slugs at the boundary. PROVIDER_META slugs match core (parity test).
+const PROVIDER_SLUGS = PROVIDER_META.map((m) => m.slug) as [string, ...string[]];
+const trendInput = z.object({
+  slug: z.enum(PROVIDER_SLUGS),
+  days: z.number().int().min(1).max(TREND_MAX_DAYS).default(90),
+});
+
+const trendCache = new Map<string, { at: number; value: ProviderTrend }>();
+
+/**
+ * Account-free daily series for one provider over the last `days`, each day
+ * floored by applyFloor (MIN_SAMPLE_CHECKS) so thin days are gaps. Parameterized
+ * by db so it is DB-real testable; the server fn supplies the real singleton.
+ *
+ * `date` is YYYY-MM-DD text, which sorts chronologically, so a lexicographic
+ * `>= cutoff` window + `order by date` needs no date casts.
+ */
+export async function computeProviderTrend(
+  db: BunSQLDatabase<typeof schema>,
+  slug: string,
+  days: number,
+): Promise<ProviderTrend> {
+  const { dailyProviderStats } = await import("@/lib/db/schema");
+  const { and, asc, eq, gte } = await import("drizzle-orm");
+
+  const cutoff = new Date(Date.now() - days * DAY_MS).toISOString().slice(0, 10);
+  const rows = await db
+    .select({
+      date: dailyProviderStats.date,
+      total: dailyProviderStats.totalChecks,
+      blocked: dailyProviderStats.blocked,
+    })
+    .from(dailyProviderStats)
+    .where(and(eq(dailyProviderStats.provider, slug), gte(dailyProviderStats.date, cutoff)))
+    .orderBy(asc(dailyProviderStats.date));
+
+  const points: TrendPoint[] = rows.map((r) => ({
+    date: r.date,
+    total: r.total,
+    blocked: r.blocked,
+    rate: applyFloor(r.total > 0 ? r.blocked / r.total : 0, r.total),
+  }));
+  return { slug, days, points };
+}
+
+export const getProviderTrend = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) => trendInput.parse(input))
+  .handler(async ({ data }): Promise<ProviderTrend> => {
+    const key = `${data.slug}:${data.days}`;
+    const hit = trendCache.get(key);
+    if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.value;
+    const { db } = await import("@/lib/db/index.server");
+    const value = await computeProviderTrend(db, data.slug, data.days);
+    trendCache.set(key, { at: Date.now(), value });
+    return value;
+  });

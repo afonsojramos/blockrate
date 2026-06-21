@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 
 import { CodeBlock } from "@/components/code-block";
+import { ProviderTrendChart } from "@/components/provider-trend-chart";
 import {
   applyFloor,
   formatRatePercent,
@@ -12,16 +13,19 @@ import {
   remediationLabel,
 } from "@/lib/providers";
 import { seo, siteUrl } from "@/lib/seo";
-import { getHeroStats } from "@/server/hero-stats";
+import { getHeroStats, getProviderTrend } from "@/server/hero-stats";
 
 export const Route = createFileRoute("/block-rate/$provider/")({
   loader: async ({ params }) => {
     const meta = getProviderMeta(params.provider);
     if (!meta) throw notFound();
-    const stats = await getHeroStats();
+    const [stats, trend] = await Promise.all([
+      getHeroStats(),
+      getProviderTrend({ data: { slug: meta.slug } }),
+    ]);
     const entry = stats?.providers.find((p) => p.name === meta.slug);
     const rate = entry ? applyFloor(entry.rate, entry.total) : null;
-    return { meta, rate };
+    return { meta, rate, trend };
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
@@ -64,7 +68,7 @@ function badgeSnippet(slug: string, label: string): string {
 }
 
 function ProviderPage() {
-  const { meta, rate } = Route.useLoaderData();
+  const { meta, rate, trend } = Route.useLoaderData();
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-16">
@@ -95,6 +99,18 @@ function ProviderPage() {
       </header>
 
       <p className="mt-6 text-muted-foreground">{meta.blurb}</p>
+
+      <section className="mt-10">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Block rate trend
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Daily {meta.label} block rate measured over the last {trend.days} days.
+        </p>
+        <div className="mt-4">
+          <ProviderTrendChart points={trend.points} />
+        </div>
+      </section>
 
       <section className="mt-10">
         <div className="flex items-center gap-3">
