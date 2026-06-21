@@ -308,3 +308,35 @@ export function buildProviderStats(
     };
   }).sort((a, b) => (b.blockRate ?? -1) - (a.blockRate ?? -1));
 }
+
+export interface BlockRateReport {
+  /** Every tracked provider, worst-first, thin providers (rate null) last. */
+  providers: ProviderRow[];
+  /** Providers with a publishable (above-floor) rate. */
+  withData: number;
+  /** The most-blocked provider that clears the floor, or null if none do. */
+  worst: { label: string; rate: number } | null;
+  /** Mean block rate across qualifying providers only, or null. */
+  averageRate: number | null;
+}
+
+/**
+ * Assemble the public report from the cached hero stats. Aggregates are
+ * computed ONLY over providers above the min-sample floor (rate !== null) —
+ * a thin provider is shown as "—" and never folded into worst/average, so the
+ * headline can never be a number the per-provider pages would suppress.
+ */
+export function buildReport(
+  stats: { name: string; rate: number; total: number }[],
+): BlockRateReport {
+  const providers = buildProviderRows(stats);
+  const qualifying = providers.filter((p): p is ProviderRow & { rate: number } => p.rate !== null);
+  const worst = qualifying[0] ? { label: qualifying[0].label, rate: qualifying[0].rate } : null;
+  // Unweighted mean BY DESIGN: each qualifying provider is one data point in the
+  // ranking, so high-traffic providers don't dominate the headline average. (This
+  // differs deliberately from the volume-weighted all-time rate in hero-stats.)
+  const averageRate = qualifying.length
+    ? qualifying.reduce((sum, p) => sum + p.rate, 0) / qualifying.length
+    : null;
+  return { providers, withData: qualifying.length, worst, averageRate };
+}

@@ -54,6 +54,13 @@ export function Nav({ session }: { session: NavSession }) {
             Demo
           </Link>
           <Link
+            to="/report"
+            className="hidden rounded-md px-3 py-2 text-sm text-muted-foreground transition-[background-color,color] duration-150 ease-out hover:bg-accent hover:text-foreground sm:inline-block"
+            activeProps={{ className: "text-foreground" }}
+          >
+            Report
+          </Link>
+          <Link
             to="/pricing"
             className="hidden rounded-md px-3 py-2 text-sm text-muted-foreground transition-[background-color,color] duration-150 ease-out hover:bg-accent hover:text-foreground sm:inline-block"
             activeProps={{ className: "text-foreground" }}
@@ -149,6 +156,13 @@ export function Nav({ session }: { session: NavSession }) {
               activeProps={{ className: "text-foreground" }}
             >
               Demo
+            </Link>
+            <Link
+              to="/report"
+              className="rounded-md px-3 py-2 text-sm text-muted-foreground transition-[background-color,color] duration-150 ease-out hover:bg-accent hover:text-foreground"
+              activeProps={{ className: "text-foreground" }}
+            >
+              Report
             </Link>
             <Link
               to="/pricing"

@@ -13,6 +13,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as ReportRouteImport } from './routes/report'
 import { Route as PrivacySnippetRouteImport } from './routes/privacy-snippet'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
@@ -62,6 +63,11 @@ const SignupRoute = SignupRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportRoute = ReportRouteImport.update({
+  id: '/report',
+  path: '/report',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacySnippetRoute = PrivacySnippetRouteImport.update({
@@ -226,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/privacy-snippet': typeof PrivacySnippetRoute
+  '/report': typeof ReportRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -261,6 +268,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/privacy-snippet': typeof PrivacySnippetRoute
+  '/report': typeof ReportRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -298,6 +306,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/privacy-snippet': typeof PrivacySnippetRoute
+  '/report': typeof ReportRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -335,6 +344,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/privacy-snippet'
+    | '/report'
     | '/robots.txt'
     | '/signup'
     | '/sitemap.xml'
@@ -370,6 +380,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/privacy-snippet'
+    | '/report'
     | '/robots.txt'
     | '/signup'
     | '/sitemap.xml'
@@ -406,6 +417,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/privacy-snippet'
+    | '/report'
     | '/robots.txt'
     | '/signup'
     | '/sitemap.xml'
@@ -443,6 +455,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   PrivacySnippetRoute: typeof PrivacySnippetRoute
+  ReportRoute: typeof ReportRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -490,6 +503,13 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/report': {
+      id: '/report'
+      path: '/report'
+      fullPath: '/report'
+      preLoaderRoute: typeof ReportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy-snippet': {
@@ -747,6 +767,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   PrivacySnippetRoute: PrivacySnippetRoute,
+  ReportRoute: ReportRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
