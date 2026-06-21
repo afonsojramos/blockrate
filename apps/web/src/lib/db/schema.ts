@@ -22,6 +22,7 @@
 
 import { sql } from "drizzle-orm";
 import {
+  boolean,
   integer,
   pgEnum,
   pgTable,
@@ -164,6 +165,60 @@ export const dailyProviderStats = pgTable(
   }),
 );
 
+// ─── Alert rules (continuous monitoring) ────────────────────────────────
+
+/** Direction of the threshold comparison. `gte` fires when the block rate is
+ *  AT OR ABOVE the threshold (the common "something is being blocked" alert);
+ *  `lte` fires when it drops AT OR BELOW (e.g. confirm a remediation worked). */
+export const alertComparatorEnum = pgEnum("alert_comparator", ["gte", "lte"]);
+
+/**
+ * Per-account alert rules. A rule fires (sends one email) when the block rate
+ * for its scope crosses `threshold` (a whole percent) over the trailing
+ * `windowHours`, provided at least `minSample` checks exist in that window.
+ *
+ * - `provider` / `service` null means "any" — the eval query only adds the
+ *   equality filter for the non-null fields.
+ * - Spam control is `lastFiredAt` + `cooldownHours`: a rule will not re-fire
+ *   within its cooldown. No separate notifications table for v1.
+ * - Gating is by count vs the plan's `maxAlertRules` (Free = 0). See plans.ts.
+ */
+export const alertRules = pgTable(
+  "alert_rules",
+  {
+    id: serial("id").primaryKey(),
+    accountId: integer("account_id")
+      .notNull()
+      .references(() => appAccounts.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    /** null = any provider. */
+    provider: text("provider"),
+    /** null = any service. */
+    service: text("service"),
+    comparator: alertComparatorEnum("comparator").notNull(),
+    /** Whole-percent threshold, 0–100. */
+    threshold: integer("threshold").notNull(),
+    /** Trailing window the rate is computed over. */
+    windowHours: integer("window_hours").notNull(),
+    /** Min checks in the window before the rule may fire (avoids thin-data noise). */
+    minSample: integer("min_sample").notNull().default(100),
+    /** A fired rule will not re-fire within this many hours. */
+    cooldownHours: integer("cooldown_hours").notNull().default(24),
+    enabled: boolean("enabled").notNull().default(true),
+    /** Whether the rule's condition was met at the last evaluation. Drives
+     *  edge-triggered firing: a rule fires only when it CROSSES into the
+     *  matching state (false → true), never on every sweep it stays matched. */
+    lastMatched: boolean("last_matched").notNull().default(false),
+    lastFiredAt: timestamp("last_fired_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .default(sql`now()`),
+  },
+  (t) => ({
+    byAccount: index("idx_alert_rules_account").on(t.accountId),
+  }),
+);
+
 export type AppAccount = typeof appAccounts.$inferSelect;
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type NewApiKey = typeof apiKeys.$inferInsert;
@@ -171,3 +226,5 @@ export type Event = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;
 export type UsageCounter = typeof usageCounters.$inferSelect;
 export type DailyProviderStat = typeof dailyProviderStats.$inferSelect;
+export type AlertRule = typeof alertRules.$inferSelect;
+export type NewAlertRule = typeof alertRules.$inferInsert;
