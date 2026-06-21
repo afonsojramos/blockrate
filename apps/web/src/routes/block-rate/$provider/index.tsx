@@ -13,7 +13,7 @@ import {
   remediationLabel,
 } from "@/lib/providers";
 import { seo, siteUrl } from "@/lib/seo";
-import { getHeroStats, getProviderTrend } from "@/server/hero-stats";
+import { getHeroStats, getProviderTrend, summarizeTrend } from "@/server/hero-stats";
 
 export const Route = createFileRoute("/block-rate/$provider/")({
   loader: async ({ params }) => {
@@ -107,6 +107,22 @@ function ProviderPage() {
         <p className="mt-2 text-sm text-muted-foreground">
           Daily {meta.label} block rate measured over the last {trend.days} days.
         </p>
+        {(() => {
+          const summary = summarizeTrend(trend.points);
+          if (!summary) return null;
+          const steady = Math.abs(summary.changePoints) < 1;
+          return (
+            <p className="mt-2 text-sm text-muted-foreground">
+              {meta.label} block rate{" "}
+              {steady
+                ? `held steady around ${formatRatePercent(summary.last.rate)}`
+                : `${summary.changePoints > 0 ? "rose" : "fell"} from ${formatRatePercent(
+                    summary.first.rate,
+                  )} to ${formatRatePercent(summary.last.rate)}`}{" "}
+              over the last {trend.days} days.
+            </p>
+          );
+        })()}
         <div className="mt-4">
           <ProviderTrendChart points={trend.points} />
         </div>

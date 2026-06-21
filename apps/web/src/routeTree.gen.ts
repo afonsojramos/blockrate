@@ -30,6 +30,7 @@ import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiBlockRateRouteImport } from './routes/api/block-rate'
 import { Route as BlockRateProviderIndexRouteImport } from './routes/block-rate/$provider/index'
 import { Route as AuthedAppIndexRouteImport } from './routes/_authed/app/index'
+import { Route as BlockRateProviderTrendDotjsonRouteImport } from './routes/block-rate/$provider/trend[.]json'
 import { Route as BlockRateProviderBadgeDotsvgRouteImport } from './routes/block-rate/$provider/badge[.]svg'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
 import { Route as ApiStripePortalRouteImport } from './routes/api/stripe/portal'
@@ -147,6 +148,12 @@ const AuthedAppIndexRoute = AuthedAppIndexRouteImport.update({
   path: '/app/',
   getParentRoute: () => AuthedRoute,
 } as any)
+const BlockRateProviderTrendDotjsonRoute =
+  BlockRateProviderTrendDotjsonRouteImport.update({
+    id: '/block-rate/$provider/trend.json',
+    path: '/block-rate/$provider/trend.json',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const BlockRateProviderBadgeDotsvgRoute =
   BlockRateProviderBadgeDotsvgRouteImport.update({
     id: '/block-rate/$provider/badge.svg',
@@ -239,6 +246,7 @@ export interface FileRoutesByFullPath {
   '/api/stripe/portal': typeof ApiStripePortalRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/block-rate/$provider/badge.svg': typeof BlockRateProviderBadgeDotsvgRoute
+  '/block-rate/$provider/trend.json': typeof BlockRateProviderTrendDotjsonRoute
   '/app/': typeof AuthedAppIndexRoute
   '/block-rate/$provider/': typeof BlockRateProviderIndexRoute
   '/app/admin/': typeof AuthedAppAdminIndexRoute
@@ -273,6 +281,7 @@ export interface FileRoutesByTo {
   '/api/stripe/portal': typeof ApiStripePortalRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/block-rate/$provider/badge.svg': typeof BlockRateProviderBadgeDotsvgRoute
+  '/block-rate/$provider/trend.json': typeof BlockRateProviderTrendDotjsonRoute
   '/app': typeof AuthedAppIndexRoute
   '/block-rate/$provider': typeof BlockRateProviderIndexRoute
   '/app/admin': typeof AuthedAppAdminIndexRoute
@@ -309,6 +318,7 @@ export interface FileRoutesById {
   '/api/stripe/portal': typeof ApiStripePortalRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/block-rate/$provider/badge.svg': typeof BlockRateProviderBadgeDotsvgRoute
+  '/block-rate/$provider/trend.json': typeof BlockRateProviderTrendDotjsonRoute
   '/_authed/app/': typeof AuthedAppIndexRoute
   '/block-rate/$provider/': typeof BlockRateProviderIndexRoute
   '/_authed/app/admin/': typeof AuthedAppAdminIndexRoute
@@ -345,6 +355,7 @@ export interface FileRouteTypes {
     | '/api/stripe/portal'
     | '/api/stripe/webhook'
     | '/block-rate/$provider/badge.svg'
+    | '/block-rate/$provider/trend.json'
     | '/app/'
     | '/block-rate/$provider/'
     | '/app/admin/'
@@ -379,6 +390,7 @@ export interface FileRouteTypes {
     | '/api/stripe/portal'
     | '/api/stripe/webhook'
     | '/block-rate/$provider/badge.svg'
+    | '/block-rate/$provider/trend.json'
     | '/app'
     | '/block-rate/$provider'
     | '/app/admin'
@@ -414,6 +426,7 @@ export interface FileRouteTypes {
     | '/api/stripe/portal'
     | '/api/stripe/webhook'
     | '/block-rate/$provider/badge.svg'
+    | '/block-rate/$provider/trend.json'
     | '/_authed/app/'
     | '/block-rate/$provider/'
     | '/_authed/app/admin/'
@@ -445,6 +458,7 @@ export interface RootRouteChildren {
   ApiStripePortalRoute: typeof ApiStripePortalRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   BlockRateProviderBadgeDotsvgRoute: typeof BlockRateProviderBadgeDotsvgRoute
+  BlockRateProviderTrendDotjsonRoute: typeof BlockRateProviderTrendDotjsonRoute
   BlockRateProviderIndexRoute: typeof BlockRateProviderIndexRoute
 }
 
@@ -597,6 +611,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAppIndexRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/block-rate/$provider/trend.json': {
+      id: '/block-rate/$provider/trend.json'
+      path: '/block-rate/$provider/trend.json'
+      fullPath: '/block-rate/$provider/trend.json'
+      preLoaderRoute: typeof BlockRateProviderTrendDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/block-rate/$provider/badge.svg': {
       id: '/block-rate/$provider/badge.svg'
       path: '/block-rate/$provider/badge.svg'
@@ -741,6 +762,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiStripePortalRoute: ApiStripePortalRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   BlockRateProviderBadgeDotsvgRoute: BlockRateProviderBadgeDotsvgRoute,
+  BlockRateProviderTrendDotjsonRoute: BlockRateProviderTrendDotjsonRoute,
   BlockRateProviderIndexRoute: BlockRateProviderIndexRoute,
 }
 export const routeTree = rootRouteImport

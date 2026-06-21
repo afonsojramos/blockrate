@@ -95,7 +95,38 @@ export interface ProviderTrend {
   points: TrendPoint[];
 }
 
+export interface TrendSummary {
+  first: { date: string; rate: number };
+  last: { date: string; rate: number };
+  /** (last.rate − first.rate) in percentage POINTS, one decimal. Sign = direction. */
+  changePoints: number;
+}
+
+/**
+ * Reduce a daily series to first/last qualifying rate + the change between them.
+ * Computed ONLY over days above the publish floor (rate !== null) — never over
+ * thin gap days. Returns null when fewer than two qualifying days exist, so a
+ * trend is never fabricated from insufficient data. Pure (no DB).
+ *
+ * Order-independent: first/last are the chronologically earliest/latest
+ * qualifying days (by YYYY-MM-DD date), NOT array positions — so feeding an
+ * unsorted or descending series can never silently invert the change's sign.
+ */
+export function summarizeTrend(points: TrendPoint[]): TrendSummary | null {
+  const qualifying = points.filter((p): p is TrendPoint & { rate: number } => p.rate !== null);
+  if (qualifying.length < 2) return null;
+  const first = qualifying.reduce((a, b) => (a.date <= b.date ? a : b));
+  const last = qualifying.reduce((a, b) => (a.date >= b.date ? a : b));
+  return {
+    first: { date: first.date, rate: first.rate },
+    last: { date: last.date, rate: last.rate },
+    changePoints: Math.round((last.rate - first.rate) * 100 * 10) / 10,
+  };
+}
+
 const TREND_MAX_DAYS = 365;
+/** Default trailing window for the trend (page loader + public JSON endpoint). */
+export const DEFAULT_TREND_DAYS = 90;
 // Bound `slug` to the known provider set, not an arbitrary 1–64 char string.
 // The fn is public and account-free, and its result is cached per (slug, days);
 // an open string slug would let any caller mint unbounded distinct cache keys
@@ -104,7 +135,7 @@ const TREND_MAX_DAYS = 365;
 const PROVIDER_SLUGS = PROVIDER_META.map((m) => m.slug) as [string, ...string[]];
 const trendInput = z.object({
   slug: z.enum(PROVIDER_SLUGS),
-  days: z.number().int().min(1).max(TREND_MAX_DAYS).default(90),
+  days: z.number().int().min(1).max(TREND_MAX_DAYS).default(DEFAULT_TREND_DAYS),
 });
 
 const trendCache = new Map<string, { at: number; value: ProviderTrend }>();

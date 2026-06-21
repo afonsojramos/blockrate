@@ -14,7 +14,7 @@ import { resolve } from "node:path";
 import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
 import * as schema from "@/lib/db/schema";
 import { MIN_SAMPLE_CHECKS } from "@/lib/providers";
-import { computeProviderTrend } from "@/server/hero-stats";
+import { computeProviderTrend, summarizeTrend, type TrendPoint } from "@/server/hero-stats";
 
 const MIGRATIONS_FOLDER = resolve(__dirname, "..", "drizzle");
 type RealDb = BunSQLDatabase<typeof schema>;
@@ -86,5 +86,62 @@ describe("computeProviderTrend", () => {
   it("returns an empty series for a provider with no rows", async () => {
     const t = await computeProviderTrend(db, "nope", 90);
     expect(t.points).toEqual([]);
+  });
+});
+
+describe("summarizeTrend", () => {
+  const pt = (date: string, rate: number | null): TrendPoint => ({
+    date,
+    total: rate === null ? 0 : 100,
+    blocked: rate === null ? 0 : Math.round(rate * 100),
+    rate,
+  });
+
+  it("reports a rising trend in percentage points", () => {
+    const s = summarizeTrend([pt("2026-01-01", 0.2), pt("2026-02-01", 0.31)]);
+    expect(s).not.toBeNull();
+    expect(s!.first).toEqual({ date: "2026-01-01", rate: 0.2 });
+    expect(s!.last).toEqual({ date: "2026-02-01", rate: 0.31 });
+    expect(s!.changePoints).toBeCloseTo(11, 5);
+  });
+
+  it("reports a falling trend with a negative change", () => {
+    const s = summarizeTrend([pt("2026-01-01", 0.3), pt("2026-02-01", 0.2)]);
+    expect(s!.changePoints).toBeCloseTo(-10, 5);
+  });
+
+  it("reports zero change for a flat trend", () => {
+    const s = summarizeTrend([pt("2026-01-01", 0.25), pt("2026-02-01", 0.25)]);
+    expect(s!.changePoints).toBe(0);
+  });
+
+  it("returns null with fewer than two qualifying days", () => {
+    expect(summarizeTrend([])).toBeNull();
+    expect(summarizeTrend([pt("2026-01-01", 0.3)])).toBeNull();
+    expect(summarizeTrend([pt("2026-01-01", null), pt("2026-02-01", 0.3)])).toBeNull();
+  });
+
+  it("ignores null-rate gap days for first/last and the count", () => {
+    const s = summarizeTrend([
+      pt("2026-01-01", 0.2),
+      pt("2026-01-15", null), // gap — must not become first/last
+      pt("2026-02-01", 0.4),
+    ]);
+    expect(s!.first.date).toBe("2026-01-01");
+    expect(s!.last.date).toBe("2026-02-01");
+    expect(s!.changePoints).toBeCloseTo(20, 5);
+  });
+
+  it("rounds changePoints to one decimal place", () => {
+    const s = summarizeTrend([pt("2026-01-01", 0.201), pt("2026-02-01", 0.314)]);
+    expect(s!.changePoints).toBe(11.3); // (0.314-0.201)*100 = 11.3, not 11.299999…
+  });
+
+  it("resolves first/last by date even when the input is not date-ascending", () => {
+    // Descending input — positional [0]/[last] would invert the sign.
+    const s = summarizeTrend([pt("2026-02-01", 0.4), pt("2026-01-01", 0.2)]);
+    expect(s!.first.date).toBe("2026-01-01");
+    expect(s!.last.date).toBe("2026-02-01");
+    expect(s!.changePoints).toBeCloseTo(20, 5); // up, not -20
   });
 });
