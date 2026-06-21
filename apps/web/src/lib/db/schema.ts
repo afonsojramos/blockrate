@@ -172,6 +172,10 @@ export const dailyProviderStats = pgTable(
  *  `lte` fires when it drops AT OR BELOW (e.g. confirm a remediation worked). */
 export const alertComparatorEnum = pgEnum("alert_comparator", ["gte", "lte"]);
 
+/** Where a fired rule delivers. `email` → account owner; `webhook`/`slack` →
+ *  POST to `webhookUrl` (slack gets a `{ text }` body, webhook a JSON payload). */
+export const alertChannelEnum = pgEnum("alert_channel", ["email", "webhook", "slack"]);
+
 /**
  * Per-account alert rules. A rule fires (sends one email) when the block rate
  * for its scope crosses `threshold` (a whole percent) over the trailing
@@ -204,6 +208,10 @@ export const alertRules = pgTable(
     minSample: integer("min_sample").notNull().default(100),
     /** A fired rule will not re-fire within this many hours. */
     cooldownHours: integer("cooldown_hours").notNull().default(24),
+    /** Delivery channel. Defaults to email so existing rules are unchanged. */
+    channel: alertChannelEnum("channel").notNull().default("email"),
+    /** Target URL for webhook/slack channels; null for email. */
+    webhookUrl: text("webhook_url"),
     enabled: boolean("enabled").notNull().default(true),
     /** Whether the rule's condition was met at the last evaluation. Drives
      *  edge-triggered firing: a rule fires only when it CROSSES into the
