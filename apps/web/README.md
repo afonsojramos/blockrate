@@ -144,6 +144,39 @@ Until this cron is wired the rules simply never evaluate — no incorrect behavi
 just inert. Sending requires `RESEND_API_KEY`; without it the alert email is logged to
 stdout (same fallback as magic-link email).
 
+## Weekly digest
+
+`/api/internal/digest` emails each **opted-in** account a summary of its per-provider
+block rate over the last 7 days — a recurring nudge back to the dashboard. Same
+bearer auth and fail-closed behaviour as the other crons. Only accounts with
+`weekly_digest = true` AND events in the window are emailed; per-account sends are
+isolated so one failure doesn't abort the sweep. Users opt out under Settings →
+Notifications.
+
+Add a weekly Railway "Cron" service (Mondays 13:00 UTC):
+
+```bash
+curl -fsS -X POST \
+  -H "Authorization: Bearer $CRON_SECRET" \
+  https://blockrate.app/api/internal/digest
+```
+
+Response shape:
+
+```json
+{
+  "ok": true,
+  "accountsConsidered": 8,
+  "sent": 6,
+  "skippedOptedOut": 2,
+  "skippedNoData": 0,
+  "ranAt": "2026-06-22T13:00:00.123Z"
+}
+```
+
+Inert until wired; `RESEND_API_KEY` unset → the digest is logged to stdout (same
+fallback as the other emails).
+
 ## OAuth (Phase 5)
 
 Google and GitHub providers are wired in `lib/auth.server.ts` and **conditionally enabled** based on env vars. With neither configured (dev default), only the magic-link form renders on `/login` and `/signup`. As soon as a provider's `_CLIENT_ID` and `_CLIENT_SECRET` pair appears in env, the corresponding button shows up.
