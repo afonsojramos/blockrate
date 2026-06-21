@@ -20,6 +20,8 @@ export interface Plan {
   dashboardHistoryDays: number;
   /** Maximum alert rules. 0 disables alerting entirely (the Free gate). */
   maxAlertRules: number;
+  /** Whether the account-scoped, impact-ranked Remediation Playbook is unlocked. */
+  remediationPlaybook: boolean;
 }
 
 export const PLANS: Record<PlanName, Plan> = {
@@ -31,6 +33,7 @@ export const PLANS: Record<PlanName, Plan> = {
     retentionDays: 30,
     dashboardHistoryDays: 30,
     maxAlertRules: 0,
+    remediationPlaybook: false,
   },
   pro: {
     name: "pro",
@@ -40,6 +43,7 @@ export const PLANS: Record<PlanName, Plan> = {
     retentionDays: 90,
     dashboardHistoryDays: 90,
     maxAlertRules: 10,
+    remediationPlaybook: true,
   },
   team: {
     name: "team",
@@ -49,6 +53,7 @@ export const PLANS: Record<PlanName, Plan> = {
     retentionDays: 365,
     dashboardHistoryDays: 365,
     maxAlertRules: 50,
+    remediationPlaybook: true,
   },
 };
 

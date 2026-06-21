@@ -38,6 +38,7 @@ import { Route as ApiInternalRetentionRouteImport } from './routes/api/internal/
 import { Route as ApiInternalAlertsRouteImport } from './routes/api/internal/alerts'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
 import { Route as AuthedAppSettingsRouteImport } from './routes/_authed/app/settings'
+import { Route as AuthedAppRemediateRouteImport } from './routes/_authed/app/remediate'
 import { Route as AuthedAppKeysRouteImport } from './routes/_authed/app/keys'
 import { Route as AuthedAppAlertsRouteImport } from './routes/_authed/app/alerts'
 import { Route as AuthedAppAdminIndexRouteImport } from './routes/_authed/app/admin/index'
@@ -187,6 +188,11 @@ const AuthedAppSettingsRoute = AuthedAppSettingsRouteImport.update({
   path: '/app/settings',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedAppRemediateRoute = AuthedAppRemediateRouteImport.update({
+  id: '/app/remediate',
+  path: '/app/remediate',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const AuthedAppKeysRoute = AuthedAppKeysRouteImport.update({
   id: '/app/keys',
   path: '/app/keys',
@@ -224,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/block-rate/': typeof BlockRateIndexRoute
   '/app/alerts': typeof AuthedAppAlertsRoute
   '/app/keys': typeof AuthedAppKeysRoute
+  '/app/remediate': typeof AuthedAppRemediateRoute
   '/app/settings': typeof AuthedAppSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/internal/alerts': typeof ApiInternalAlertsRoute
@@ -257,6 +264,7 @@ export interface FileRoutesByTo {
   '/block-rate': typeof BlockRateIndexRoute
   '/app/alerts': typeof AuthedAppAlertsRoute
   '/app/keys': typeof AuthedAppKeysRoute
+  '/app/remediate': typeof AuthedAppRemediateRoute
   '/app/settings': typeof AuthedAppSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/internal/alerts': typeof ApiInternalAlertsRoute
@@ -292,6 +300,7 @@ export interface FileRoutesById {
   '/block-rate/': typeof BlockRateIndexRoute
   '/_authed/app/alerts': typeof AuthedAppAlertsRoute
   '/_authed/app/keys': typeof AuthedAppKeysRoute
+  '/_authed/app/remediate': typeof AuthedAppRemediateRoute
   '/_authed/app/settings': typeof AuthedAppSettingsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/internal/alerts': typeof ApiInternalAlertsRoute
@@ -327,6 +336,7 @@ export interface FileRouteTypes {
     | '/block-rate/'
     | '/app/alerts'
     | '/app/keys'
+    | '/app/remediate'
     | '/app/settings'
     | '/api/auth/$'
     | '/api/internal/alerts'
@@ -360,6 +370,7 @@ export interface FileRouteTypes {
     | '/block-rate'
     | '/app/alerts'
     | '/app/keys'
+    | '/app/remediate'
     | '/app/settings'
     | '/api/auth/$'
     | '/api/internal/alerts'
@@ -394,6 +405,7 @@ export interface FileRouteTypes {
     | '/block-rate/'
     | '/_authed/app/alerts'
     | '/_authed/app/keys'
+    | '/_authed/app/remediate'
     | '/_authed/app/settings'
     | '/api/auth/$'
     | '/api/internal/alerts'
@@ -641,6 +653,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAppSettingsRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/app/remediate': {
+      id: '/_authed/app/remediate'
+      path: '/app/remediate'
+      fullPath: '/app/remediate'
+      preLoaderRoute: typeof AuthedAppRemediateRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/app/keys': {
       id: '/_authed/app/keys'
       path: '/app/keys'
@@ -668,6 +687,7 @@ declare module '@tanstack/react-router' {
 interface AuthedRouteChildren {
   AuthedAppAlertsRoute: typeof AuthedAppAlertsRoute
   AuthedAppKeysRoute: typeof AuthedAppKeysRoute
+  AuthedAppRemediateRoute: typeof AuthedAppRemediateRoute
   AuthedAppSettingsRoute: typeof AuthedAppSettingsRoute
   AuthedAppIndexRoute: typeof AuthedAppIndexRoute
   AuthedAppAdminIndexRoute: typeof AuthedAppAdminIndexRoute
@@ -676,6 +696,7 @@ interface AuthedRouteChildren {
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedAppAlertsRoute: AuthedAppAlertsRoute,
   AuthedAppKeysRoute: AuthedAppKeysRoute,
+  AuthedAppRemediateRoute: AuthedAppRemediateRoute,
   AuthedAppSettingsRoute: AuthedAppSettingsRoute,
   AuthedAppIndexRoute: AuthedAppIndexRoute,
   AuthedAppAdminIndexRoute: AuthedAppAdminIndexRoute,

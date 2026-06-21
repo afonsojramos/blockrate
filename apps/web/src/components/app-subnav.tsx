@@ -4,6 +4,7 @@ const TABS = [
   { to: "/app", label: "Overview" },
   { to: "/app/keys", label: "API keys" },
   { to: "/app/alerts", label: "Alerts" },
+  { to: "/app/remediate", label: "Remediate" },
   { to: "/app/settings", label: "Settings" },
 ] as const;
 
