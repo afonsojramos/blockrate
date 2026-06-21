@@ -61,6 +61,8 @@ export const appAccounts = pgTable(
     stripeSubscriptionStatus: text("stripe_subscription_status"),
     /** End of current billing period — for "cancels on [date]" display. */
     stripeCurrentPeriodEnd: timestamp("stripe_current_period_end", { withTimezone: true }),
+    /** Opt-out for the weekly digest email. Default on; toggled in settings. */
+    weeklyDigest: boolean("weekly_digest").notNull().default(true),
   },
   (t) => ({
     byStripeCustomer: uniqueIndex("idx_app_accounts_stripe_customer").on(t.stripeCustomerId),

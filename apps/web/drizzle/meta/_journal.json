@@ -43,6 +43,13 @@
       "when": 1782005342499,
       "tag": "0005_perfect_komodo",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1782017373811,
+      "tag": "0006_strong_agent_brand",
+      "breakpoints": true
     }
   ]
 }

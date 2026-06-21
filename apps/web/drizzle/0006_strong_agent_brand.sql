@@ -1,0 +1,1 @@
+ALTER TABLE "app_accounts" ADD COLUMN "weekly_digest" boolean DEFAULT true NOT NULL;
