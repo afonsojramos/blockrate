@@ -35,6 +35,15 @@ export const dashboardHtml = /* html */ `<!doctype html>
 <script>
 const f = document.getElementById("f");
 const out = document.getElementById("out");
+/** Escape text before interpolating into HTML sinks (provider/tenant are ingest-controlled). */
+function esc(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 const stored = localStorage.getItem("br_key");
 if (stored) f.key.value = stored;
 f.addEventListener("submit", async (e) => {
@@ -43,7 +52,7 @@ f.addEventListener("submit", async (e) => {
   localStorage.setItem("br_key", key);
   const params = new URLSearchParams({ since: f.since.value });
   if (f.service.value) params.set("service", f.service.value);
-  out.innerHTML = "Loading...";
+  out.textContent = "Loading...";
   try {
     const res = await fetch("/stats?" + params, {
       headers: { "x-blockrate-key": key },
@@ -59,22 +68,22 @@ f.addEventListener("submit", async (e) => {
       .map((s) => {
         const pct = (s.blockRate * 100).toFixed(1);
         return \`<tr>
-          <td>\${s.provider}</td>
-          <td>\${s.total.toLocaleString()}</td>
-          <td>\${pct}%</td>
-          <td><div class="bar"><div style="--w:\${pct}%"></div></div></td>
-          <td>\${s.avgLatency}ms</td>
+          <td>\${esc(s.provider)}</td>
+          <td>\${esc(s.total.toLocaleString())}</td>
+          <td>\${esc(pct)}%</td>
+          <td><div class="bar"><div style="--w:\${esc(pct)}%"></div></div></td>
+          <td>\${esc(s.avgLatency)}ms</td>
         </tr>\`;
       })
       .join("");
     out.innerHTML = \`
-      <p class="muted">Tenant: <b>\${data.tenant}</b> · \${data.service ?? "all services"} · last \${data.sinceDays}d</p>
+      <p class="muted">Tenant: <b>\${esc(data.tenant)}</b> · \${esc(data.service ?? "all services")} · last \${esc(data.sinceDays)}d</p>
       <table>
         <thead><tr><th>Provider</th><th>Checks</th><th>Block rate</th><th></th><th>Avg latency</th></tr></thead>
         <tbody>\${rows}</tbody>
       </table>\`;
   } catch (err) {
-    out.innerHTML = "<p class='err'>" + err.message + "</p>";
+    out.innerHTML = "<p class='err'>" + esc(err.message) + "</p>";
   }
 });
 </script>
