@@ -10,6 +10,16 @@
  * is the follow-up. Paired with `redirect: "manual"` at delivery (so an https
  * URL can't 302 to an internal http target), this is a proportionate MVP guard.
  */
+/** True when a/b/c/d is a private, loopback, link-local, CGNAT, or this-host IPv4. */
+function isPrivateIPv4(a: number, b: number, _c: number, _d: number): boolean {
+  if (a === 0 || a === 127 || a === 10) return true; // this-host, loopback, private
+  if (a === 169 && b === 254) return true; // link-local (cloud metadata)
+  if (a === 172 && b >= 16 && b <= 31) return true; // private
+  if (a === 192 && b === 168) return true; // private
+  if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT
+  return false;
+}
+
 export function isBlockedWebhookHost(hostname: string): boolean {
   const host = hostname.toLowerCase().replace(/\.$/, "").replace(/^\[/, "").replace(/\]$/, "");
 
@@ -27,16 +37,31 @@ export function isBlockedWebhookHost(hostname: string): boolean {
   if (/^f[cd][0-9a-f]{2}:/.test(host)) return true;
   if (/^fe[89ab][0-9a-f]:/.test(host)) return true;
 
+  // IPv4-mapped IPv6 (::ffff:a.b.c.d or ::ffff:hex) — same private ranges as IPv4.
+  const mappedDotted = host.match(/^::ffff:(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (mappedDotted) {
+    return isPrivateIPv4(
+      Number(mappedDotted[1]),
+      Number(mappedDotted[2]),
+      Number(mappedDotted[3]),
+      Number(mappedDotted[4]),
+    );
+  }
+  const mappedHex = host.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/);
+  if (mappedHex) {
+    const hi = parseInt(mappedHex[1]!, 16);
+    const lo = parseInt(mappedHex[2]!, 16);
+    const a = (hi >> 8) & 0xff;
+    const b = hi & 0xff;
+    const c = (lo >> 8) & 0xff;
+    const d = lo & 0xff;
+    return isPrivateIPv4(a, b, c, d);
+  }
+
   // IPv4 literal (already canonicalised to dotted-decimal by the URL parser).
   const m = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
   if (m) {
-    const a = Number(m[1]);
-    const b = Number(m[2]);
-    if (a === 0 || a === 127 || a === 10) return true; // this-host, loopback, private
-    if (a === 169 && b === 254) return true; // link-local (cloud metadata)
-    if (a === 172 && b >= 16 && b <= 31) return true; // private
-    if (a === 192 && b === 168) return true; // private
-    if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT
+    return isPrivateIPv4(Number(m[1]), Number(m[2]), Number(m[3]), Number(m[4]));
   }
 
   return false;

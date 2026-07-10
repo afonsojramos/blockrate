@@ -27,6 +27,12 @@ describe("isBlockedWebhookHost — blocks internal targets", () => {
     "https://[fc00::1]/h",
     "https://[fe80::1]/h",
     "https://2130706433/h", // integer form of 127.0.0.1 — URL canonicalises it
+    "https://[::ffff:127.0.0.1]/h", // IPv4-mapped loopback
+    "https://[::ffff:169.254.169.254]/h", // IPv4-mapped cloud metadata
+    "https://[::ffff:10.0.0.1]/h",
+    "https://[::ffff:192.168.0.1]/h",
+    "https://[::ffff:7f00:1]/h", // hex form of 127.0.0.1
+    "https://[::ffff:a9fe:a9fe]/h", // hex form of 169.254.169.254
   ];
   for (const u of blocked) {
     it(`blocks ${u}`, () => {
