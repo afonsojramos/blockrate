@@ -71,4 +71,24 @@ describe("getPlan", () => {
     expect(getPlan("bogus").name).toBe("free");
     expect(getPlan("").name).toBe("free");
   });
+
+  it("keeps free as an evaluation wedge, not a production monitoring plan", () => {
+    const free = getPlan("free");
+    expect(free.eventsPerMonth).toBe(10_000);
+    expect(free.maxKeys).toBe(1);
+    expect(free.retentionDays).toBe(7);
+    expect(free.dashboardHistoryDays).toBe(7);
+    expect(free.maxAlertRules).toBe(0);
+    expect(free.remediationPlaybook).toBe(false);
+  });
+
+  it("gates continuous monitoring and remediation behind paid tiers", () => {
+    const pro = getPlan("pro");
+    const team = getPlan("team");
+    expect(pro.eventsPerMonth).toBeGreaterThan(getPlan("free").eventsPerMonth);
+    expect(pro.maxAlertRules).toBeGreaterThan(0);
+    expect(pro.remediationPlaybook).toBe(true);
+    expect(team.maxAlertRules).toBeGreaterThan(pro.maxAlertRules);
+    expect(team.retentionDays).toBeGreaterThan(pro.retentionDays);
+  });
 });

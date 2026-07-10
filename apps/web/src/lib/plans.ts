@@ -1,8 +1,9 @@
 /**
  * Plan tier configuration. Single source of truth for quota limits.
  *
- * Differentiation is on volume + keys + features, not on deleting data.
- * Free gets 30 days — generous enough that hobbyists never feel squeezed.
+ * Free is an evaluation wedge: enough volume and history to see a trustworthy
+ * per-provider rate on one site, not a free production monitoring plan.
+ * Paid unlocks continuous monitoring (alerts, longer retention) and remediation.
  */
 
 export type PlanName = "free" | "pro" | "team";
@@ -28,10 +29,12 @@ export const PLANS: Record<PlanName, Plan> = {
   free: {
     name: "free",
     label: "Free",
-    eventsPerMonth: 100_000,
-    maxKeys: 3,
-    retentionDays: 30,
-    dashboardHistoryDays: 30,
+    // ~10k checks/mo ≈ one site at sampleRate 0.1 on modest traffic.
+    // Enough to trust the number; not enough for always-on production sampling.
+    eventsPerMonth: 10_000,
+    maxKeys: 1,
+    retentionDays: 7,
+    dashboardHistoryDays: 7,
     maxAlertRules: 0,
     remediationPlaybook: false,
   },
@@ -39,7 +42,7 @@ export const PLANS: Record<PlanName, Plan> = {
     name: "pro",
     label: "Pro",
     eventsPerMonth: 1_000_000,
-    maxKeys: 50,
+    maxKeys: 25,
     retentionDays: 90,
     dashboardHistoryDays: 90,
     maxAlertRules: 10,
@@ -49,7 +52,7 @@ export const PLANS: Record<PlanName, Plan> = {
     name: "team",
     label: "Team",
     eventsPerMonth: 10_000_000,
-    maxKeys: 500,
+    maxKeys: 100,
     retentionDays: 365,
     dashboardHistoryDays: 365,
     maxAlertRules: 50,

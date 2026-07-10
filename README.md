@@ -78,7 +78,7 @@ That's the entire setup. Open the dashboard, paste the printed API key, point yo
 
 If you don't want to operate any infrastructure, [blockrate.app](https://blockrate.app) is the hosted version of the self-hosted server with:
 
-- **Free tier**: 100k events/month, 3 API keys, 30-day retention
+- **Free tier**: 10k events/month, 1 API key, 7-day retention
 - Sign-in with magic link, Google, or GitHub
 - Per-account API keys, cascading delete, CSV export
 - Same OSS library — you can move on or off any time

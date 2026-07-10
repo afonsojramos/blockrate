@@ -184,7 +184,7 @@ function ApiDocs() {
             2/sec. Returns <code className="font-mono text-xs">429 rate limited</code>.
           </li>
           <li>
-            <span className="text-foreground">Monthly quota (free tier):</span> 100,000 events /
+            <span className="text-foreground">Monthly quota (free tier):</span> 10,000 events /
             month. Returns <code className="font-mono text-xs">429 monthly quota exceeded</code>{" "}
             with current usage in headers.
           </li>

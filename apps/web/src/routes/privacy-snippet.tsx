@@ -21,7 +21,7 @@ metadata: the page path, your browser family and major version (e.g.
 "Chrome 131"), which analytics provider was checked, whether it was
 reachable, and how long the check took. This data is aggregated into
 per-provider block rate statistics and cannot identify individual
-visitors. Data is retained for [30/90/365] days depending on our plan
+visitors. Data is retained for [7/90/365] days depending on our plan
 and then permanently deleted. For more information, see
 https://blockrate.app/privacy.`;
 
@@ -53,7 +53,7 @@ function PrivacySnippet() {
           <p>
             You still need to inform your visitors that blockrate is in use. Add a section like the
             one below to your privacy policy. Adjust the retention period to match your plan (Free:
-            30 days, Pro: 90 days, Team: 365 days).
+            7 days, Pro: 90 days, Team: 365 days).
           </p>
         </section>
 

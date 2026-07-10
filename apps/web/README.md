@@ -58,7 +58,7 @@ Open `http://localhost:3000`. Sign in via `/login` — the magic link URL prints
 
 ## Retention sweep (Phase 4)
 
-`/api/internal/retention` deletes events older than each plan's `retentionDays` (free = 30 days, pro = 90, team = 365). It's bearer-authenticated via `CRON_SECRET` and **fails closed** in two ways:
+`/api/internal/retention` deletes events older than each plan's `retentionDays` (free = 7 days, pro = 90, team = 365). It's bearer-authenticated via `CRON_SECRET` and **fails closed** in two ways:
 
 - If `CRON_SECRET` is unset → **503** (deployment misconfigured)
 - If the bearer is missing or wrong → **401**

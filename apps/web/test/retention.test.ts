@@ -121,11 +121,11 @@ describe("retention cron — auth", () => {
 describe("retention cron — deletion by plan", () => {
   beforeEach(reset);
 
-  it("deletes free-plan events older than 30 days, keeps recent ones", async () => {
+  it("deletes free-plan events older than 7 days, keeps recent ones", async () => {
     const { accountId, apiKeyId } = await seedAccount("free1", "free");
-    await insertEvent(accountId, apiKeyId, 40); // older than 30d → delete
-    await insertEvent(accountId, apiKeyId, 31); // older than 30d → delete
-    await insertEvent(accountId, apiKeyId, 5); // recent → keep
+    await insertEvent(accountId, apiKeyId, 14); // older than 7d → delete
+    await insertEvent(accountId, apiKeyId, 8); // older than 7d → delete
+    await insertEvent(accountId, apiKeyId, 2); // recent → keep
 
     const res = await POST({ request: request(CRON_SECRET) });
     const body = (await res.json()) as { eventsDeleted: number };
@@ -145,8 +145,8 @@ describe("retention cron — deletion by plan", () => {
   it("applies each plan's own cutoff in a single run", async () => {
     const free = await seedAccount("free2", "free");
     const pro = await seedAccount("pro2", "pro");
-    await insertEvent(free.accountId, free.apiKeyId, 45); // free: delete
-    await insertEvent(pro.accountId, pro.apiKeyId, 45); // pro: keep (< 90d)
+    await insertEvent(free.accountId, free.apiKeyId, 14); // free (7d): delete
+    await insertEvent(pro.accountId, pro.apiKeyId, 14); // pro (90d): keep
 
     await POST({ request: request(CRON_SECRET) });
     expect(await countEvents(free.accountId)).toBe(0);
@@ -160,9 +160,10 @@ describe("retention cron — daily rollup", () => {
   it("rolls up provider stats before deleting and is idempotent on re-run", async () => {
     const { accountId, apiKeyId } = await seedAccount("free3", "free");
     // Same UTC day, mixed statuses → one daily_provider_stats row for posthog.
-    await insertEvent(accountId, apiKeyId, 40, "blocked");
-    await insertEvent(accountId, apiKeyId, 40, "blocked");
-    await insertEvent(accountId, apiKeyId, 40, "loaded");
+    // age > free retention (7d) so events are deleted after rollup.
+    await insertEvent(accountId, apiKeyId, 14, "blocked");
+    await insertEvent(accountId, apiKeyId, 14, "blocked");
+    await insertEvent(accountId, apiKeyId, 14, "loaded");
 
     await POST({ request: request(CRON_SECRET) });
     const first = await db.select().from(schema.dailyProviderStats);
@@ -187,7 +188,7 @@ describe("retention cron — daily rollup", () => {
     // public totals downward.
     const free = await seedAccount("rollup-free", "free");
     const pro = await seedAccount("rollup-pro", "pro");
-    const ageDays = 45; // free deletes (>30d), pro keeps (<90d)
+    const ageDays = 14; // free deletes (>7d), pro keeps (<90d)
     await insertEvent(free.accountId, free.apiKeyId, ageDays, "blocked");
     await insertEvent(free.accountId, free.apiKeyId, ageDays, "blocked");
     await insertEvent(pro.accountId, pro.apiKeyId, ageDays, "loaded");
@@ -208,5 +209,38 @@ describe("retention cron — daily rollup", () => {
     expect(afterSecond.length).toBe(1);
     expect(afterSecond[0]!.totalChecks).toBe(4);
     expect(afterSecond[0]!.blocked).toBe(3);
+  });
+
+  it("excludes the dogfood account (BLOCKRATE_API_KEY) from the public rollup", async () => {
+    const { generateApiKey, hashKey, keyPrefix } = await import("@/lib/keys.server");
+    const dogfood = generateApiKey();
+    const customer = await seedAccount("rollup-customer", "pro");
+    const dog = await seedAccount("rollup-dogfood", "pro");
+    // Point dogfood key at the dog account.
+    await db.insert(schema.apiKeys).values({
+      accountId: dog.accountId,
+      name: "dogfood",
+      keyPrefix: keyPrefix(dogfood.plaintext),
+      keyHash: hashKey(dogfood.plaintext),
+      service: "dogfood",
+    });
+    await insertEvent(customer.accountId, customer.apiKeyId, 1, "blocked");
+    await insertEvent(dog.accountId, dog.apiKeyId, 1, "blocked");
+    await insertEvent(dog.accountId, dog.apiKeyId, 1, "blocked");
+
+    const prev = process.env.BLOCKRATE_API_KEY;
+    process.env.BLOCKRATE_API_KEY = dogfood.plaintext;
+    try {
+      await POST({ request: request(CRON_SECRET) });
+    } finally {
+      if (prev === undefined) delete process.env.BLOCKRATE_API_KEY;
+      else process.env.BLOCKRATE_API_KEY = prev;
+    }
+
+    const rows = await db.select().from(schema.dailyProviderStats);
+    expect(rows.length).toBe(1);
+    // Only the customer's single blocked event — dogfood's 2 are excluded.
+    expect(rows[0]!.totalChecks).toBe(1);
+    expect(rows[0]!.blocked).toBe(1);
   });
 });
