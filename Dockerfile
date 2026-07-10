@@ -10,7 +10,7 @@
 # IMPORTANT: pin the exact Bun version so --frozen-lockfile never drifts
 # between local dev and Railway. Update this + mise.toml together.
 
-FROM oven/bun:1.3.11-alpine AS base
+FROM oven/bun:1.3.14-alpine AS base
 
 # ─── Dependencies ────────────────────────────────────────────────────────
 
