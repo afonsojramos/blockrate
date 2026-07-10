@@ -57,11 +57,34 @@ export const Route = createFileRoute("/api/internal/retention")({
         // Aggregate all events by day + provider into daily_provider_stats.
         // ON CONFLICT upsert makes this idempotent — safe to re-run.
 
+        // Exclude the site dogfood account (BLOCKRATE_API_KEY) from the public
+        // index so self-traffic / synthetic demo volume cannot dominate or
+        // poison the per-provider rates published on /report and badges.
+        let excludeAccountId: number | null = null;
+        const dogfoodKey = process.env.BLOCKRATE_API_KEY;
+        if (dogfoodKey?.startsWith("br_")) {
+          const { apiKeys } = await import("@/lib/db/schema");
+          const { hashKey, keyPrefix, compareHashes } = await import("@/lib/keys.server");
+          const { and, eq: eqCol, isNull } = drizzle;
+          const prefix = keyPrefix(dogfoodKey);
+          const expected = hashKey(dogfoodKey);
+          const candidates = await db
+            .select({ accountId: apiKeys.accountId, keyHash: apiKeys.keyHash })
+            .from(apiKeys)
+            .where(and(eqCol(apiKeys.keyPrefix, prefix), isNull(apiKeys.revokedAt)));
+          const match = candidates.find((c) => compareHashes(c.keyHash, expected));
+          if (match) excludeAccountId = match.accountId;
+        }
+
         // Seal historical days: never shrink a prior rollup when free-tier
         // (or other short-retention) events age out of `events`. Re-aggregating
         // only remaining rows would undercount public all-time rates.
         // GREATEST keeps the higher total_checks; blocked follows the winner
         // (or max when totals tie) so a sealed day cannot lose volume.
+        const excludeClause =
+          excludeAccountId === null
+            ? drizzle.sql`TRUE`
+            : drizzle.sql`account_id <> ${excludeAccountId}`;
         await db.execute(drizzle.sql`
           INSERT INTO daily_provider_stats (date, provider, total_checks, blocked)
           SELECT
@@ -70,6 +93,7 @@ export const Route = createFileRoute("/api/internal/retention")({
             COUNT(*)::int as total_checks,
             SUM(CASE WHEN status = 'blocked' THEN 1 ELSE 0 END)::int as blocked
           FROM events
+          WHERE ${excludeClause}
           GROUP BY date, provider
           ON CONFLICT (date, provider) DO UPDATE SET
             total_checks = GREATEST(daily_provider_stats.total_checks, EXCLUDED.total_checks),
