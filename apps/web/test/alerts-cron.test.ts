@@ -359,10 +359,56 @@ describe("alerts cron — delivery channels", () => {
     nextOk = false; // webhook responds 500
 
     expect((await run()).fired).toBe(0);
-    const fresh = (
+    const afterFail = (
       await db.select().from(schema.alertRules).where(eq(schema.alertRules.id, rule.id))
     )[0]!;
-    expect(fresh.lastFiredAt).toBeNull();
+    expect(afterFail.lastFiredAt).toBeNull();
+    // lastMatched must stay false so the edge can retry while still matching.
+    expect(afterFail.lastMatched).toBe(false);
+
+    // Same condition still holds; delivery recovers → fires on the retry sweep.
+    nextOk = true;
+    expect((await run()).fired).toBe(1);
+    const afterRetry = (
+      await db.select().from(schema.alertRules).where(eq(schema.alertRules.id, rule.id))
+    )[0]!;
+    expect(afterRetry.lastFiredAt).not.toBeNull();
+    expect(afterRetry.lastMatched).toBe(true);
+  });
+
+  it("fires after cooldown expires while still matching (cooldown does not silence the edge)", async () => {
+    const { accountId, apiKeyId } = await seedAccount("cd1");
+    const rule = await seedRule(accountId, {
+      channel: "webhook",
+      webhookUrl: "https://hooks.test/cd",
+      threshold: 30,
+      cooldownHours: 24,
+      // Recent fire, but lastMatched false (e.g. recovered then re-crossed).
+      lastFiredAt: new Date(Date.now() - 1 * HOUR),
+      lastMatched: false,
+    });
+    await insertEvents(accountId, apiKeyId, { blocked: 9, loaded: 1 }); // 90%
+
+    const cooled = await run();
+    expect(cooled.fired).toBe(0);
+    expect(cooled.skippedCooldown).toBe(1);
+    const mid = (
+      await db.select().from(schema.alertRules).where(eq(schema.alertRules.id, rule.id))
+    )[0]!;
+    // Cooldown must not stamp lastMatched — that would permanently silence the edge.
+    expect(mid.lastMatched).toBe(false);
+
+    // Cooldown window elapsed; condition still holds → fire.
+    await db
+      .update(schema.alertRules)
+      .set({ lastFiredAt: new Date(Date.now() - 25 * HOUR) })
+      .where(eq(schema.alertRules.id, rule.id));
+    expect((await run()).fired).toBe(1);
+    const done = (
+      await db.select().from(schema.alertRules).where(eq(schema.alertRules.id, rule.id))
+    )[0]!;
+    expect(done.lastMatched).toBe(true);
+    expect(done.lastFiredAt).not.toBeNull();
   });
 });
 

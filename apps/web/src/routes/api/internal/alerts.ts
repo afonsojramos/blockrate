@@ -176,30 +176,41 @@ export const Route = createFileRoute("/api/internal/alerts")({
             rule.comparator === "gte" ? ratePct >= rule.threshold : ratePct <= rule.threshold;
 
           let didFire = false;
-          // Edge: fire only on the unmet → met transition.
-          if (matches && !rule.lastMatched) {
+          // lastMatched tracks a *successful* edge only. Cooldown suppress and
+          // delivery failure must leave it false so the next sweep can still
+          // attempt the unmet → met crossing while the condition holds.
+          // Recovery (matches false) always re-arms by clearing lastMatched.
+          let nextLastMatched = rule.lastMatched;
+
+          if (!matches) {
+            nextLastMatched = false;
+          } else if (!rule.lastMatched) {
+            // Edge: condition just became met (or a prior attempt did not commit).
             const cooldownOk =
               !rule.lastFiredAt || now - rule.lastFiredAt.getTime() >= rule.cooldownHours * HOUR_MS;
             if (!cooldownOk) {
               skippedCooldown++;
+              nextLastMatched = false;
             } else {
               try {
                 await deliverAlert(rule, email, ratePct);
                 didFire = true;
+                nextLastMatched = true;
               } catch (err) {
-                // Don't stamp lastFiredAt — leave the rule to retry next sweep.
+                // Don't stamp lastFiredAt or lastMatched — retry next sweep.
                 console.error("[alerts] delivery failed for rule", rule.id, err);
+                nextLastMatched = false;
               }
             }
           }
+          // else: still matching after a prior successful fire → leave lastMatched true
 
-          // Always persist the matched state so recovery re-arms the edge.
           await db
             .update(alertRules)
             .set(
               didFire
-                ? { lastMatched: matches, lastFiredAt: new Date(now) }
-                : { lastMatched: matches },
+                ? { lastMatched: nextLastMatched, lastFiredAt: new Date(now) }
+                : { lastMatched: nextLastMatched },
             )
             .where(eq(alertRules.id, rule.id));
           if (didFire) fired++;
