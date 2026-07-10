@@ -23,11 +23,24 @@ interface SendArgs {
   text: string;
 }
 
+/**
+ * Fail-closed gate for transactional email. Production without Resend is a
+ * deployment bug — never log magic-link tokens and pretend the send succeeded.
+ * Development/test without Resend is allowed (console fallback).
+ * Exported for unit tests; `sendEmail` always goes through this.
+ */
+export function assertCanSendEmail(opts: { nodeEnv: string; hasResend: boolean }): void {
+  if (!opts.hasResend && opts.nodeEnv === "production") {
+    throw new Error("RESEND_API_KEY is required in production");
+  }
+}
+
 export async function sendEmail({ to, subject, text }: SendArgs): Promise<void> {
+  assertCanSendEmail({ nodeEnv: env.NODE_ENV, hasResend: capabilities.resend });
+
   if (!capabilities.resend) {
-    // Log the email to stdout — in production this shows up in Railway logs
-    // so you can copy-paste the magic link URL to sign in. Once RESEND_API_KEY
-    // is set, this code path is never taken.
+    // Dev/test only — production is rejected above. Log so local magic-link
+    // flows stay usable without Resend.
     console.log(`[mailer] to=${to} subject="${subject}"\n${text.replace(/^/gm, "  ")}`);
     return;
   }
