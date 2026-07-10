@@ -272,6 +272,23 @@ describe("alerts cron — edge triggering & re-gating", () => {
     expect(body.skippedUnentitled).toBe(1);
   });
 
+  it("after Team→Pro downgrade, only the oldest maxAlertRules rules fire", async () => {
+    // Pro allows 10; seed 12 enabled rules, only the 10 lowest ids may fire.
+    const { accountId, apiKeyId } = await seedAccount("team-to-pro", "pro");
+    await insertEvents(accountId, apiKeyId, { blocked: 9, loaded: 1 }); // 90%
+    for (let i = 0; i < 12; i++) {
+      await seedRule(accountId, {
+        name: `r${i}`,
+        threshold: 30,
+        cooldownHours: 0,
+      });
+    }
+
+    const body = await run();
+    expect(body.fired).toBe(10);
+    expect(body.skippedUnentitled).toBe(2);
+  });
+
   it("fires a gte rule at exactly the threshold (boundary)", async () => {
     const { accountId, apiKeyId } = await seedAccount("b1");
     await seedRule(accountId, { threshold: 30, comparator: "gte" });

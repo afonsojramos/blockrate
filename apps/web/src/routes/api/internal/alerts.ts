@@ -133,14 +133,35 @@ export const Route = createFileRoute("/api/internal/alerts")({
           .innerJoin(user, eq(appAccounts.userId, user.id))
           .where(eq(alertRules.enabled, true));
 
+        // Re-gate by plan cap, not only free (maxAlertRules === 0). After a
+        // Team→Pro downgrade, only the oldest maxAlertRules enabled rules stay
+        // live; the rest are skipped as unentitled.
+        const allowedRuleIds = new Set<number>();
+        {
+          const byAccount = new Map<number, typeof rows>();
+          for (const row of rows) {
+            const list = byAccount.get(row.rule.accountId) ?? [];
+            list.push(row);
+            byAccount.set(row.rule.accountId, list);
+          }
+          for (const accountRows of byAccount.values()) {
+            const max = getPlan(accountRows[0]!.plan).maxAlertRules;
+            if (max <= 0) continue;
+            accountRows
+              .slice()
+              .sort((a, b) => a.rule.id - b.rule.id)
+              .slice(0, max)
+              .forEach((r) => allowedRuleIds.add(r.rule.id));
+          }
+        }
+
         let fired = 0;
         let skippedCooldown = 0;
         let skippedMinSample = 0;
         let skippedUnentitled = 0;
 
-        for (const { rule, plan, email } of rows) {
-          // Re-gate: a rule whose account downgraded below alerting is inert.
-          if (getPlan(plan).maxAlertRules === 0) {
+        for (const { rule, email } of rows) {
+          if (!allowedRuleIds.has(rule.id)) {
             skippedUnentitled++;
             continue;
           }
