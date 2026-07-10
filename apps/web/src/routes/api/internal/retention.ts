@@ -57,6 +57,11 @@ export const Route = createFileRoute("/api/internal/retention")({
         // Aggregate all events by day + provider into daily_provider_stats.
         // ON CONFLICT upsert makes this idempotent — safe to re-run.
 
+        // Seal historical days: never shrink a prior rollup when free-tier
+        // (or other short-retention) events age out of `events`. Re-aggregating
+        // only remaining rows would undercount public all-time rates.
+        // GREATEST keeps the higher total_checks; blocked follows the winner
+        // (or max when totals tie) so a sealed day cannot lose volume.
         await db.execute(drizzle.sql`
           INSERT INTO daily_provider_stats (date, provider, total_checks, blocked)
           SELECT
@@ -67,8 +72,13 @@ export const Route = createFileRoute("/api/internal/retention")({
           FROM events
           GROUP BY date, provider
           ON CONFLICT (date, provider) DO UPDATE SET
-            total_checks = EXCLUDED.total_checks,
-            blocked = EXCLUDED.blocked
+            total_checks = GREATEST(daily_provider_stats.total_checks, EXCLUDED.total_checks),
+            blocked = CASE
+              WHEN EXCLUDED.total_checks > daily_provider_stats.total_checks THEN EXCLUDED.blocked
+              WHEN EXCLUDED.total_checks = daily_provider_stats.total_checks
+                THEN GREATEST(daily_provider_stats.blocked, EXCLUDED.blocked)
+              ELSE daily_provider_stats.blocked
+            END
         `);
 
         // ─── Step 2: Retention delete ───────────────────────────────

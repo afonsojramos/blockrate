@@ -172,10 +172,41 @@ describe("retention cron — daily rollup", () => {
     expect(first[0]!.blocked).toBe(2);
 
     // Re-run: events already deleted, ON CONFLICT upsert must not error or
-    // duplicate the row.
+    // duplicate the row — and must not shrink sealed totals.
     const res = await POST({ request: request(CRON_SECRET) });
     expect(res.status).toBe(200);
     const second = await db.select().from(schema.dailyProviderStats);
     expect(second.length).toBe(1);
+    expect(second[0]!.totalChecks).toBe(3);
+    expect(second[0]!.blocked).toBe(2);
+  });
+
+  it("does not shrink sealed daily totals when free-tier events age out of a mixed day", async () => {
+    // Same historical day: free + pro traffic. After free retention deletes free
+    // events, a re-rollup from remaining events must not overwrite the sealed
+    // public totals downward.
+    const free = await seedAccount("rollup-free", "free");
+    const pro = await seedAccount("rollup-pro", "pro");
+    const ageDays = 45; // free deletes (>30d), pro keeps (<90d)
+    await insertEvent(free.accountId, free.apiKeyId, ageDays, "blocked");
+    await insertEvent(free.accountId, free.apiKeyId, ageDays, "blocked");
+    await insertEvent(pro.accountId, pro.apiKeyId, ageDays, "loaded");
+    await insertEvent(pro.accountId, pro.apiKeyId, ageDays, "blocked");
+
+    // First run: rollup all 4 events (3 blocked / 4 total), then delete free's 2.
+    await POST({ request: request(CRON_SECRET) });
+    const afterFirst = await db.select().from(schema.dailyProviderStats);
+    expect(afterFirst.length).toBe(1);
+    expect(afterFirst[0]!.totalChecks).toBe(4);
+    expect(afterFirst[0]!.blocked).toBe(3);
+    expect(await countEvents(free.accountId)).toBe(0);
+    expect(await countEvents(pro.accountId)).toBe(2);
+
+    // Second run: only pro's 2 events remain in `events`. Sealed day must hold.
+    await POST({ request: request(CRON_SECRET) });
+    const afterSecond = await db.select().from(schema.dailyProviderStats);
+    expect(afterSecond.length).toBe(1);
+    expect(afterSecond[0]!.totalChecks).toBe(4);
+    expect(afterSecond[0]!.blocked).toBe(3);
   });
 });
