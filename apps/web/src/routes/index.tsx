@@ -51,7 +51,7 @@ function Landing() {
       <section className="flex flex-col items-start gap-10 lg:flex-row lg:items-center lg:gap-12">
         <div className="space-y-6 lg:flex-1">
           <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            early access
+            per-provider block rate
           </p>
           <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
             Know what your ad blockers are hiding from your analytics.
@@ -147,7 +147,7 @@ export const POST = createBlockRateHandler({
           },
           {
             title: "Honest about the gap",
-            body: "See the exact percentage of users who can\u2019t reach each tool, sliced by browser family. No cookies, no consent banner, no fingerprinting, no personal data.",
+            body: "See the exact percentage of users who can\u2019t reach each tool, per provider. No cookies, no consent banner, no fingerprinting, no personal data.",
           },
         ].map((card) => (
           <article

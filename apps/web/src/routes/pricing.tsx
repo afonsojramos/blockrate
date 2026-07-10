@@ -28,7 +28,7 @@ export const Route = createFileRoute("/pricing")({
     seo({
       title: "pricing — blockrate",
       description:
-        "Free forever tier with 100k events/month. Paid plans unlock longer retention and higher quotas. No hidden fees, no per-seat upcharges, no contact-sales walls.",
+        "Free forever tier with 100k events/month. Paid plans unlock alerts, the remediation playbook, longer retention, and higher quotas. No hidden fees, no contact-sales walls.",
       path: "/pricing",
     }),
   loader: () => getPricingSession(),
@@ -55,9 +55,10 @@ const tiers = [
     annual: 40,
     features: [
       "1M events / month",
-      "Unlimited API keys",
+      "50 API keys",
       "90-day history",
-      "Browser-family slicing",
+      "Block-rate alerts (email, Slack, webhook)",
+      "Remediation playbook",
     ],
   },
   {
@@ -65,7 +66,13 @@ const tiers = [
     planKey: "team",
     monthly: 8,
     annual: 80,
-    features: ["10M events / month", "Multi-seat accounts", "1-year history", "Priority support"],
+    features: [
+      "10M events / month",
+      "500 API keys",
+      "1-year history",
+      "More alert rules (50)",
+      "Remediation playbook",
+    ],
   },
 ];
 
@@ -107,8 +114,8 @@ function Pricing() {
       <header className="space-y-4 text-center">
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Honest pricing</h1>
         <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-          Free for hobbyists. Paid tiers when there's real demand. No hidden fees, no per-seat
-          upcharges, no "contact sales" walls.
+          Free for hobbyists. Paid tiers unlock monitoring and remediation guidance. No hidden fees,
+          no "contact sales" walls.
         </p>
 
         <div className="mt-6 flex items-center justify-center gap-3">

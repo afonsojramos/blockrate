@@ -6,11 +6,11 @@ Existing "ad block detectors" tell you whether _a_ blocker exists. `blockrate` t
 
 ## Three ways to use it
 
-|                               | What                                                                                              | Where to start                                            |
-| ----------------------------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| 🪶 **OSS library**            | The 1.6 KB client. Drop into any web app, point at any reporter.                                  | [`packages/core`](packages/core/README.md)                |
-| 🏠 **Self-hosted server**     | Drop-in ingestion server with SQLite or Postgres + a built-in dashboard. One binary, one command. | [`packages/server`](packages/server/README.md)            |
-| ☁️ **Hosted (blockrate.app)** | Sign up, get an API key, see per-provider block rates. No infrastructure.                         | [blockrate.app](https://blockrate.app) _(in development)_ |
+|                               | What                                                                                              | Where to start                                 |
+| ----------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| 🪶 **OSS library**            | The 1.6 KB client. Drop into any web app, point at any reporter.                                  | [`packages/core`](packages/core/README.md)     |
+| 🏠 **Self-hosted server**     | Drop-in ingestion server with SQLite or Postgres + a built-in dashboard. One binary, one command. | [`packages/server`](packages/server/README.md) |
+| ☁️ **Hosted (blockrate.app)** | Sign up, get an API key, see per-provider block rates. No infrastructure.                         | [blockrate.app](https://blockrate.app)         |
 
 ## Repository layout
 
@@ -78,7 +78,7 @@ That's the entire setup. Open the dashboard, paste the printed API key, point yo
 
 If you don't want to operate any infrastructure, [blockrate.app](https://blockrate.app) is the hosted version of the self-hosted server with:
 
-- **Free tier**: 100k events/month, 3 API keys, 7-day retention
+- **Free tier**: 100k events/month, 3 API keys, 30-day retention
 - Sign-in with magic link, Google, or GitHub
 - Per-account API keys, cascading delete, CSV export
 - Same OSS library — you can move on or off any time

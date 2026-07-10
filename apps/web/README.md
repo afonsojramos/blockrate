@@ -1,8 +1,8 @@
 # blockrate.app web
 
-The hosted dashboard at [blockrate.app](https://blockrate.app). TanStack Start + Better Auth (magic link) + Drizzle/Postgres + Tailwind v4 + Base UI via shadcn.
+The hosted dashboard at [blockrate.app](https://blockrate.app). TanStack Start + Better Auth (magic link / OAuth) + Drizzle/Postgres + Tailwind v4 + Base UI via shadcn.
 
-> **This is Phase 1 of 6**. Auth works end-to-end (magic link only), the dashboard is a placeholder. Phase 2 builds the real ingest endpoint and key management; Phase 3 builds the real dashboard.
+Ingest, API keys, per-provider dashboard, Stripe billing, alerts (email/Slack/webhook), weekly digests, remediation playbook, and the public block-rate index all live here. See root `CLAUDE.md` for pre-ship validation and deploy env vars.
 
 ## Prerequisites
 
@@ -58,7 +58,7 @@ Open `http://localhost:3000`. Sign in via `/login` — the magic link URL prints
 
 ## Retention sweep (Phase 4)
 
-`/api/internal/retention` deletes events older than each plan's `retentionDays` (free = 7 days). It's bearer-authenticated via `CRON_SECRET` and **fails closed** in two ways:
+`/api/internal/retention` deletes events older than each plan's `retentionDays` (free = 30 days, pro = 90, team = 365). It's bearer-authenticated via `CRON_SECRET` and **fails closed** in two ways:
 
 - If `CRON_SECRET` is unset → **503** (deployment misconfigured)
 - If the bearer is missing or wrong → **401**

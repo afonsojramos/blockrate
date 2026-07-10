@@ -104,13 +104,13 @@ function Privacy() {
           <p>Event data is kept for the duration of your plan's retention window:</p>
           <ul className="list-inside list-disc space-y-1">
             <li>
-              <span className="text-foreground">Free</span> — 7 days
+              <span className="text-foreground">Free</span> — 30 days
             </li>
             <li>
-              <span className="text-foreground">Pro</span> — 30 days
+              <span className="text-foreground">Pro</span> — 90 days
             </li>
             <li>
-              <span className="text-foreground">Team</span> — 90 days
+              <span className="text-foreground">Team</span> — 365 days
             </li>
           </ul>
           <p>

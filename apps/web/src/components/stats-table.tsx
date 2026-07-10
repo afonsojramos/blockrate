@@ -35,9 +35,16 @@ export function StatsTable({ stats }: { stats: StatsRow[] }) {
       <div className="rounded-md border border-dashed border-border/60 bg-muted/30 p-10 text-center">
         <h3 className="text-base font-medium">No data yet</h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          Drop the blockrate library into your app and POST events to{" "}
-          <code className="font-mono text-xs">/api/ingest</code>. Once data arrives, this table will
-          show per-provider block rates.
+          Install via a{" "}
+          <a
+            href="/docs"
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+          >
+            first-party reporter
+          </a>{" "}
+          (framework handler, Cloudflare Worker, or GTM tag) so the browser only talks to your
+          origin. Never post the browser client straight at blockrate.app. Once the first event
+          lands, this table shows per-provider block rates.
         </p>
       </div>
     );
