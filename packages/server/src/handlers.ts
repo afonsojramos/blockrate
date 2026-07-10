@@ -1,4 +1,4 @@
-import { blockRatePayloadSchema } from "./validate";
+import { blockRatePayloadSchema, isTimestampWithinSkew } from "./validate";
 import { truncateUserAgent } from "./ua";
 import type { BlockRateStore, StoredTenant } from "./store";
 
@@ -30,6 +30,9 @@ export async function handleIngest(
     return json({ error: "invalid payload", issues: parsed.error.issues }, 400);
   }
   const { timestamp, url, userAgent, service, providers } = parsed.data;
+  if (!isTimestampWithinSkew(timestamp)) {
+    return json({ error: "timestamp out of allowed range" }, 400);
+  }
   const truncatedUa = truncateUserAgent(userAgent);
   const ts = new Date(timestamp);
   await store.insertEvents(

@@ -53,7 +53,7 @@ export const Route = createFileRoute("/api/ingest")({
           { ingestLimiter },
           { getUsage, incrementUsage },
           { getPlan },
-          { blockRatePayloadSchema },
+          { blockRatePayloadSchema, isTimestampWithinSkew },
           { truncateUserAgent },
           { and, eq, isNull, sql },
         ] = await Promise.all([
@@ -149,8 +149,14 @@ export const Route = createFileRoute("/api/ingest")({
           );
         }
 
-        // 5. Truncate UA + build rows
+        // 5. Bound client clocks — far-past/future timestamps would rewrite
+        // sealed daily_provider_stats days (or park events outside real traffic).
         const { timestamp, url, userAgent, service, providers } = parsed.data;
+        if (!isTimestampWithinSkew(timestamp)) {
+          return jsonError("timestamp out of allowed range", 400);
+        }
+
+        // 6. Truncate UA + build rows
         const truncatedUa = truncateUserAgent(userAgent);
         const ts = new Date(timestamp);
         const rows = providers.map((p) => ({
@@ -165,13 +171,13 @@ export const Route = createFileRoute("/api/ingest")({
           latency: p.latency,
         }));
 
-        // 6. Insert events + increment counter
+        // 7. Insert events + increment counter
         // (Single-instance Phase 1 — these are two queries; Phase 5 may
         // wrap in a real transaction once we have multi-instance concerns.)
         await db.insert(events).values(rows);
         await incrementUsage(matched.accountId, rows.length);
 
-        // 7. Best-effort touch last_used_at — fire and forget
+        // 8. Best-effort touch last_used_at — fire and forget
         void db
           .update(apiKeys)
           .set({ lastUsedAt: sql`now()` })

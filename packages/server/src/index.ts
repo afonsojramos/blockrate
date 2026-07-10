@@ -19,7 +19,7 @@ export * as sqliteSchema from "./schema.sqlite";
 export * as postgresSchema from "./schema.postgres";
 
 // Validation
-export { blockRatePayloadSchema } from "./validate";
+export { blockRatePayloadSchema, isTimestampWithinSkew, MAX_TIMESTAMP_SKEW_MS } from "./validate";
 export type { BlockRatePayload } from "./validate";
 
 // User-agent truncation (used by both self-hosted and hosted)
