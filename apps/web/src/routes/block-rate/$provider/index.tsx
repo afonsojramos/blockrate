@@ -4,6 +4,7 @@ import { CodeBlock } from "@/components/code-block";
 import { ProviderTrendChart } from "@/components/provider-trend-chart";
 import {
   applyFloor,
+  buildProviderRows,
   formatRatePercent,
   getProviderMeta,
   providerPageDescription,
@@ -25,7 +26,14 @@ export const Route = createFileRoute("/block-rate/$provider/")({
     ]);
     const entry = stats?.providers.find((p) => p.name === meta.slug);
     const rate = entry ? applyFloor(entry.rate, entry.total) : null;
-    return { meta, rate, trend };
+    // Sibling providers (worst-first, with their own rate) for cross-linking —
+    // every provider page links to all the others so crawlers reach the whole
+    // set without bouncing through the index, and link equity flows sideways.
+    // Project to only the rendered fields so the loader payload stays lean.
+    const siblings = buildProviderRows(stats?.providers ?? [])
+      .filter((p) => p.slug !== meta.slug)
+      .map(({ slug, label, rate }) => ({ slug, label, rate }));
+    return { meta, rate, trend, siblings };
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
@@ -40,21 +48,45 @@ export const Route = createFileRoute("/block-rate/$provider/")({
       rate === null
         ? `There isn't enough measured data yet to publish a ${meta.label} block rate.`
         : `Currently ${formatRatePercent(rate)} of measured visitors have ${meta.label} blocked by ad or content blockers.`;
+    // Absolute base for BreadcrumbList item URLs (Google wants absolute); falls
+    // back to the canonical origin when VITE_SITE_URL is unset, like badgeSnippet.
+    const base = siteUrl()?.replace(/\/$/, "") ?? "https://blockrate.app";
     return seo({
       title: providerPageTitle(meta, rate),
       description: providerPageDescription(meta, rate),
       path: `/block-rate/${meta.slug}`,
-      jsonLd: {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        mainEntity: [
-          {
-            "@type": "Question",
-            name: `Is ${meta.label} blocked by ad blockers?`,
-            acceptedAnswer: { "@type": "Answer", text: answer },
-          },
-        ],
-      },
+      jsonLd: [
+        {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: [
+            {
+              "@type": "Question",
+              name: `Is ${meta.label} blocked by ad blockers?`,
+              acceptedAnswer: { "@type": "Answer", text: answer },
+            },
+          ],
+        },
+        {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "blockrate", item: base },
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: "Block rate by provider",
+              item: `${base}/block-rate`,
+            },
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: meta.label,
+              item: `${base}/block-rate/${meta.slug}`,
+            },
+          ],
+        },
+      ],
     });
   },
   notFoundComponent: ProviderNotFound,
@@ -68,7 +100,7 @@ function badgeSnippet(slug: string, label: string): string {
 }
 
 function ProviderPage() {
-  const { meta, rate, trend } = Route.useLoaderData();
+  const { meta, rate, trend, siblings } = Route.useLoaderData();
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-16">
@@ -179,6 +211,28 @@ function ProviderPage() {
         <div className="mt-3">
           <CodeBlock>{badgeSnippet(meta.slug, meta.label)}</CodeBlock>
         </div>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Other providers
+        </h2>
+        <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3">
+          {siblings.map((p) => (
+            <li key={p.slug}>
+              <Link
+                to="/block-rate/$provider"
+                params={{ provider: p.slug }}
+                className="flex items-baseline justify-between gap-2 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              >
+                <span>{p.label}</span>
+                <span className={"tabular-nums " + (p.rate === null ? "" : rateColor(p.rate))}>
+                  {p.rate === null ? "—" : formatRatePercent(p.rate)}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <p className="mt-10 text-sm text-muted-foreground">
