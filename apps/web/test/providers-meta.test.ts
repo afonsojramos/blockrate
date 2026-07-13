@@ -65,7 +65,7 @@ describe("getProviderMeta", () => {
 });
 
 describe("formatRatePercent", () => {
-  it("formats a rate to one decimal percent, matching the hero chart", () => {
+  it("formats a rate to one decimal percent across public rate surfaces", () => {
     expect(formatRatePercent(0.382)).toBe("38.2%");
     expect(formatRatePercent(0)).toBe("0%");
     expect(formatRatePercent(1)).toBe("100%");

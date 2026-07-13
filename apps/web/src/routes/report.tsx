@@ -131,7 +131,7 @@ function ReportPage() {
         </p>
       </section>
 
-      <section className="mt-12 space-y-3">
+      <section id="how-we-get-the-number-right" className="mt-12 scroll-mt-24 space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           How we get the number right
         </h2>

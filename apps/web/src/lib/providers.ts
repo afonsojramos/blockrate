@@ -170,7 +170,7 @@ export function getProviderMeta(slug: string): ProviderMeta | undefined {
 
 /**
  * Format an all-time block rate (0..1) as a one-decimal percentage string,
- * matching the hero chart's rounding (`Math.round(rate * 1000) / 10`).
+ * shared by the homepage live-rate panel and public provider surfaces.
  */
 export function formatRatePercent(rate: number): string {
   return `${Math.round(rate * 1000) / 10}%`;
