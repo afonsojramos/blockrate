@@ -7,6 +7,11 @@ import { Nav } from "../components/nav";
 import { seo, siteUrl } from "../lib/seo";
 import { getNavSession } from "../server/session";
 import appCss from "../styles/app.css?url";
+// Preload the Latin Geist subset (the body/heading font for English text).
+// Without this the font is only discovered after the render-blocking CSS is
+// parsed, so it lands after first paint and swaps in late — reflowing the hero
+// and driving CLS. Preloading fetches it up front so it's ready before FCP.
+import geistLatinFont from "@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url";
 
 const THEME_INIT_SCRIPT = `(function(){try{var s=localStorage.getItem("theme");var m=window.matchMedia("(prefers-color-scheme: dark)").matches;var d=s==="dark"||(s!=="light"&&m);document.documentElement.classList.toggle("dark",d);document.documentElement.style.colorScheme=d?"dark":"light";}catch(e){}})();`;
 
@@ -52,6 +57,13 @@ export const Route = createRootRoute({
         ...siteSeo.meta,
       ],
       links: [
+        {
+          rel: "preload",
+          as: "font",
+          type: "font/woff2",
+          href: geistLatinFont,
+          crossOrigin: "anonymous",
+        },
         { rel: "stylesheet", href: appCss },
         { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
         ...siteSeo.links,
