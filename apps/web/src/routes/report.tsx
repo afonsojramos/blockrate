@@ -18,6 +18,7 @@ function datasetJsonLd() {
     description:
       "Measured block rates for popular third-party analytics providers, per provider, across engaged visitors. Vendor-neutral, cookie-free measurement.",
     url: `${origin}/report`,
+    license: "https://creativecommons.org/licenses/by/4.0/",
     creator: { "@type": "Organization", name: "blockrate", url: origin },
     distribution: [
       {

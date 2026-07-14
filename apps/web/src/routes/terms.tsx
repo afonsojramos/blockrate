@@ -145,6 +145,20 @@ function Terms() {
             The <code className="font-mono text-xs">blockrate</code> client library and the{" "}
             <code className="font-mono text-xs">blockrate-server</code> self-hosted server are MIT
             licensed. The blockrate.app service, brand, and site content are owned by the Operator.
+            The aggregate block-rate dataset we publish (the numbers on{" "}
+            <Link to="/report" className="underline-offset-4 hover:underline">
+              /report
+            </Link>{" "}
+            and at <code className="font-mono text-xs">/block-rate.json</code>) is available under{" "}
+            <a
+              href="https://creativecommons.org/licenses/by/4.0/"
+              className="underline-offset-4 hover:underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              CC BY 4.0
+            </a>
+            , so you may reuse it with attribution.
           </p>
         </section>
 
