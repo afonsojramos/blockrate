@@ -10,7 +10,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "./theme-toggle";
-import { authClient } from "@/lib/auth-client";
 import type { NavSession } from "@/server/session";
 
 export function Nav({ session }: { session: NavSession }) {
@@ -26,6 +25,11 @@ export function Nav({ session }: { session: NavSession }) {
   }, [pathname]);
 
   async function onSignOut() {
+    // Load the Better Auth client on demand. Nav renders on every page, but only
+    // a signed-in user ever signs out, so keeping this import lazy pulls the auth
+    // client (and its zod dependency) out of the always-on bundle public visitors
+    // download.
+    const { authClient } = await import("@/lib/auth-client");
     await authClient.signOut();
     await router.invalidate();
     navigate({ to: "/" });
