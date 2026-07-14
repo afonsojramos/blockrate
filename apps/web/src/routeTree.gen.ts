@@ -18,6 +18,7 @@ import { Route as PrivacySnippetRouteImport } from './routes/privacy-snippet'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as DpaRouteImport } from './routes/dpa'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DemoRouteImport } from './routes/demo'
@@ -89,6 +90,11 @@ const PricingRoute = PricingRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
+  id: '/llms.txt',
+  path: '/llms.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DpaRoute = DpaRouteImport.update({
@@ -234,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/demo': typeof DemoRoute
   '/docs': typeof DocsRouteWithChildren
   '/dpa': typeof DpaRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -271,6 +278,7 @@ export interface FileRoutesByTo {
   '/demo': typeof DemoRoute
   '/docs': typeof DocsRouteWithChildren
   '/dpa': typeof DpaRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -310,6 +318,7 @@ export interface FileRoutesById {
   '/demo': typeof DemoRoute
   '/docs': typeof DocsRouteWithChildren
   '/dpa': typeof DpaRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -349,6 +358,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/docs'
     | '/dpa'
+    | '/llms.txt'
     | '/login'
     | '/pricing'
     | '/privacy'
@@ -386,6 +396,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/docs'
     | '/dpa'
+    | '/llms.txt'
     | '/login'
     | '/pricing'
     | '/privacy'
@@ -424,6 +435,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/docs'
     | '/dpa'
+    | '/llms.txt'
     | '/login'
     | '/pricing'
     | '/privacy'
@@ -463,6 +475,7 @@ export interface RootRouteChildren {
   DemoRoute: typeof DemoRoute
   DocsRoute: typeof DocsRouteWithChildren
   DpaRoute: typeof DpaRoute
+  LlmsDottxtRoute: typeof LlmsDottxtRoute
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -551,6 +564,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/llms.txt': {
+      id: '/llms.txt'
+      path: '/llms.txt'
+      fullPath: '/llms.txt'
+      preLoaderRoute: typeof LlmsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dpa': {
@@ -783,6 +803,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoRoute: DemoRoute,
   DocsRoute: DocsRouteWithChildren,
   DpaRoute: DpaRoute,
+  LlmsDottxtRoute: LlmsDottxtRoute,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
