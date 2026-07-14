@@ -121,6 +121,24 @@ describe("PUBLIC_ROUTES (sitemap allowlist)", () => {
     expect(paths).toContain("/block-rate");
   });
 
+  it("includes the primary public crawl targets", () => {
+    expect(paths).toEqual(
+      expect.arrayContaining([
+        "/",
+        "/demo",
+        "/report",
+        "/block-rate",
+        "/pricing",
+        "/docs",
+        "/docs/api",
+      ]),
+    );
+  });
+
+  it("excludes the noindex privacy snippet utility", () => {
+    expect(paths).not.toContain("/privacy-snippet");
+  });
+
   it("includes one page per provider, in sync with PROVIDER_META", () => {
     for (const p of PROVIDER_META) {
       expect(paths).toContain(`/block-rate/${p.slug}`);

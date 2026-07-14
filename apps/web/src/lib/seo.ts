@@ -144,7 +144,6 @@ export const PUBLIC_ROUTES: readonly PublicRoute[] = [
   { path: "/docs", changefreq: "weekly", priority: 0.8 },
   { path: "/docs/api", changefreq: "weekly", priority: 0.7 },
   { path: "/privacy", changefreq: "yearly", priority: 0.4 },
-  { path: "/privacy-snippet", changefreq: "yearly", priority: 0.3 },
   { path: "/terms", changefreq: "yearly", priority: 0.4 },
   { path: "/dpa", changefreq: "yearly", priority: 0.4 },
 ];

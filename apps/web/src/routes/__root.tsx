@@ -110,7 +110,19 @@ function RootLayout() {
       <footer className="mt-24 border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-6 py-8 text-sm text-muted-foreground sm:flex-row">
           <p>© 2026 blockrate</p>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 sm:justify-end">
+            <a href="/block-rate" className="hover:text-foreground">
+              Block rates
+            </a>
+            <a href="/demo" className="hover:text-foreground">
+              Demo
+            </a>
+            <a href="/docs" className="hover:text-foreground">
+              Docs
+            </a>
+            <a href="/pricing" className="hover:text-foreground">
+              Pricing
+            </a>
             <a href="https://github.com/afonsojramos/blockrate" className="hover:text-foreground">
               OSS
             </a>

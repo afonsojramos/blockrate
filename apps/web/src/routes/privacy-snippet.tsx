@@ -8,6 +8,7 @@ export const Route = createFileRoute("/privacy-snippet")({
       description:
         "Copy-paste privacy policy snippet for your own site, explaining what blockrate collects and why it operates without a cookie banner. Adjust retention to match your plan.",
       path: "/privacy-snippet",
+      noindex: true,
     }),
   component: PrivacySnippet,
 });
