@@ -14,6 +14,8 @@ import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 
+import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
+import type * as schema from "@/lib/db/schema";
 import { DAY_MS } from "@/lib/time";
 
 // Shared operator gate. Verifies an admin session or throws the SAME opaque
@@ -41,6 +43,100 @@ const adminSessionOrRedirect = async () => {
 export const assertAdmin = createServerFn({ method: "GET" }).handler(async () => {
   await adminSessionOrRedirect();
 });
+
+// ─── Onboarding funnel ──────────────────────────────────────────────────
+
+export interface OnboardingFunnel {
+  /** app_accounts rows — stage 1, "signed up". */
+  accounts: number;
+  /** Accounts with ≥1 api_keys row, revoked included — stage 2. */
+  withKey: number;
+  /** Accounts with ≥1 events row — stage 3. NOTE: retention deletes old
+   *  events, so very old accounts eventually fall out of this stage. */
+  withEvents: number;
+  /** Median hours from app_accounts.created_at to the account's first
+   *  api_keys.created_at, over accounts WITH a key. null when none. */
+  medianHoursToKey: number | null;
+  /** Median hours from app_accounts.created_at to MIN(events.timestamp),
+   *  over accounts WITH events. null when none. */
+  medianHoursToFirstEvent: number | null;
+}
+
+/** Median of a numeric list; null for the empty list. Averages the two
+ *  middle elements on even counts. */
+function median(values: number[]): number | null {
+  if (values.length === 0) return null;
+  const s = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 === 1 ? s[mid]! : (s[mid - 1]! + s[mid]!) / 2;
+}
+
+const HOUR_MS = 3_600_000;
+
+/**
+ * Signup → first API key → first event, derived entirely from existing
+ * timestamps (no schema support needed). DB-parameterized core so it is
+ * DB-real testable without a session, mirroring buildRemediationPlaybook
+ * in src/server/remediation.ts. Medians are computed in JS over per-account
+ * firsts (percentile_cont is unverified on PGlite, and account counts are
+ * small); each median only includes accounts that reached that stage, so
+ * non-converters never drag it.
+ */
+export async function getOnboardingFunnel(
+  db: BunSQLDatabase<typeof schema>,
+): Promise<OnboardingFunnel> {
+  const { appAccounts, apiKeys, events } = await import("@/lib/db/schema");
+  const { countDistinct, min } = await import("drizzle-orm");
+
+  const [accountRows, keyCountRows, eventCountRows, firstKeyRows, firstEventRows] =
+    await Promise.all([
+      db.select({ id: appAccounts.id, createdAt: appAccounts.createdAt }).from(appAccounts),
+      db.select({ value: countDistinct(apiKeys.accountId) }).from(apiKeys),
+      db.select({ value: countDistinct(events.accountId) }).from(events),
+      db
+        .select({ accountId: apiKeys.accountId, firstAt: min(apiKeys.createdAt) })
+        .from(apiKeys)
+        .groupBy(apiKeys.accountId),
+      db
+        .select({ accountId: events.accountId, firstAt: min(events.timestamp) })
+        .from(events)
+        .groupBy(events.accountId),
+    ]);
+
+  const createdById = new Map(accountRows.map((a) => [a.id, a.createdAt]));
+
+  const hoursToKey: number[] = [];
+  for (const row of firstKeyRows) {
+    const created = createdById.get(row.accountId);
+    if (created && row.firstAt) {
+      hoursToKey.push((row.firstAt.getTime() - created.getTime()) / HOUR_MS);
+    }
+  }
+
+  const hoursToFirstEvent: number[] = [];
+  for (const row of firstEventRows) {
+    const created = createdById.get(row.accountId);
+    if (created && row.firstAt) {
+      hoursToFirstEvent.push((row.firstAt.getTime() - created.getTime()) / HOUR_MS);
+    }
+  }
+
+  return {
+    accounts: accountRows.length,
+    withKey: keyCountRows[0]?.value ?? 0,
+    withEvents: eventCountRows[0]?.value ?? 0,
+    medianHoursToKey: median(hoursToKey),
+    medianHoursToFirstEvent: median(hoursToFirstEvent),
+  };
+}
+
+export const getAdminFunnel = createServerFn({ method: "GET" }).handler(
+  async (): Promise<OnboardingFunnel> => {
+    await requireAdmin();
+    const { db } = await import("@/lib/db/index.server");
+    return getOnboardingFunnel(db);
+  },
+);
 
 const requireAdmin = async () => {
   const session = await adminSessionOrRedirect();
