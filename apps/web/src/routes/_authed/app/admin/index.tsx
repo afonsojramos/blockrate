@@ -10,20 +10,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { assertAdmin, getAdminOverview } from "@/server/admin";
+import { assertAdmin, getAdminFunnel, getAdminOverview } from "@/server/admin";
 
 export const Route = createFileRoute("/_authed/app/admin/")({
   // Authorize before loading: non-operators are redirected to /app here, so the
   // loader below only ever runs for admins. Genuine query failures then surface
   // through errorComponent as real errors rather than a misleading redirect.
   beforeLoad: () => assertAdmin(),
-  loader: () => getAdminOverview(),
+  loader: async () => ({ overview: await getAdminOverview(), funnel: await getAdminFunnel() }),
   pendingComponent: AdminOverviewPending,
   errorComponent: AdminOverviewError,
   component: AdminOverview,
 });
 
 const fmt = (n: number) => n.toLocaleString("en-US");
+
+/** Hours under 48, days (1 decimal) at/above; null means "no converters yet". */
+const fmtDuration = (hours: number | null): string => {
+  if (hours === null) return "–";
+  if (hours >= 48) return `${(hours / 24).toFixed(1)}d`;
+  return `${hours.toFixed(1)}h`;
+};
 
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
@@ -40,6 +47,25 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
         {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
       </div>
     </Card>
+  );
+}
+
+function FunnelStage({ count, label }: { count: number; label: string }) {
+  return (
+    <li className="inline-flex items-baseline gap-2 rounded-md bg-accent px-3 py-1.5 text-sm">
+      <span className="font-medium tabular-nums">{fmt(count)}</span>
+      <span className="text-muted-foreground">{label}</span>
+    </li>
+  );
+}
+
+/** Conversion between two stages as "→ 68%", or "→" alone when the
+ *  previous stage is empty (no meaningful percentage). */
+function FunnelArrow({ from, to }: { from: number; to: number }) {
+  return (
+    <li aria-hidden="true" className="text-sm text-muted-foreground tabular-nums">
+      →{from > 0 ? ` ${Math.round((to / from) * 100)}%` : ""}
+    </li>
   );
 }
 
@@ -95,7 +121,7 @@ function AdminOverviewError({ reset }: { reset: () => void }) {
 }
 
 function AdminOverview() {
-  const data = Route.useLoaderData();
+  const { overview: data, funnel } = Route.useLoaderData();
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">
@@ -112,6 +138,45 @@ function AdminOverview() {
           value={fmt(data.activeAccounts7d)}
           hint="≥1 event in the last 7 days"
         />
+      </section>
+
+      <section aria-labelledby="funnel-heading" className="mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle id="funnel-heading" className="text-base">
+              Signup → first value
+            </CardTitle>
+            <CardDescription>
+              Accounts through the onboarding stages. Stage 3 counts accounts with events in
+              retained history.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ol className="flex flex-wrap items-baseline gap-x-3 gap-y-2 tabular-nums">
+              <FunnelStage count={funnel.accounts} label="signed up" />
+              <FunnelArrow from={funnel.accounts} to={funnel.withKey} />
+              <FunnelStage count={funnel.withKey} label="created a key" />
+              <FunnelArrow from={funnel.withKey} to={funnel.withEvents} />
+              <FunnelStage count={funnel.withEvents} label="sent events" />
+            </ol>
+            <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2 text-sm">
+              <div>
+                <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Median to first key
+                </dt>
+                <dd className="mt-0.5 tabular-nums">{fmtDuration(funnel.medianHoursToKey)}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Median to first event
+                </dt>
+                <dd className="mt-0.5 tabular-nums">
+                  {fmtDuration(funnel.medianHoursToFirstEvent)}
+                </dd>
+              </div>
+            </dl>
+          </CardContent>
+        </Card>
       </section>
 
       <section aria-labelledby="plan-distribution-heading" className="mt-6">
