@@ -59,6 +59,10 @@ export const POST = createBlockRateHandler({
 });
 ```
 
+Or skip the manual route: `bunx blockrate-init` detects your framework (Next,
+TanStack Start, SvelteKit, Nuxt, Remix, Astro) and scaffolds the first-party
+route for you.
+
 The client always posts to your own origin; the server route forwards to blockrate.app (or your self-hosted instance) with your API key attached server-side. This is load-bearing — read [Why the reporter endpoint must be first-party](packages/core/README.md#why-the-reporter-endpoint-must-be-first-party) in the core README.
 
 Full library docs (built-in providers, custom providers, framework adapters, query examples) in [`packages/core/README.md`](packages/core/README.md).
