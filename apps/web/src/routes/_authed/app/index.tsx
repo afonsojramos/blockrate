@@ -10,7 +10,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StatsTable } from "@/components/stats-table";
-import { getOverviewData } from "@/server/stats";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { formatRatePercent } from "@/lib/providers";
+import { getBrowserBreakdown, getOverviewData } from "@/server/stats";
 
 const search = z.object({
   service: z.string().optional(),
@@ -23,10 +32,13 @@ export const Route = createFileRoute("/_authed/app/")({
     since: search.since,
     service: search.service,
   }),
-  loader: ({ deps }) =>
-    getOverviewData({
-      data: { sinceDays: deps.since, service: deps.service },
-    }),
+  loader: async ({ deps }) => {
+    const [overview, browsers] = await Promise.all([
+      getOverviewData({ data: { sinceDays: deps.since, service: deps.service } }),
+      getBrowserBreakdown({ data: { sinceDays: deps.since, service: deps.service } }),
+    ]);
+    return { ...overview, browsers };
+  },
   component: Overview,
 });
 
@@ -179,6 +191,51 @@ function Overview() {
           <StatsTable stats={data.stats} />
         </CardContent>
       </Card>
+
+      {data.browsers.length > 0 && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-base">By browser</CardTitle>
+            <CardDescription>
+              Same window and service filter as above. Sorted by volume, not rate.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead scope="col">Browser</TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Checks
+                  </TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Blocked
+                  </TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Block rate
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.browsers.map((b) => (
+                  <TableRow key={b.family}>
+                    <TableCell className="font-medium">{b.family}</TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {b.total.toLocaleString("en-US")}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {b.blocked.toLocaleString("en-US")}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {formatRatePercent(b.blockRate)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       <p className="mt-6 text-center text-xs text-muted-foreground">
         Need more history?{" "}
