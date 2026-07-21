@@ -149,6 +149,8 @@ export const getOverviewData = createServerFn({ method: "GET" })
     const hero = await getHeroStats();
     const benchmarked = attachBenchmark(stats, hero?.providers ?? []);
 
+    const hasReceivedEvents = await hasReceivedEventsForAccount(db, account.id);
+
     return {
       stats: benchmarked,
       services,
@@ -156,8 +158,32 @@ export const getOverviewData = createServerFn({ method: "GET" })
       service: data.service ?? null,
       planLabel: plan.label,
       planDashboardHistoryDays: plan.dashboardHistoryDays,
+      hasReceivedEvents,
     };
   });
+
+// ─── hasReceivedEvents ──────────────────────────────────────────────────
+
+/**
+ * True once the account has ingested at least one event, ever. Derived from
+ * usage_counters — the aggregate incremented on every successful ingest —
+ * NOT api_keys.last_used_at, whose touch is best-effort fire-and-forget
+ * (see routes/api/ingest.ts step 8). DB-parameterized core so it is DB-real
+ * testable without a session, mirroring setWeeklyDigestForAccount.
+ */
+export async function hasReceivedEventsForAccount(
+  db: BunSQLDatabase<typeof schema>,
+  accountId: number,
+): Promise<boolean> {
+  const { usageCounters } = await import("@/lib/db/schema");
+  const { and, eq, gt } = await import("drizzle-orm");
+  const rows = await db
+    .select({ eventCount: usageCounters.eventCount })
+    .from(usageCounters)
+    .where(and(eq(usageCounters.accountId, accountId), gt(usageCounters.eventCount, 0)))
+    .limit(1);
+  return rows.length > 0;
+}
 
 // ─── getUsageSnapshot ───────────────────────────────────────────────────
 
