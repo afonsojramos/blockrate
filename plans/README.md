@@ -11,7 +11,7 @@ when done.
 | Plan | Title                                                    | Priority | Effort | Depends on    | Status |
 | ---- | -------------------------------------------------------- | -------- | ------ | ------------- | ------ |
 | 001  | Admin onboarding funnel (signup → key → first event)     | P1       | M      | —             | DONE   |
-| 002  | Managed first-party proxy — design + spike (Phase 3)     | P2       | L      | —             | TODO   |
+| 002  | Managed first-party proxy — design + spike (Phase 3)     | P2       | L      | —             | DONE   |
 | 003  | `blockrate-init` scaffolding CLI + first-event checklist | P2       | M      | — (soft: 001) | TODO   |
 | 004  | Per-browser block-rate breakdowns on the dashboard       | P3       | M      | —             | TODO   |
 | 005  | Public live detector-health page                         | P3       | S      | —             | TODO   |
