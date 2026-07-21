@@ -36,6 +36,58 @@ const RANGES: { days: number; label: string }[] = [
   { days: 30, label: "30d" },
 ];
 
+/**
+ * Shown until the account's first event arrives (hasReceivedEvents ===
+ * false). The three onboarding steps, honest about state: we can't tell
+ * from here whether a key exists yet, so step 1 links to Keys rather than
+ * claiming it's done. Step 3 is the one this card waits on.
+ */
+function OnboardingChecklist() {
+  return (
+    <Card className="mt-8" aria-label="Get your first block rate">
+      <CardHeader>
+        <CardTitle className="text-base">Get your first block rate</CardTitle>
+        <CardDescription>
+          No events yet. Three steps stand between you and your first measurement.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ol className="flex flex-col gap-3 text-sm">
+          <li className="flex gap-3">
+            <span className="font-medium tabular-nums text-muted-foreground">1.</span>
+            <span>
+              Create an API key on the{" "}
+              <Link to="/app/keys" className="underline-offset-4 hover:underline">
+                Keys page
+              </Link>
+              .
+            </span>
+          </li>
+          <li className="flex gap-3">
+            <span className="font-medium tabular-nums text-muted-foreground">2.</span>
+            <span>
+              Add the first-party reporter route to your app —{" "}
+              <code className="rounded bg-accent px-1.5 py-0.5 text-xs">bunx blockrate-init</code>{" "}
+              scaffolds it for your framework.
+            </span>
+          </li>
+          <li className="flex gap-3">
+            <span className="font-medium tabular-nums text-muted-foreground">3.</span>
+            <span>
+              Deploy and send your first event. This card turns into your live data the moment it
+              arrives.{" "}
+              <Link to="/docs" className="underline-offset-4 hover:underline">
+                Read the docs
+              </Link>
+              .
+            </span>
+          </li>
+        </ol>
+      </CardContent>
+    </Card>
+  );
+}
+
 function Overview() {
   const data = Route.useLoaderData();
   const search = Route.useSearch();
@@ -110,6 +162,8 @@ function Overview() {
           </div>
         </div>
       </header>
+
+      {!data.hasReceivedEvents && <OnboardingChecklist />}
 
       <Card className="mt-8">
         <CardHeader>
