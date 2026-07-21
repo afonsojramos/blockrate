@@ -81,9 +81,16 @@
       "name": "block-rate-example-vanilla",
       "version": "0.0.0",
     },
+    "packages/cli": {
+      "name": "blockrate-init",
+      "version": "0.1.0",
+      "bin": {
+        "blockrate-init": "./dist/index.js",
+      },
+    },
     "packages/core": {
       "name": "blockrate",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "devDependencies": {
         "blockrate-server": "workspace:*",
       },
@@ -96,7 +103,7 @@
     },
     "packages/server": {
       "name": "blockrate-server",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "bin": {
         "blockrate-server": "./src/cli.ts",
       },
@@ -828,6 +835,8 @@
     "block-rate-example-vanilla": ["block-rate-example-vanilla@workspace:examples/vanilla"],
 
     "blockrate": ["blockrate@workspace:packages/core"],
+
+    "blockrate-init": ["blockrate-init@workspace:packages/cli"],
 
     "blockrate-server": ["blockrate-server@workspace:packages/server"],
 
