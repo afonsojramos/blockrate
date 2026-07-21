@@ -1,0 +1,22 @@
+name = "blockrate-proxy-spike"
+main = "worker.ts"
+compatibility_date = "2026-01-01"
+
+# SPIKE — see README.md. Single-provider (PostHog) first-party reverse proxy.
+#
+# Replace with your Cloudflare account_id (find it in dash.cloudflare.com → right sidebar).
+# account_id = "your-account-id"
+
+# Bind the worker to a route on YOUR domain — the whole point is that the
+# provider is served first-party, so a filter-list rule for us.i.posthog.com
+# no longer matches. The route must be on a domain Cloudflare manages.
+# Example: with your app at app.example.com, host the proxy at
+# metrics.example.com/ph so it shares the registered domain.
+#
+# routes = [
+#   { pattern = "metrics.example.com/ph/*", zone_name = "example.com" }
+# ]
+
+# Optional: EU PostHog projects should point at the EU ingest host instead.
+# [vars]
+# POSTHOG_UPSTREAM = "https://eu.i.posthog.com"
