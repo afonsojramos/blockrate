@@ -162,6 +162,93 @@ export const getOverviewData = createServerFn({ method: "GET" })
     };
   });
 
+// ─── getBrowserBreakdown ────────────────────────────────────────────────
+
+export interface BrowserRow {
+  /** Browser family, e.g. "Chrome" (major versions collapsed). */
+  family: string;
+  total: number;
+  blocked: number;
+  blockRate: number;
+}
+
+/**
+ * Per-browser block-rate aggregation for the dashboard. The data already
+ * exists: events.user_agent holds "Family Major" (e.g. "Chrome 131") from
+ * truncateUserAgent at ingest — that truncation exists precisely to answer
+ * "does block rate differ by browser?" (see packages/server/src/ua.ts).
+ * Major versions are collapsed into families in JS; "unknown"/"other"
+ * carry no version suffix and stay as-is. DB-parameterized core so it is
+ * DB-real testable without a session, mirroring setWeeklyDigestForAccount.
+ */
+export async function getBrowserBreakdownForAccount(
+  db: BunSQLDatabase<typeof schema>,
+  accountId: number,
+  sinceDays: number,
+  service?: string,
+): Promise<BrowserRow[]> {
+  const { events } = await import("@/lib/db/schema");
+  const { and, count, eq, gte, sql } = await import("drizzle-orm");
+
+  const since = new Date(Date.now() - sinceDays * DAY_MS);
+  // Same where shape as getOverviewData — the two tables must always agree.
+  const where = service
+    ? and(
+        eq(events.accountId, accountId),
+        eq(events.service, service),
+        gte(events.timestamp, since),
+      )
+    : and(eq(events.accountId, accountId), gte(events.timestamp, since));
+
+  const rows = await db
+    .select({
+      userAgent: events.userAgent,
+      total: count(),
+      // Postgres SUM comes back as a string from the pg/pglite drivers —
+      // mapWith(Number) coerces at the driver boundary (see getOverviewData).
+      blocked: sql<number>`SUM(CASE WHEN ${events.status} = 'blocked' THEN 1 ELSE 0 END)`.mapWith(
+        Number,
+      ),
+    })
+    .from(events)
+    .where(where)
+    .groupBy(events.userAgent);
+
+  const byFamily = new Map<string, { total: number; blocked: number }>();
+  for (const r of rows) {
+    const family = r.userAgent.replace(/ \d+$/, "");
+    const acc = byFamily.get(family) ?? { total: 0, blocked: 0 };
+    acc.total += r.total;
+    acc.blocked += r.blocked;
+    byFamily.set(family, acc);
+  }
+
+  // Volume-first ordering, a deliberate difference from the provider table's
+  // rate-first: segments are read as "where do my users concentrate", and a
+  // 100%-blocked family with 3 checks should not headline.
+  return [...byFamily.entries()]
+    .map(([family, { total, blocked }]) => ({
+      family,
+      total,
+      blocked,
+      blockRate: total > 0 ? blocked / total : 0,
+    }))
+    .sort((a, b) => b.total - a.total);
+}
+
+export const getBrowserBreakdown = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) => overviewInput.parse(input))
+  .handler(async ({ data }) => {
+    const { account } = await requireAccount();
+    const { db } = await import("@/lib/db/index.server");
+    const { getPlan } = await import("@/lib/plans");
+
+    const plan = getPlan(account.plan);
+    // Cap the requested window at the plan's history, same as the overview.
+    const sinceDays = Math.min(data.sinceDays, plan.dashboardHistoryDays);
+    return getBrowserBreakdownForAccount(db, account.id, sinceDays, data.service);
+  });
+
 // ─── hasReceivedEvents ──────────────────────────────────────────────────
 
 /**
