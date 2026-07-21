@@ -27,6 +27,7 @@ import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlockRateIndexRouteImport } from './routes/block-rate/index'
 import { Route as DocsApiRouteImport } from './routes/docs/api'
+import { Route as BlockRateStatusRouteImport } from './routes/block-rate/status'
 import { Route as ApiIngestRouteImport } from './routes/api/ingest'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiBlockRateRouteImport } from './routes/api/block-rate'
@@ -135,6 +136,11 @@ const DocsApiRoute = DocsApiRouteImport.update({
   id: '/api',
   path: '/api',
   getParentRoute: () => DocsRoute,
+} as any)
+const BlockRateStatusRoute = BlockRateStatusRouteImport.update({
+  id: '/block-rate/status',
+  path: '/block-rate/status',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiIngestRoute = ApiIngestRouteImport.update({
   id: '/api/ingest',
@@ -253,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/api/block-rate': typeof ApiBlockRateRoute
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
+  '/block-rate/status': typeof BlockRateStatusRoute
   '/docs/api': typeof DocsApiRoute
   '/block-rate/': typeof BlockRateIndexRoute
   '/app/alerts': typeof AuthedAppAlertsRoute
@@ -291,6 +298,7 @@ export interface FileRoutesByTo {
   '/api/block-rate': typeof ApiBlockRateRoute
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
+  '/block-rate/status': typeof BlockRateStatusRoute
   '/docs/api': typeof DocsApiRoute
   '/block-rate': typeof BlockRateIndexRoute
   '/app/alerts': typeof AuthedAppAlertsRoute
@@ -331,6 +339,7 @@ export interface FileRoutesById {
   '/api/block-rate': typeof ApiBlockRateRoute
   '/api/health': typeof ApiHealthRoute
   '/api/ingest': typeof ApiIngestRoute
+  '/block-rate/status': typeof BlockRateStatusRoute
   '/docs/api': typeof DocsApiRoute
   '/block-rate/': typeof BlockRateIndexRoute
   '/_authed/app/alerts': typeof AuthedAppAlertsRoute
@@ -371,6 +380,7 @@ export interface FileRouteTypes {
     | '/api/block-rate'
     | '/api/health'
     | '/api/ingest'
+    | '/block-rate/status'
     | '/docs/api'
     | '/block-rate/'
     | '/app/alerts'
@@ -409,6 +419,7 @@ export interface FileRouteTypes {
     | '/api/block-rate'
     | '/api/health'
     | '/api/ingest'
+    | '/block-rate/status'
     | '/docs/api'
     | '/block-rate'
     | '/app/alerts'
@@ -448,6 +459,7 @@ export interface FileRouteTypes {
     | '/api/block-rate'
     | '/api/health'
     | '/api/ingest'
+    | '/block-rate/status'
     | '/docs/api'
     | '/block-rate/'
     | '/_authed/app/alerts'
@@ -488,6 +500,7 @@ export interface RootRouteChildren {
   ApiBlockRateRoute: typeof ApiBlockRateRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiIngestRoute: typeof ApiIngestRoute
+  BlockRateStatusRoute: typeof BlockRateStatusRoute
   BlockRateIndexRoute: typeof BlockRateIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiInternalAlertsRoute: typeof ApiInternalAlertsRoute
@@ -628,6 +641,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/docs/api'
       preLoaderRoute: typeof DocsApiRouteImport
       parentRoute: typeof DocsRoute
+    }
+    '/block-rate/status': {
+      id: '/block-rate/status'
+      path: '/block-rate/status'
+      fullPath: '/block-rate/status'
+      preLoaderRoute: typeof BlockRateStatusRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/ingest': {
       id: '/api/ingest'
@@ -816,6 +836,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBlockRateRoute: ApiBlockRateRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiIngestRoute: ApiIngestRoute,
+  BlockRateStatusRoute: BlockRateStatusRoute,
   BlockRateIndexRoute: BlockRateIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiInternalAlertsRoute: ApiInternalAlertsRoute,

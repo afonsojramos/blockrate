@@ -355,6 +355,14 @@ export const POST = createBlockRateHandler({
             <code className="font-mono text-xs">facebook.com/tr</code> only serves CORS headers on
             GET — a blocked request lacks them and throws, the accurate blocked signal.
           </p>
+          <p className="text-sm text-muted-foreground">
+            Every CDN endpoint and CORS policy these detectors rely on is probed daily in CI and
+            live on the{" "}
+            <Link to="/block-rate/status" className="underline-offset-4 hover:underline">
+              detector health page
+            </Link>
+            , so a rotted probe URL shows up publicly before it can silently skew a number.
+          </p>
 
           <div className="overflow-hidden rounded-md border border-border">
             <table className="w-full text-sm">

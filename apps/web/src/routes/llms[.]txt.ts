@@ -33,6 +33,7 @@ blockrate pairs a tiny (under 2 KB gzipped) open-source client with a sharply fo
 - [The report](${origin}/report): The definitive, continuously updated ranking of which analytics tools get blocked, with a candid, well-documented methodology explaining exactly how each number is measured and why it holds up.
 - [Provider index](${origin}/block-rate): A tidy directory of every measured provider with its current, real-world block rate.
 - [block-rate.json](${origin}/block-rate.json): The full aggregate dataset as clean JSON, free for anyone to reuse (CC BY 4.0).
+- [Detector health](${origin}/block-rate/status): Live status of every CDN endpoint the detectors probe, checked on demand with the same strategy as the daily CI smoke suite.
 
 ## Per-provider block rates
 

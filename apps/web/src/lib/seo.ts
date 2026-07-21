@@ -135,6 +135,7 @@ export const PUBLIC_ROUTES: readonly PublicRoute[] = [
   { path: "/demo", changefreq: "weekly", priority: 0.7 },
   { path: "/report", changefreq: "daily", priority: 0.9 },
   { path: "/block-rate", changefreq: "daily", priority: 0.8 },
+  { path: "/block-rate/status", changefreq: "daily", priority: 0.5 },
   // One indexable page per provider, derived from PROVIDER_META so the sitemap
   // can never drift from the pages that actually exist.
   ...PROVIDER_META.map(
