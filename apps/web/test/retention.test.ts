@@ -69,13 +69,14 @@ async function insertEvent(
   apiKeyId: number,
   ageDays: number,
   status: "loaded" | "blocked" = "blocked",
+  url = "/p",
 ) {
   await db.insert(schema.events).values({
     accountId,
     apiKeyId,
     service: "default",
     timestamp: new Date(Date.now() - ageDays * DAY),
-    url: "/p",
+    url,
     userAgent: "Chrome",
     provider: "posthog",
     status,
@@ -211,7 +212,7 @@ describe("retention cron — daily rollup", () => {
     expect(afterSecond[0]!.blocked).toBe(3);
   });
 
-  it("excludes the dogfood account (BLOCKRATE_API_KEY) from the public rollup", async () => {
+  it("includes dogfood traffic in the public rollup but excludes its /demo events", async () => {
     const { generateApiKey, hashKey, keyPrefix } = await import("@/lib/keys.server");
     const dogfood = generateApiKey();
     const customer = await seedAccount("rollup-customer", "pro");
@@ -225,8 +226,13 @@ describe("retention cron — daily rollup", () => {
       service: "dogfood",
     });
     await insertEvent(customer.accountId, customer.apiKeyId, 1, "blocked");
+    // Dogfood site traffic counts (one blocked, one loaded)…
     await insertEvent(dog.accountId, dog.apiKeyId, 1, "blocked");
-    await insertEvent(dog.accountId, dog.apiKeyId, 1, "blocked");
+    await insertEvent(dog.accountId, dog.apiKeyId, 1, "loaded");
+    // …but its /demo-page events (blocker-toggling visitors) do not.
+    await insertEvent(dog.accountId, dog.apiKeyId, 1, "blocked", "/demo");
+    // A CUSTOMER'S own /demo page is not blockrate's demo — it counts.
+    await insertEvent(customer.accountId, customer.apiKeyId, 1, "blocked", "/demo");
 
     const prev = process.env.BLOCKRATE_API_KEY;
     process.env.BLOCKRATE_API_KEY = dogfood.plaintext;
@@ -239,8 +245,9 @@ describe("retention cron — daily rollup", () => {
 
     const rows = await db.select().from(schema.dailyProviderStats);
     expect(rows.length).toBe(1);
-    // Only the customer's single blocked event — dogfood's 2 are excluded.
-    expect(rows[0]!.totalChecks).toBe(1);
-    expect(rows[0]!.blocked).toBe(1);
+    // Customer 2 (incl. their own /demo page) + dogfood 2 site events;
+    // dogfood's /demo event is the only exclusion.
+    expect(rows[0]!.totalChecks).toBe(4);
+    expect(rows[0]!.blocked).toBe(3);
   });
 });

@@ -57,10 +57,12 @@ export const Route = createFileRoute("/api/internal/retention")({
         // Aggregate all events by day + provider into daily_provider_stats.
         // ON CONFLICT upsert makes this idempotent — safe to re-run.
 
-        // Exclude the site dogfood account (BLOCKRATE_API_KEY) from the public
-        // index so self-traffic / synthetic demo volume cannot dominate or
-        // poison the per-provider rates published on /report and badges.
-        let excludeAccountId: number | null = null;
+        // The site dogfood account (BLOCKRATE_API_KEY) counts toward the
+        // public index — blockrate.app visitors are a real population, and the
+        // /report methodology labels them. Its /demo-page events are excluded:
+        // visitors there toggle their blockers to watch the tool work, which
+        // would skew the published rates in both directions.
+        let dogfoodAccountId: number | null = null;
         const dogfoodKey = process.env.BLOCKRATE_API_KEY;
         if (dogfoodKey?.startsWith("br_")) {
           const { apiKeys } = await import("@/lib/db/schema");
@@ -73,7 +75,7 @@ export const Route = createFileRoute("/api/internal/retention")({
             .from(apiKeys)
             .where(and(eqCol(apiKeys.keyPrefix, prefix), isNull(apiKeys.revokedAt)));
           const match = candidates.find((c) => compareHashes(c.keyHash, expected));
-          if (match) excludeAccountId = match.accountId;
+          if (match) dogfoodAccountId = match.accountId;
         }
 
         // Seal historical days: never shrink a prior rollup when free-tier
@@ -82,9 +84,9 @@ export const Route = createFileRoute("/api/internal/retention")({
         // GREATEST keeps the higher total_checks; blocked follows the winner
         // (or max when totals tie) so a sealed day cannot lose volume.
         const excludeClause =
-          excludeAccountId === null
+          dogfoodAccountId === null
             ? drizzle.sql`TRUE`
-            : drizzle.sql`account_id <> ${excludeAccountId}`;
+            : drizzle.sql`(account_id <> ${dogfoodAccountId} OR url NOT LIKE '/demo%')`;
         await db.execute(drizzle.sql`
           INSERT INTO daily_provider_stats (date, provider, total_checks, blocked)
           SELECT
