@@ -153,6 +153,12 @@ function ReportPage() {
           </Link>
           .
         </p>
+        <p className="text-muted-foreground">
+          The population: these rates are measured across blockrate.app's own visitors and
+          participating customer sites, so they skew technical; read them as an upper bound on a
+          general audience. Checks from our interactive demo page are excluded, because people
+          toggle their blockers there to watch the tool work.
+        </p>
       </section>
 
       <section className="mt-12 rounded-lg border border-border bg-card p-6">

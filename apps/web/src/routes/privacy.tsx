@@ -250,7 +250,9 @@ function Privacy() {
           <p>
             We do not use any analytics or product-tracking subprocessors — including, deliberately,
             our own. We dogfood the OSS library on this site to measure its own block rate, and the
-            data is stored in the same database with the same retention policy.
+            data is stored in the same database with the same retention policy. Aggregate
+            per-provider counts from that dogfood measurement (never anything user-level) feed the
+            public block-rate index; checks from the interactive demo page are excluded.
           </p>
         </section>
 
