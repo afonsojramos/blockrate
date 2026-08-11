@@ -189,6 +189,45 @@ export const Route = createFileRoute("/api/block-rate")({
 });
 ```
 
+## Fixing a blocked provider: the first-party proxy
+
+Measurement tells you which providers are blocked; the fix is serving them
+first-party. `blockrate/proxy` ships a route handler that reverse-proxies a
+provider through a **subpath on your own domain** — the most block-resistant
+mount, because filter lists match hostnames and a path can't be blocked
+without blocking your whole site. (A subdomain is simpler to operate but is a
+separately-blockable hostname; if you go that route, use a real server-side
+proxy, never a CNAME, which uBlock Origin uncloaks.)
+
+v1 supports PostHog (officially documented reverse-proxy support):
+
+```ts
+// app/m/[...path]/route.ts — Next.js App Router; any Request/Response
+// framework works the same way.
+import { createBlockRateProxy } from "blockrate/proxy";
+
+const proxy = createBlockRateProxy({ provider: "posthog", prefix: "/m" });
+export const GET = proxy;
+export const POST = proxy;
+export const OPTIONS = proxy;
+```
+
+```ts
+// Point the SDK at the proxy (EU cloud: pass region: "eu" above).
+posthog.init(token, {
+  api_host: `${window.location.origin}/m`,
+  ui_host: "https://us.posthog.com",
+});
+```
+
+Pick an unguessable mount segment (not `/analytics` or `/track` — path-token
+rules already target those). The upstream host is pinned per region, so the
+route is not an open proxy, and `cookie`/`authorization` headers are stripped
+before forwarding so your first-party session credentials never reach the
+vendor. Because blockrate's PostHog detector gates on the post-load global
+(`posthog.__loaded`), your measured block rate falls as the proxy recovers
+users — the before/after is visible in the same dashboard.
+
 ## Self-hosted server
 
 If you don't want to build ingestion yourself, run `blockrate-server` — a batteries-included Bun server with SQLite storage, validation, rate limiting, multi-tenant API keys, and a one-page dashboard.

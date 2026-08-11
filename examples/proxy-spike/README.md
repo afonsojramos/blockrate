@@ -1,5 +1,10 @@
 # proxy-spike — single-provider first-party reverse proxy (PostHog)
 
+> **Update:** the subpath variant of this now ships as `blockrate/proxy`
+> (`createBlockRateProxy`) — an in-app route handler, see
+> `examples/nextjs/app/m/[...path]/route.ts`. This worker remains the option
+> for sites that can't add an app route (static hosting, separate zone).
+
 **Status: spike, not a shipped feature.** This worker is the proof-of-concept
 behind `docs/brainstorms/2026-07-21-managed-first-party-proxy.md`. It exists
 to validate, on one provider, that a thin streaming worker can serve a
