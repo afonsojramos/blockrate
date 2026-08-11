@@ -127,15 +127,40 @@ function RemediatePage() {
             <CardHeader>
               <CardTitle className="text-base">The general fix: serve it first-party</CardTitle>
             </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Most blocking is domain-based — filter lists match a vendor's hostname, not your own.
-              Routing a provider's script and collection endpoints through a path on your own domain
-              (a reverse proxy or edge worker) sidesteps that. blockrate ships a first-party
-              reporter for exactly this shape.{" "}
-              <Link to="/docs" className="text-primary underline-offset-4 hover:underline">
-                See the setup docs
-              </Link>
-              .
+            <CardContent className="space-y-4 text-sm text-muted-foreground">
+              <p>
+                Most blocking is domain-based: filter lists match a vendor's hostname, not your own.
+                Routing a provider's script and collection endpoints through your own domain (a
+                reverse proxy or edge worker) sidesteps that. blockrate ships a first-party reporter
+                for exactly this shape.{" "}
+                <Link to="/docs" className="text-primary underline-offset-4 hover:underline">
+                  See the setup docs
+                </Link>
+                .
+              </p>
+              <div>
+                <p className="font-medium text-foreground">Path vs. subdomain</p>
+                <ul className="mt-2 space-y-2">
+                  <li>
+                    <span className="font-mono text-xs text-foreground">yoursite.com/m/…</span> (a
+                    subpath on your primary domain) is the most block-resistant: a filter list can't
+                    match a path without blocking your whole site. Pick it when not losing the data
+                    is the priority. It has to sit in front of your app's routing (an edge worker on
+                    a route pattern), and you should use an unguessable path segment so generic
+                    path-token rules can't match.
+                  </li>
+                  <li>
+                    <span className="font-mono text-xs text-foreground">m.yoursite.com</span> (a
+                    subdomain) is simpler to run: independent DNS and service, no collision with
+                    your app's routes. Pick it when deploy simplicity outweighs maximal resistance.
+                    A subdomain is a separately-blockable hostname, so serve it via a real
+                    server-side proxy, not a CNAME (which uBlock Origin uncloaks and blocks), and
+                    avoid predictable names like{" "}
+                    <span className="font-mono text-xs">analytics.</span> or{" "}
+                    <span className="font-mono text-xs">track.</span>
+                  </li>
+                </ul>
+              </div>
             </CardContent>
           </Card>
         </>
