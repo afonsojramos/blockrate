@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "drizzle-orm": "catalog:",
-    "zod": "^3.23.0"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "drizzle-kit": "catalog:"
