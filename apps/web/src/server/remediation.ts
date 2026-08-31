@@ -12,7 +12,6 @@
  */
 
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
 import { and, count, eq, gt, sql } from "drizzle-orm";
 
 import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
@@ -20,6 +19,7 @@ import type * as schema from "@/lib/db/schema";
 import type { Plan } from "@/lib/plans";
 import type { Remediation } from "@/lib/providers";
 
+import { requireAccount } from "@/lib/require-account.server";
 import { DAY_MS } from "@/lib/time";
 import { MIN_SAMPLE_CHECKS, getProviderMeta } from "@/lib/providers";
 
@@ -119,24 +119,6 @@ export async function buildRemediationPlaybook(
     windowDays: WINDOW_DAYS,
   };
 }
-
-const requireAccount = async () => {
-  const { auth } = await import("@/lib/auth.server");
-  const { db } = await import("@/lib/db/index.server");
-  const { appAccounts } = await import("@/lib/db/schema");
-
-  const session = await auth.api.getSession({ headers: getRequest().headers });
-  if (!session) throw new Error("unauthorized");
-
-  const rows = await db
-    .select()
-    .from(appAccounts)
-    .where(eq(appAccounts.userId, session.user.id))
-    .limit(1);
-  const account = rows[0];
-  if (!account) throw new Error("no app_account for user — bootstrap hook missed");
-  return { account, db };
-};
 
 export const getRemediationPlaybook = createServerFn({ method: "GET" }).handler(async () => {
   const { account, db } = await requireAccount();
