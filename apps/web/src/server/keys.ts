@@ -5,31 +5,10 @@
  */
 
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 
-const requireAccount = async () => {
-  const { auth } = await import("@/lib/auth.server");
-  const { db } = await import("@/lib/db/index.server");
-  const { appAccounts } = await import("@/lib/db/schema");
-
-  const session = await auth.api.getSession({
-    headers: getRequest().headers,
-  });
-  if (!session) throw new Error("unauthorized");
-
-  const rows = await db
-    .select()
-    .from(appAccounts)
-    .where(eq(appAccounts.userId, session.user.id))
-    .limit(1);
-  const account = rows[0];
-  if (!account) {
-    throw new Error("no app_account for user — bootstrap hook missed");
-  }
-  return { session, account, db, appAccounts };
-};
+import { requireAccount } from "@/lib/require-account.server";
 
 // ─── listKeys ────────────────────────────────────────────────────────────
 

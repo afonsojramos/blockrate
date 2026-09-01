@@ -70,6 +70,33 @@ describe("ingest timestamp skew (self-hosted handler)", () => {
     expect(body.error).toContain("timestamp");
   });
 
+  it("returns the owned issue shape ({ path, code, message }) for an invalid payload", async () => {
+    const app = await newApp();
+    const bad = { ...payload(new Date().toISOString()), providers: [] };
+    const res = await app.fetch(
+      new Request("http://x/ingest", {
+        method: "POST",
+        headers: { "x-blockrate-key": "br_test_key" },
+        body: JSON.stringify(bad),
+      }),
+    );
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as {
+      error: string;
+      issues: { path: string[]; code: string; message: string }[];
+    };
+    expect(body.error).toBe("invalid payload");
+    expect(body.issues.length).toBeGreaterThan(0);
+    for (const issue of body.issues) {
+      // Contract: exactly these keys, stable across zod majors.
+      expect(Object.keys(issue).sort()).toEqual(["code", "message", "path"]);
+      expect(issue.path.every((p) => typeof p === "string")).toBe(true);
+      expect(typeof issue.code).toBe("string");
+      expect(typeof issue.message).toBe("string");
+    }
+    expect(body.issues[0]?.path).toEqual(["providers"]);
+  });
+
   it("accepts a fresh timestamp", async () => {
     const app = await newApp();
     const res = await app.fetch(

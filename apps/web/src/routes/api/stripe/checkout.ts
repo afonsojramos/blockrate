@@ -24,7 +24,8 @@ export const Route = createFileRoute("/api/stripe/checkout")({
             import("drizzle-orm"),
             import("stripe"),
           ]);
-        const { jsonError, requireAccountForApi } = await import("@/lib/api-utils.server");
+        const { jsonError } = await import("@/lib/api-utils.server");
+        const { requireAccountForApi } = await import("@/lib/require-account.server");
 
         if (!env.STRIPE_SECRET_KEY) return jsonError("billing not configured", 503);
 

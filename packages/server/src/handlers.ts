@@ -27,7 +27,14 @@ export async function handleIngest(
   }
   const parsed = blockRatePayloadSchema.safeParse(body);
   if (!parsed.success) {
-    return json({ error: "invalid payload", issues: parsed.error.issues }, 400);
+    // Owned wire shape: raw zod issue objects change across zod majors, and
+    // self-hosters may match on this response.
+    const issues = parsed.error.issues.map((issue) => ({
+      path: issue.path.map(String),
+      code: issue.code,
+      message: issue.message,
+    }));
+    return json({ error: "invalid payload", issues }, 400);
   }
   const { timestamp, url, userAgent, service, providers } = parsed.data;
   if (!isTimestampWithinSkew(timestamp)) {
