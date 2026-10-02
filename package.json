@@ -23,6 +23,8 @@
     "build": "bun run --filter '*' build",
     "bump": "bun scripts/bump.ts",
     "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
     "format": "oxfmt .",
