@@ -35,7 +35,7 @@ pg/pglite drivers as **strings**. Always coerce with drizzle `count()` /
 ## Pre-ship validation
 
 ```bash
-bun run check                              # fmt + lint + typecheck
+bun run check                              # format check + lint + typecheck
 bun test packages/core packages/server
 cd apps/web && bun test                    # needs BETTER_AUTH_SECRET (≥32 chars)
 cd packages/core && bun run test:smoke     # live CDNs; required before an npm publish
@@ -45,15 +45,15 @@ Production build: `cd packages/core && bun run build && cd apps/web && NODE_ENV=
 
 ## Deploy — apps/web
 
-| Var                                           | Used for                     | Notes                                                                                                     |
-| --------------------------------------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `BETTER_AUTH_SECRET`                          | session signing              | ≥32 chars; rotating logs everyone out                                                                     |
-| `DATABASE_URL`                                | Postgres                     | bun:sql driver; `pglite://` is local/dev only                                                             |
-| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | billing                      | per-environment                                                                                           |
-| `STRIPE_{PRO,TEAM}_{MONTHLY,ANNUAL}_PRICE_ID` | plan ↔ price mapping         | read at call time by `lib/plans.ts`                                                                       |
-| `RESEND_API_KEY`                              | magic-link email             | required for sign-in                                                                                      |
-| `CRON_SECRET`                                 | retention endpoint           | ≥32 chars; unset ⇒ endpoint 503s                                                                          |
-| `VITE_SITE_URL`                               | canonical + robots + sitemap | **must be set at BUILD time** (Vite-inlined). Unset ⇒ the site serves `Disallow: /` and is non-indexable. |
+| Var                                           | Used for                                                            | Notes                                                                                                     |
+| --------------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `BETTER_AUTH_SECRET`                          | session signing                                                     | ≥32 chars; rotating logs everyone out                                                                     |
+| `DATABASE_URL`                                | Postgres                                                            | bun:sql driver; `pglite://` is local/dev only                                                             |
+| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | billing                                                             | per-environment                                                                                           |
+| `STRIPE_{PRO,TEAM}_{MONTHLY,ANNUAL}_PRICE_ID` | plan ↔ price mapping                                                | read at call time by `lib/plans.ts`                                                                       |
+| `RESEND_API_KEY`                              | magic-link email                                                    | required for sign-in in production; dev logs the link instead                                             |
+| `CRON_SECRET`                                 | internal cron endpoints (`/api/internal/{retention,digest,alerts}`) | ≥32 chars; unset ⇒ those endpoints 503                                                                    |
+| `VITE_SITE_URL`                               | canonical + robots + sitemap                                        | **must be set at BUILD time** (Vite-inlined). Unset ⇒ the site serves `Disallow: /` and is non-indexable. |
 
 Gate, in order: `bun run check` green → tests green → prod build green → migrations
 applied (`drizzle-kit check` shows no drift). After deploy, hit `/api/health`, `/demo`,
