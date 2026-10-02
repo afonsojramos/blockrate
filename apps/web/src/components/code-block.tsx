@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { highlight } from "sugar-high";
 import { Clipboard, Check } from "lucide-react";
 
@@ -22,12 +22,12 @@ export function CodeBlock({
   const html = highlight(trimmed);
   const highlightedLines = html.split("\n");
 
-  const onCopy = useCallback(() => {
+  function onCopy() {
     navigator.clipboard.writeText(trimmed).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
-  }, [trimmed]);
+  }
 
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-card">

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Link, useNavigate, useLocation, useRouter } from "@tanstack/react-router";
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import { Menu, X } from "lucide-react";
@@ -17,12 +17,14 @@ export function Nav({ session }: { session: NavSession }) {
   const router = useRouter();
   const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [menuPath, setMenuPath] = useState(pathname);
 
   // Close mobile menu on route change
-  useEffect(() => {
+  if (menuPath !== pathname) {
+    setMenuPath(pathname);
     setMobileOpen(false);
-  }, [pathname]);
+  }
+  const menuRef = useRef<HTMLDivElement>(null);
 
   async function onSignOut() {
     // Load the Better Auth client on demand. Nav renders on every page, but only
