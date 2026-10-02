@@ -8,13 +8,18 @@ import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
 
+import { SECURITY_HEADERS } from "./src/lib/security-headers";
+
 // `bun` is a runtime-only module (no npm package). Rollup must leave
 // `import { SQL } from "bun"` as an external so the Bun runtime can
 // resolve it at execution time.
 const config = defineConfig({
   plugins: [
     devtools(),
-    nitro({ rollupConfig: { external: [/^@sentry\//, "bun"] } }),
+    nitro({
+      rollupConfig: { external: [/^@sentry\//, "bun"] },
+      routeRules: { "/**": { headers: SECURITY_HEADERS } },
+    }),
     tsconfigPaths({ projects: ["./tsconfig.json"] }),
     tailwindcss(),
     tanstackStart(),
