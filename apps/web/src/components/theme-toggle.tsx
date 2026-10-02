@@ -1,45 +1,50 @@
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { Monitor, Moon, Sun } from "lucide-react";
 
 type Theme = "light" | "dark" | "system";
 const ORDER: Theme[] = ["system", "light", "dark"];
 
+const listeners = new Set<() => void>();
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+function getTheme(): Theme {
+  const stored = localStorage.getItem("theme");
+  return ORDER.find((t) => t === stored) ?? "system";
+}
+
+function getServerTheme(): Theme | null {
+  return null;
+}
+
+function setTheme(theme: Theme) {
+  localStorage.setItem("theme", theme);
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const dark = theme === "dark" || (theme === "system" && prefersDark);
+  document.documentElement.classList.toggle("dark", dark);
+  document.documentElement.style.colorScheme = dark ? "dark" : "light";
+  for (const listener of listeners) listener();
+}
+
 /**
- * Single button that cycles Light → Dark → System. The inline `<head>` script
- * in __root.tsx sets the initial `.dark` class before paint, so this hook
- * just READS from the DOM on mount and writes when the user clicks.
+ * Single button that cycles System → Light → Dark. The inline `<head>` script
+ * in __root.tsx sets the initial `.dark` class before paint, so this component
+ * only reads localStorage and writes the class when the user clicks.
  *
- * julik-races: do NOT let React own the initial value — three sources of
- * truth (SSR / inline script / React state) = guaranteed hydration mismatch.
- * Render a placeholder until `theme !== null` (after mount).
+ * The server snapshot is `null`, so SSR and hydration both render the
+ * placeholder; React then re-renders with the stored theme.
  */
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme | null>(null);
-
-  // Mount: read whatever the inline head script + localStorage settled on
-  useLayoutEffect(() => {
-    const stored = localStorage.getItem("theme") as Theme | null;
-    setTheme(stored ?? "system");
-  }, []);
-
-  // Apply theme changes synchronously (before paint) when user clicks
-  useLayoutEffect(() => {
-    if (!theme) return;
-    const m = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const dark = theme === "dark" || (theme === "system" && m);
-    document.documentElement.classList.toggle("dark", dark);
-    document.documentElement.style.colorScheme = dark ? "dark" : "light";
-  }, [theme]);
-
-  // Persist asynchronously (non-critical)
-  useEffect(() => {
-    if (theme) localStorage.setItem("theme", theme);
-  }, [theme]);
+  const theme = useSyncExternalStore(subscribe, getTheme, getServerTheme);
 
   function cycle() {
     if (!theme) return;
-    const next = ORDER[(ORDER.indexOf(theme) + 1) % ORDER.length];
-    setTheme(next);
+    setTheme(ORDER[(ORDER.indexOf(theme) + 1) % ORDER.length]);
   }
 
   // Placeholder during SSR + first frame to avoid hydration mismatch
