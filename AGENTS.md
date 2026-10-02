@@ -36,10 +36,14 @@ pg/pglite drivers as **strings**. Always coerce with drizzle `count()` /
 
 ```bash
 bun run check                              # format check + lint + typecheck
-bun test packages/core packages/server
-cd apps/web && bun test                    # needs BETTER_AUTH_SECRET (≥32 chars)
+bun run test                               # each workspace's suite from its own dir; needs packages/core built
 cd packages/core && bun run test:smoke     # live CDNs; required before an npm publish
 ```
+
+Run tests through `bun run test` (or `test:watch`, `test:coverage`), not a bare root
+`bun test`: the root run skips the `apps/web/bunfig.toml` preload that sets the test env.
+A test that opens a PGlite or SQLite store must close it (`afterEach(() => store.close())`);
+an open PGlite makes bun exit 99 after every test has passed.
 
 Production build: `cd packages/core && bun run build && cd apps/web && NODE_ENV=production bun run build`.
 
