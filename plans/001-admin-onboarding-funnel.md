@@ -69,8 +69,8 @@ existing timestamps.
   `COUNT`/`SUM`/`AVG` come back from the pg/pglite drivers as **strings**.
   Always use drizzle `count()` or `.mapWith(Number)`. `admin.ts:89` already
   does this (`sql<number>\`COUNT(\*)\`.mapWith(Number)`); match it. Raw `sql``
-template inlines must be pre-stringified dates (`.toISOString()`), never raw
-`Date`objects — see the comment at`admin.ts:86-89`.
+  template inlines must be pre-stringified dates (`.toISOString()`), never raw
+  `Date`objects — see the comment at`admin.ts:86-89`.
 - Tests: `apps/web/test/admin-overview.test.ts` exists and mirrors the query
   shape (per the header comment in `admin.ts:10`). Tests run against PGlite;
   `cd apps/web && bun test` requires `BETTER_AUTH_SECRET` (≥32 chars) in the

@@ -41,7 +41,7 @@
     "@types/bun": "latest",
     "@types/react": "catalog:",
     "husky": "^9.1.7",
-    "oxfmt": "^0.55.0",
+    "oxfmt": "^0.71.0",
     "oxlint": "^1.70.0",
     "react": "catalog:",
     "typescript": "^6.0.3"
