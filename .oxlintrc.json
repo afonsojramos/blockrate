@@ -1,0 +1,46 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "pedantic": "off",
+    "perf": "warn",
+    "style": "off"
+  },
+  "plugins": ["react", "typescript", "import", "jsx-a11y"],
+  "rules": {
+    "no-console": "warn",
+    "no-debugger": "error",
+    "typescript/no-unsafe-type-assertion": "off",
+    "typescript/no-unnecessary-type-conversion": "off",
+    "react/no-unstable-nested-components": ["warn", { "allowAsProps": true }],
+    "no-underscore-dangle": ["warn", { "allow": ["__loaded"] }],
+    "react/jsx-key": "error",
+    "react/react-in-jsx-scope": "off",
+    "jsx-a11y/alt-text": "error",
+    "jsx-a11y/label-has-associated-control": "off",
+    "jsx-a11y/no-autofocus": ["error", { "ignoreNonDOM": true }],
+    "jsx-a11y/no-noninteractive-tabindex": "warn",
+    "jsx-a11y/prefer-tag-over-role": "off"
+  },
+  "ignorePatterns": ["**/node_modules/**", "**/dist/**", "**/.output/**", "**/*.gen.ts"],
+  "overrides": [
+    {
+      "files": [
+        "scripts/**/*.ts",
+        "apps/web/scripts/**/*.ts",
+        "packages/*/src/cli.ts",
+        "packages/cli/src/**/*.ts"
+      ],
+      "rules": { "no-console": "off", "no-await-in-loop": "off" }
+    },
+    {
+      "files": ["apps/web/src/routes/api/**/*.ts", "packages/server/src/**/*.ts"],
+      "rules": { "no-await-in-loop": "off" }
+    },
+    {
+      "files": ["**/test/**/*.{ts,tsx}", "**/*.test.{ts,tsx}"],
+      "rules": { "no-await-in-loop": "off" }
+    }
+  ]
+}

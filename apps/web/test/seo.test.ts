@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 import { seo, PUBLIC_ROUTES } from "@/lib/seo";
 import { PROVIDER_META } from "@/lib/providers";
 

@@ -24,10 +24,12 @@
     "bump": "bun scripts/bump.ts",
     "test": "bun test",
     "lint": "oxlint .",
-    "fmt": "oxfmt .",
-    "fmt:check": "oxfmt --check .",
+    "lint:fix": "oxlint --fix .",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
     "typecheck": "cd apps/web && bun run typecheck",
-    "check": "bun run fmt:check && bun run lint && bun run typecheck",
+    "check": "bun run format:check && bun run lint && bun run typecheck",
+    "precommit": "bun run check",
     "prepare": "husky"
   },
   "dependencies": {

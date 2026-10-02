@@ -192,7 +192,9 @@ function AlertsPage() {
                     <th className="px-2 py-3 font-medium">Notify</th>
                     <th className="px-2 py-3 font-medium">Last fired</th>
                     <th className="px-2 py-3 font-medium">Status</th>
-                    <th className="px-2 py-3"></th>
+                    <th className="px-2 py-3">
+                      <span className="sr-only">Actions</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>

@@ -8,6 +8,15 @@ dist
 *.db-shm
 .playwright-mcp/
 .claude/
+.conductor/
+.tanstack
+coverage/
+.env
+.env.*
+!.env.example
+
+# Screenshots and scratch images at the repo root
+/*.png
 
 # Working docs — local only, not part of the shipped repo
 docs/brainstorms/

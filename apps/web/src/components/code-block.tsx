@@ -73,6 +73,7 @@ export function CodeBlock({
                 <td className="select-none pr-4 text-right align-top border-r border-border font-mono text-[13px] text-muted-foreground">
                   {i + 1}
                 </td>
+                {/* oxlint-disable-next-line jsx-a11y/control-has-associated-label -- content is set through dangerouslySetInnerHTML */}
                 <td className="pl-4">
                   <code
                     className="font-mono text-[13px]"
