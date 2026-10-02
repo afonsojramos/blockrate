@@ -22,6 +22,7 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     # The environment name below must match the environment you configure on
     # the trusted publisher entry at https://npmjs.com/packages/blockrate
     # (Settings → Publishing access → GitHub Actions). Leave it commented
