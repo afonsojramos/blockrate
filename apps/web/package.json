@@ -11,6 +11,7 @@
     "build": "NODE_ENV=production vite build",
     "preview": "vite preview",
     "test": "bun test",
+    "test:headers": "bun scripts/check-security-headers.ts",
     "typecheck": "tsc --noEmit",
     "og": "bun run scripts/generate-og.ts",
     "start": "NODE_ENV=production bun run db:migrate && NODE_ENV=production bun .output/server/index.mjs",
