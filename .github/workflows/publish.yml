@@ -1,10 +1,9 @@
-name: Publish blockrate (core)
+name: Publish
 
-# Trigger on tags of the form v<semver>, e.g. v0.2.0. Both blockrate and
-# blockrate-server are released in lockstep from the same tag — this
-# workflow and the sibling publish workflow both listen for v* and run
-# in parallel. package.json on the two packages MUST stay in sync; the
-# tag-version check below fails the publish if this package is out of
+# Trigger on tags of the form v<semver>, e.g. v0.2.0. blockrate and
+# blockrate-server are released in lockstep from the same tag, one matrix
+# entry each. package.json on the two packages MUST stay in sync; the
+# tag-version check below fails an entry's publish if its package is out of
 # sync with the tag.
 on:
   push:
@@ -21,13 +20,25 @@ permissions:
 
 jobs:
   publish:
+    name: Publish ${{ matrix.package }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     # The environment name below must match the environment you configure on
-    # the trusted publisher entry at https://npmjs.com/packages/blockrate
-    # (Settings → Publishing access → GitHub Actions). Leave it commented
-    # if you did not scope the trusted publisher to an environment.
+    # each package's trusted publisher entry on npmjs.com (Settings →
+    # Publishing access → GitHub Actions). Leave it commented if you did not
+    # scope the trusted publisher to an environment.
     # environment: release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package: blockrate
+            dir: core
+          - package: blockrate-server
+            dir: server
+    env:
+      PACKAGE_NAME: ${{ matrix.package }}
+      PACKAGE_DIR: packages/${{ matrix.dir }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -40,22 +51,23 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      # Verify the tag matches packages/core/package.json. `GITHUB_REF_NAME`
+      # Verify the tag matches the package's package.json. `GITHUB_REF_NAME`
       # is injected by Actions as the tag string; git's refname rules keep
       # shell metacharacters out of it, so the bash parameter expansion
       # below is safe. Never inline `${{ github.ref_name }}` into a run
-      # block — this is the recommended pattern to avoid script injection.
+      # block; this is the recommended pattern to avoid script injection.
       - name: Verify tag matches package.json
         run: |
           tag_version="${GITHUB_REF_NAME#v}"
-          pkg_version=$(node -p "require('./packages/core/package.json').version")
+          pkg_version=$(node -p "require('./$PACKAGE_DIR/package.json').version")
           if [ "$tag_version" != "$pkg_version" ]; then
-            echo "::error::Tag version $tag_version does not match packages/core/package.json version $pkg_version"
+            echo "::error::Tag version $tag_version does not match $PACKAGE_DIR/package.json version $pkg_version"
             exit 1
           fi
-          echo "Publishing blockrate@$pkg_version"
+          echo "Publishing $PACKAGE_NAME@$pkg_version"
 
       - name: Build
+        if: matrix.dir == 'core'
         working-directory: packages/core
         run: bun run build
 
@@ -68,7 +80,7 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: Publish to npm (trusted publisher + provenance)
-        working-directory: packages/core
+        working-directory: ${{ env.PACKAGE_DIR }}
         # `--provenance` produces a Sigstore attestation. `--access public`
         # is required on first publish for unscoped packages; harmless on
         # subsequent publishes.
