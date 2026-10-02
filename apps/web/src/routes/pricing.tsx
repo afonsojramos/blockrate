@@ -130,6 +130,7 @@ function Pricing() {
             type="button"
             role="switch"
             aria-checked={annual}
+            aria-label="Bill annually"
             onClick={() => setAnnual(!annual)}
             className={
               "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 " +

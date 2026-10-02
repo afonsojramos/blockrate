@@ -138,7 +138,9 @@ function KeysPage() {
                   <th className="px-2 py-3 font-medium">Prefix</th>
                   <th className="px-2 py-3 font-medium">Last used</th>
                   <th className="px-2 py-3 font-medium">Status</th>
-                  <th className="px-2 py-3"></th>
+                  <th className="px-2 py-3">
+                    <span className="sr-only">Actions</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
