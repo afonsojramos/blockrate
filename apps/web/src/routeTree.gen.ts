@@ -9,108 +9,52 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TermsRouteImport } from './routes/terms'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as SignupRouteImport } from './routes/signup'
-import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
-import { Route as ReportRouteImport } from './routes/report'
-import { Route as PrivacySnippetRouteImport } from './routes/privacy-snippet'
-import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
-import { Route as DpaRouteImport } from './routes/dpa'
-import { Route as DocsRouteImport } from './routes/docs'
-import { Route as DemoRouteImport } from './routes/demo'
-import { Route as BlockRateDotjsonRouteImport } from './routes/block-rate[.]json'
-import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as BlockRateIndexRouteImport } from './routes/block-rate/index'
-import { Route as DocsApiRouteImport } from './routes/docs/api'
-import { Route as BlockRateStatusRouteImport } from './routes/block-rate/status'
-import { Route as ApiIngestRouteImport } from './routes/api/ingest'
-import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as AuthedRouteImport } from './routes/_authed'
+import { Route as BlockRateDotjsonRouteImport } from './routes/block-rate[.]json'
+import { Route as DemoRouteImport } from './routes/demo'
+import { Route as DocsRouteImport } from './routes/docs'
+import { Route as DpaRouteImport } from './routes/dpa'
+import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as PrivacySnippetRouteImport } from './routes/privacy-snippet'
+import { Route as ReportRouteImport } from './routes/report'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ApiBlockRateRouteImport } from './routes/api/block-rate'
-import { Route as BlockRateProviderIndexRouteImport } from './routes/block-rate/$provider/index'
+import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as ApiIngestRouteImport } from './routes/api/ingest'
+import { Route as BlockRateIndexRouteImport } from './routes/block-rate/index'
+import { Route as BlockRateStatusRouteImport } from './routes/block-rate/status'
+import { Route as DocsApiRouteImport } from './routes/docs/api'
 import { Route as AuthedAppIndexRouteImport } from './routes/_authed/app/index'
-import { Route as BlockRateProviderTrendDotjsonRouteImport } from './routes/block-rate/$provider/trend[.]json'
-import { Route as BlockRateProviderBadgeDotsvgRouteImport } from './routes/block-rate/$provider/badge[.]svg'
-import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
-import { Route as ApiStripePortalRouteImport } from './routes/api/stripe/portal'
-import { Route as ApiStripeCheckoutRouteImport } from './routes/api/stripe/checkout'
-import { Route as ApiInternalRetentionRouteImport } from './routes/api/internal/retention'
-import { Route as ApiInternalDigestRouteImport } from './routes/api/internal/digest'
-import { Route as ApiInternalAlertsRouteImport } from './routes/api/internal/alerts'
-import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
-import { Route as AuthedAppSettingsRouteImport } from './routes/_authed/app/settings'
-import { Route as AuthedAppRemediateRouteImport } from './routes/_authed/app/remediate'
-import { Route as AuthedAppKeysRouteImport } from './routes/_authed/app/keys'
 import { Route as AuthedAppAlertsRouteImport } from './routes/_authed/app/alerts'
+import { Route as AuthedAppKeysRouteImport } from './routes/_authed/app/keys'
+import { Route as AuthedAppRemediateRouteImport } from './routes/_authed/app/remediate'
+import { Route as AuthedAppSettingsRouteImport } from './routes/_authed/app/settings'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
+import { Route as ApiInternalAlertsRouteImport } from './routes/api/internal/alerts'
+import { Route as ApiInternalDigestRouteImport } from './routes/api/internal/digest'
+import { Route as ApiInternalRetentionRouteImport } from './routes/api/internal/retention'
+import { Route as ApiStripeCheckoutRouteImport } from './routes/api/stripe/checkout'
+import { Route as ApiStripePortalRouteImport } from './routes/api/stripe/portal'
+import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
+import { Route as BlockRateProviderIndexRouteImport } from './routes/block-rate/$provider/index'
+import { Route as BlockRateProviderBadgeDotsvgRouteImport } from './routes/block-rate/$provider/badge[.]svg'
+import { Route as BlockRateProviderTrendDotjsonRouteImport } from './routes/block-rate/$provider/trend[.]json'
 import { Route as AuthedAppAdminIndexRouteImport } from './routes/_authed/app/admin/index'
 
-const TermsRoute = TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SignupRoute = SignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
-  id: '/robots.txt',
-  path: '/robots.txt',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReportRoute = ReportRouteImport.update({
-  id: '/report',
-  path: '/report',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacySnippetRoute = PrivacySnippetRouteImport.update({
-  id: '/privacy-snippet',
-  path: '/privacy-snippet',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PricingRoute = PricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
-  id: '/llms.txt',
-  path: '/llms.txt',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DpaRoute = DpaRouteImport.update({
-  id: '/dpa',
-  path: '/dpa',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsRoute = DocsRouteImport.update({
-  id: '/docs',
-  path: '/docs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoRoute = DemoRouteImport.update({
-  id: '/demo',
-  path: '/demo',
+const AuthedRoute = AuthedRouteImport.update({
+  id: '/_authed',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlockRateDotjsonRoute = BlockRateDotjsonRouteImport.update({
@@ -118,38 +62,69 @@ const BlockRateDotjsonRoute = BlockRateDotjsonRouteImport.update({
   path: '/block-rate.json',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthedRoute = AuthedRouteImport.update({
-  id: '/_authed',
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const DocsRoute = DocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BlockRateIndexRoute = BlockRateIndexRouteImport.update({
-  id: '/block-rate/',
-  path: '/block-rate/',
+const DpaRoute = DpaRouteImport.update({
+  id: '/dpa',
+  path: '/dpa',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DocsApiRoute = DocsApiRouteImport.update({
-  id: '/api',
-  path: '/api',
-  getParentRoute: () => DocsRoute,
-} as any)
-const BlockRateStatusRoute = BlockRateStatusRouteImport.update({
-  id: '/block-rate/status',
-  path: '/block-rate/status',
+const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
+  id: '/llms.txt',
+  path: '/llms.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiIngestRoute = ApiIngestRouteImport.update({
-  id: '/api/ingest',
-  path: '/api/ingest',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiHealthRoute = ApiHealthRouteImport.update({
-  id: '/api/health',
-  path: '/api/health',
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacySnippetRoute = PrivacySnippetRouteImport.update({
+  id: '/privacy-snippet',
+  path: '/privacy-snippet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportRoute = ReportRouteImport.update({
+  id: '/report',
+  path: '/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiBlockRateRoute = ApiBlockRateRouteImport.update({
@@ -157,76 +132,34 @@ const ApiBlockRateRoute = ApiBlockRateRouteImport.update({
   path: '/api/block-rate',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BlockRateProviderIndexRoute = BlockRateProviderIndexRouteImport.update({
-  id: '/block-rate/$provider/',
-  path: '/block-rate/$provider/',
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ApiIngestRoute = ApiIngestRouteImport.update({
+  id: '/api/ingest',
+  path: '/api/ingest',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlockRateIndexRoute = BlockRateIndexRouteImport.update({
+  id: '/block-rate/',
+  path: '/block-rate/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlockRateStatusRoute = BlockRateStatusRouteImport.update({
+  id: '/block-rate/status',
+  path: '/block-rate/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsApiRoute = DocsApiRouteImport.update({
+  id: '/api',
+  path: '/api',
+  getParentRoute: () => DocsRoute,
 } as any)
 const AuthedAppIndexRoute = AuthedAppIndexRouteImport.update({
   id: '/app/',
   path: '/app/',
-  getParentRoute: () => AuthedRoute,
-} as any)
-const BlockRateProviderTrendDotjsonRoute =
-  BlockRateProviderTrendDotjsonRouteImport.update({
-    id: '/block-rate/$provider/trend.json',
-    path: '/block-rate/$provider/trend.json',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const BlockRateProviderBadgeDotsvgRoute =
-  BlockRateProviderBadgeDotsvgRouteImport.update({
-    id: '/block-rate/$provider/badge.svg',
-    path: '/block-rate/$provider/badge.svg',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
-  id: '/api/stripe/webhook',
-  path: '/api/stripe/webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiStripePortalRoute = ApiStripePortalRouteImport.update({
-  id: '/api/stripe/portal',
-  path: '/api/stripe/portal',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiStripeCheckoutRoute = ApiStripeCheckoutRouteImport.update({
-  id: '/api/stripe/checkout',
-  path: '/api/stripe/checkout',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiInternalRetentionRoute = ApiInternalRetentionRouteImport.update({
-  id: '/api/internal/retention',
-  path: '/api/internal/retention',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiInternalDigestRoute = ApiInternalDigestRouteImport.update({
-  id: '/api/internal/digest',
-  path: '/api/internal/digest',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiInternalAlertsRoute = ApiInternalAlertsRouteImport.update({
-  id: '/api/internal/alerts',
-  path: '/api/internal/alerts',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
-  id: '/api/auth/$',
-  path: '/api/auth/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthedAppSettingsRoute = AuthedAppSettingsRouteImport.update({
-  id: '/app/settings',
-  path: '/app/settings',
-  getParentRoute: () => AuthedRoute,
-} as any)
-const AuthedAppRemediateRoute = AuthedAppRemediateRouteImport.update({
-  id: '/app/remediate',
-  path: '/app/remediate',
-  getParentRoute: () => AuthedRoute,
-} as any)
-const AuthedAppKeysRoute = AuthedAppKeysRouteImport.update({
-  id: '/app/keys',
-  path: '/app/keys',
   getParentRoute: () => AuthedRoute,
 } as any)
 const AuthedAppAlertsRoute = AuthedAppAlertsRouteImport.update({
@@ -234,6 +167,73 @@ const AuthedAppAlertsRoute = AuthedAppAlertsRouteImport.update({
   path: '/app/alerts',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedAppKeysRoute = AuthedAppKeysRouteImport.update({
+  id: '/app/keys',
+  path: '/app/keys',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedAppRemediateRoute = AuthedAppRemediateRouteImport.update({
+  id: '/app/remediate',
+  path: '/app/remediate',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedAppSettingsRoute = AuthedAppSettingsRouteImport.update({
+  id: '/app/settings',
+  path: '/app/settings',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiInternalAlertsRoute = ApiInternalAlertsRouteImport.update({
+  id: '/api/internal/alerts',
+  path: '/api/internal/alerts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiInternalDigestRoute = ApiInternalDigestRouteImport.update({
+  id: '/api/internal/digest',
+  path: '/api/internal/digest',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiInternalRetentionRoute = ApiInternalRetentionRouteImport.update({
+  id: '/api/internal/retention',
+  path: '/api/internal/retention',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStripeCheckoutRoute = ApiStripeCheckoutRouteImport.update({
+  id: '/api/stripe/checkout',
+  path: '/api/stripe/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStripePortalRoute = ApiStripePortalRouteImport.update({
+  id: '/api/stripe/portal',
+  path: '/api/stripe/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
+  id: '/api/stripe/webhook',
+  path: '/api/stripe/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlockRateProviderIndexRoute = BlockRateProviderIndexRouteImport.update({
+  id: '/block-rate/$provider/',
+  path: '/block-rate/$provider/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlockRateProviderBadgeDotsvgRoute =
+  BlockRateProviderBadgeDotsvgRouteImport.update({
+    id: '/block-rate/$provider/badge.svg',
+    path: '/block-rate/$provider/badge.svg',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const BlockRateProviderTrendDotjsonRoute =
+  BlockRateProviderTrendDotjsonRouteImport.update({
+    id: '/block-rate/$provider/trend.json',
+    path: '/block-rate/$provider/trend.json',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthedAppAdminIndexRoute = AuthedAppAdminIndexRouteImport.update({
   id: '/app/admin/',
   path: '/app/admin/',
@@ -516,102 +516,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/terms': {
-      id: '/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof TermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/robots.txt': {
-      id: '/robots.txt'
-      path: '/robots.txt'
-      fullPath: '/robots.txt'
-      preLoaderRoute: typeof RobotsDottxtRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/report': {
-      id: '/report'
-      path: '/report'
-      fullPath: '/report'
-      preLoaderRoute: typeof ReportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacy-snippet': {
-      id: '/privacy-snippet'
-      path: '/privacy-snippet'
-      fullPath: '/privacy-snippet'
-      preLoaderRoute: typeof PrivacySnippetRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pricing': {
-      id: '/pricing'
-      path: '/pricing'
-      fullPath: '/pricing'
-      preLoaderRoute: typeof PricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/llms.txt': {
-      id: '/llms.txt'
-      path: '/llms.txt'
-      fullPath: '/llms.txt'
-      preLoaderRoute: typeof LlmsDottxtRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dpa': {
-      id: '/dpa'
-      path: '/dpa'
-      fullPath: '/dpa'
-      preLoaderRoute: typeof DpaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs': {
-      id: '/docs'
-      path: '/docs'
-      fullPath: '/docs'
-      preLoaderRoute: typeof DocsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo': {
-      id: '/demo'
-      path: '/demo'
-      fullPath: '/demo'
-      preLoaderRoute: typeof DemoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/block-rate.json': {
-      id: '/block-rate.json'
-      path: '/block-rate.json'
-      fullPath: '/block-rate.json'
-      preLoaderRoute: typeof BlockRateDotjsonRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authed': {
@@ -621,46 +530,102 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/block-rate.json': {
+      id: '/block-rate.json'
+      path: '/block-rate.json'
+      fullPath: '/block-rate.json'
+      preLoaderRoute: typeof BlockRateDotjsonRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/block-rate/': {
-      id: '/block-rate/'
-      path: '/block-rate'
-      fullPath: '/block-rate/'
-      preLoaderRoute: typeof BlockRateIndexRouteImport
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/docs/api': {
-      id: '/docs/api'
-      path: '/api'
-      fullPath: '/docs/api'
-      preLoaderRoute: typeof DocsApiRouteImport
-      parentRoute: typeof DocsRoute
-    }
-    '/block-rate/status': {
-      id: '/block-rate/status'
-      path: '/block-rate/status'
-      fullPath: '/block-rate/status'
-      preLoaderRoute: typeof BlockRateStatusRouteImport
+    '/docs': {
+      id: '/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/ingest': {
-      id: '/api/ingest'
-      path: '/api/ingest'
-      fullPath: '/api/ingest'
-      preLoaderRoute: typeof ApiIngestRouteImport
+    '/dpa': {
+      id: '/dpa'
+      path: '/dpa'
+      fullPath: '/dpa'
+      preLoaderRoute: typeof DpaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/health': {
-      id: '/api/health'
-      path: '/api/health'
-      fullPath: '/api/health'
-      preLoaderRoute: typeof ApiHealthRouteImport
+    '/llms.txt': {
+      id: '/llms.txt'
+      path: '/llms.txt'
+      fullPath: '/llms.txt'
+      preLoaderRoute: typeof LlmsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy-snippet': {
+      id: '/privacy-snippet'
+      path: '/privacy-snippet'
+      fullPath: '/privacy-snippet'
+      preLoaderRoute: typeof PrivacySnippetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/report': {
+      id: '/report'
+      path: '/report'
+      fullPath: '/report'
+      preLoaderRoute: typeof ReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/block-rate': {
@@ -670,12 +635,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiBlockRateRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/block-rate/$provider/': {
-      id: '/block-rate/$provider/'
-      path: '/block-rate/$provider'
-      fullPath: '/block-rate/$provider/'
-      preLoaderRoute: typeof BlockRateProviderIndexRouteImport
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/ingest': {
+      id: '/api/ingest'
+      path: '/api/ingest'
+      fullPath: '/api/ingest'
+      preLoaderRoute: typeof ApiIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/block-rate/': {
+      id: '/block-rate/'
+      path: '/block-rate'
+      fullPath: '/block-rate/'
+      preLoaderRoute: typeof BlockRateIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/block-rate/status': {
+      id: '/block-rate/status'
+      path: '/block-rate/status'
+      fullPath: '/block-rate/status'
+      preLoaderRoute: typeof BlockRateStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/api': {
+      id: '/docs/api'
+      path: '/api'
+      fullPath: '/docs/api'
+      preLoaderRoute: typeof DocsApiRouteImport
+      parentRoute: typeof DocsRoute
     }
     '/_authed/app/': {
       id: '/_authed/app/'
@@ -684,81 +677,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAppIndexRouteImport
       parentRoute: typeof AuthedRoute
     }
-    '/block-rate/$provider/trend.json': {
-      id: '/block-rate/$provider/trend.json'
-      path: '/block-rate/$provider/trend.json'
-      fullPath: '/block-rate/$provider/trend.json'
-      preLoaderRoute: typeof BlockRateProviderTrendDotjsonRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/block-rate/$provider/badge.svg': {
-      id: '/block-rate/$provider/badge.svg'
-      path: '/block-rate/$provider/badge.svg'
-      fullPath: '/block-rate/$provider/badge.svg'
-      preLoaderRoute: typeof BlockRateProviderBadgeDotsvgRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/stripe/webhook': {
-      id: '/api/stripe/webhook'
-      path: '/api/stripe/webhook'
-      fullPath: '/api/stripe/webhook'
-      preLoaderRoute: typeof ApiStripeWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/stripe/portal': {
-      id: '/api/stripe/portal'
-      path: '/api/stripe/portal'
-      fullPath: '/api/stripe/portal'
-      preLoaderRoute: typeof ApiStripePortalRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/stripe/checkout': {
-      id: '/api/stripe/checkout'
-      path: '/api/stripe/checkout'
-      fullPath: '/api/stripe/checkout'
-      preLoaderRoute: typeof ApiStripeCheckoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/internal/retention': {
-      id: '/api/internal/retention'
-      path: '/api/internal/retention'
-      fullPath: '/api/internal/retention'
-      preLoaderRoute: typeof ApiInternalRetentionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/internal/digest': {
-      id: '/api/internal/digest'
-      path: '/api/internal/digest'
-      fullPath: '/api/internal/digest'
-      preLoaderRoute: typeof ApiInternalDigestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/internal/alerts': {
-      id: '/api/internal/alerts'
-      path: '/api/internal/alerts'
-      fullPath: '/api/internal/alerts'
-      preLoaderRoute: typeof ApiInternalAlertsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/auth/$': {
-      id: '/api/auth/$'
-      path: '/api/auth/$'
-      fullPath: '/api/auth/$'
-      preLoaderRoute: typeof ApiAuthSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authed/app/settings': {
-      id: '/_authed/app/settings'
-      path: '/app/settings'
-      fullPath: '/app/settings'
-      preLoaderRoute: typeof AuthedAppSettingsRouteImport
-      parentRoute: typeof AuthedRoute
-    }
-    '/_authed/app/remediate': {
-      id: '/_authed/app/remediate'
-      path: '/app/remediate'
-      fullPath: '/app/remediate'
-      preLoaderRoute: typeof AuthedAppRemediateRouteImport
+    '/_authed/app/alerts': {
+      id: '/_authed/app/alerts'
+      path: '/app/alerts'
+      fullPath: '/app/alerts'
+      preLoaderRoute: typeof AuthedAppAlertsRouteImport
       parentRoute: typeof AuthedRoute
     }
     '/_authed/app/keys': {
@@ -768,12 +691,89 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAppKeysRouteImport
       parentRoute: typeof AuthedRoute
     }
-    '/_authed/app/alerts': {
-      id: '/_authed/app/alerts'
-      path: '/app/alerts'
-      fullPath: '/app/alerts'
-      preLoaderRoute: typeof AuthedAppAlertsRouteImport
+    '/_authed/app/remediate': {
+      id: '/_authed/app/remediate'
+      path: '/app/remediate'
+      fullPath: '/app/remediate'
+      preLoaderRoute: typeof AuthedAppRemediateRouteImport
       parentRoute: typeof AuthedRoute
+    }
+    '/_authed/app/settings': {
+      id: '/_authed/app/settings'
+      path: '/app/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AuthedAppSettingsRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/internal/alerts': {
+      id: '/api/internal/alerts'
+      path: '/api/internal/alerts'
+      fullPath: '/api/internal/alerts'
+      preLoaderRoute: typeof ApiInternalAlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/internal/digest': {
+      id: '/api/internal/digest'
+      path: '/api/internal/digest'
+      fullPath: '/api/internal/digest'
+      preLoaderRoute: typeof ApiInternalDigestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/internal/retention': {
+      id: '/api/internal/retention'
+      path: '/api/internal/retention'
+      fullPath: '/api/internal/retention'
+      preLoaderRoute: typeof ApiInternalRetentionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stripe/checkout': {
+      id: '/api/stripe/checkout'
+      path: '/api/stripe/checkout'
+      fullPath: '/api/stripe/checkout'
+      preLoaderRoute: typeof ApiStripeCheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stripe/portal': {
+      id: '/api/stripe/portal'
+      path: '/api/stripe/portal'
+      fullPath: '/api/stripe/portal'
+      preLoaderRoute: typeof ApiStripePortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stripe/webhook': {
+      id: '/api/stripe/webhook'
+      path: '/api/stripe/webhook'
+      fullPath: '/api/stripe/webhook'
+      preLoaderRoute: typeof ApiStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/block-rate/$provider/': {
+      id: '/block-rate/$provider/'
+      path: '/block-rate/$provider'
+      fullPath: '/block-rate/$provider/'
+      preLoaderRoute: typeof BlockRateProviderIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/block-rate/$provider/badge.svg': {
+      id: '/block-rate/$provider/badge.svg'
+      path: '/block-rate/$provider/badge.svg'
+      fullPath: '/block-rate/$provider/badge.svg'
+      preLoaderRoute: typeof BlockRateProviderBadgeDotsvgRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/block-rate/$provider/trend.json': {
+      id: '/block-rate/$provider/trend.json'
+      path: '/block-rate/$provider/trend.json'
+      fullPath: '/block-rate/$provider/trend.json'
+      preLoaderRoute: typeof BlockRateProviderTrendDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authed/app/admin/': {
       id: '/_authed/app/admin/'
