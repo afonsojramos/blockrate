@@ -76,9 +76,5 @@ two deploys).
 
 ## Conventions
 
-- Runtime: Bun. Lint/format: oxlint / oxfmt. ORM: Drizzle — use the CLI for migrations,
-  never hand-edit; consolidate a PR's migrations into one.
-- Ship with confidence, not feature flags. Build the confidence with tests and review,
-  then ship the feature on.
-- Never reference Claude in commits or docs. Conventional-commit titles, imperative mood,
-  atomic commits.
+- Runtime and package manager: Bun, installed through `mise.toml`. Lint/format: oxlint / oxfmt.
+  ORM: Drizzle.
