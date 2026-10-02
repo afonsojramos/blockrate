@@ -34,58 +34,66 @@ const PROVIDERS = [
   "intercom",
 ] as const;
 
+const INITIAL_RESULTS: ProviderResult[] = PROVIDERS.map((name) => ({
+  name,
+  status: "checking",
+  latency: 0,
+}));
+
+async function runDemoCheck(onResult: (providers: ProviderResult[]) => void) {
+  // Dynamic import so the library only loads when the user visits /demo
+  const { BlockRate } = await import("blockrate");
+
+  const br = new BlockRate({
+    providers: [...PROVIDERS],
+    delay: 0,
+    sampleRate: 1,
+    service: "demo",
+    sessionKey: "__block_rate_demo",
+    reporter: (result) => {
+      onResult(
+        result.providers.map((p) => ({
+          name: p.name,
+          status: p.status,
+          latency: p.latency,
+        })),
+      );
+
+      // Also report to our own forward route; it 204s when BLOCKRATE_API_KEY
+      // is unset so dev is a no-op.
+      if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+        navigator.sendBeacon("/api/block-rate", JSON.stringify(result));
+      }
+    },
+  });
+
+  // Clear session storage so re-runs work
+  try {
+    sessionStorage.removeItem("__block_rate_demo");
+  } catch {}
+
+  br.check();
+}
+
 function Demo() {
-  const [results, setResults] = useState<ProviderResult[]>(
-    PROVIDERS.map((name) => ({ name, status: "checking", latency: 0 })),
-  );
-  const [running, setRunning] = useState(false);
+  const [results, setResults] = useState<ProviderResult[]>(INITIAL_RESULTS);
   const [done, setDone] = useState(false);
 
-  async function runCheck() {
-    setRunning(true);
-    setDone(false);
-    setResults(PROVIDERS.map((name) => ({ name, status: "checking", latency: 0 })));
-
-    // Dynamic import so the library only loads when the user visits /demo
-    const { BlockRate } = await import("blockrate");
-
-    const br = new BlockRate({
-      providers: [...PROVIDERS],
-      delay: 0,
-      sampleRate: 1,
-      service: "demo",
-      sessionKey: "__block_rate_demo",
-      reporter: (result) => {
-        // Always update the UI
-        setResults(
-          result.providers.map((p) => ({
-            name: p.name,
-            status: p.status,
-            latency: p.latency,
-          })),
-        );
-        setDone(true);
-        setRunning(false);
-
-        // Also report to our own forward route; it 204s when BLOCKRATE_API_KEY
-        // is unset so dev is a no-op.
-        if (typeof navigator !== "undefined" && navigator.sendBeacon) {
-          navigator.sendBeacon("/api/block-rate", JSON.stringify(result));
-        }
-      },
-    });
-
-    // Clear session storage so re-runs work
-    try {
-      sessionStorage.removeItem("__block_rate_demo");
-    } catch {}
-
-    br.check();
-  }
-
   useEffect(() => {
-    runCheck();
+    void runDemoCheck((providers) => {
+      setResults(providers);
+      setDone(true);
+    });
   }, []);
+
+  function rerun() {
+    setDone(false);
+    setResults(INITIAL_RESULTS);
+    void runDemoCheck((providers) => {
+      setResults(providers);
+      setDone(true);
+    });
+  }
 
   const blocked = results.filter((r) => r.status === "blocked").length;
   const loaded = results.filter((r) => r.status === "loaded").length;
@@ -171,7 +179,7 @@ function Demo() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-base">
-                {done ? `${loaded} loaded · ${blocked} blocked` : running ? "Checking..." : "Ready"}
+                {done ? `${loaded} loaded · ${blocked} blocked` : "Checking..."}
               </CardTitle>
               <CardDescription>
                 Each provider is checked via a CDN probe and, where reliable, a post-load window
@@ -180,7 +188,7 @@ function Demo() {
             </div>
             {done && (
               <button
-                onClick={runCheck}
+                onClick={rerun}
                 className="rounded-md border border-border px-3 py-1.5 text-xs font-medium transition-[background-color] duration-150 hover:bg-accent"
               >
                 Run again
