@@ -68,3 +68,4 @@ jobs:
       - run: cd apps/web && NODE_ENV=production bun run build
         env:
           BETTER_AUTH_SECRET: ci-placeholder-secret-at-least-32-characters
+      - run: cd apps/web && bun run test:headers
