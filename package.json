@@ -46,6 +46,6 @@
     "oxfmt": "^0.71.0",
     "oxlint": "^1.86.0",
     "react": "catalog:",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.2"
   }
 }
