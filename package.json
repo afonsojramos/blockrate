@@ -9,7 +9,7 @@
       "examples/*"
     ],
     "catalog": {
-      "@electric-sql/pglite": "^0.5.3",
+      "@electric-sql/pglite": "^0.5.8",
       "@types/react": "^19.3.0",
       "drizzle-kit": "^0.31.11",
       "drizzle-orm": "^0.45.3",
