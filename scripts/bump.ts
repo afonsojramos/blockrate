@@ -1,10 +1,10 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * Lockstep version bump for `blockrate` and `blockrate-server`.
  *
  * Usage:
- *   bun run bump 0.2.0
- *   bun run bump 1.0.0-rc.1
+ *   nub run bump 0.2.0
+ *   nub run bump 1.0.0-rc.1
  *
  * Updates packages/core/package.json and packages/server/package.json to
  * the same version. Commits and tags are deliberately left for you —
@@ -19,9 +19,9 @@ const SEMVER = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 
 const version = process.argv[2];
 if (!version) {
-  console.error("usage: bun run bump <semver>");
-  console.error("  e.g. bun run bump 0.2.0");
-  console.error("       bun run bump 1.0.0-rc.1");
+  console.error("usage: nub run bump <semver>");
+  console.error("  e.g. nub run bump 0.2.0");
+  console.error("       nub run bump 1.0.0-rc.1");
   process.exit(1);
 }
 if (!SEMVER.test(version)) {
@@ -29,7 +29,7 @@ if (!SEMVER.test(version)) {
   process.exit(1);
 }
 
-const repoRoot = resolve(import.meta.dir, "..");
+const repoRoot = resolve(import.meta.dirname, "..");
 const packages = ["packages/core/package.json", "packages/server/package.json"];
 
 for (const rel of packages) {

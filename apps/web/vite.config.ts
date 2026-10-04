@@ -9,31 +9,23 @@ import { nitro } from "nitro/vite";
 
 import { SECURITY_HEADERS } from "./src/lib/security-headers.ts";
 
-// `bun` is a runtime-only module (no npm package). The bundler must leave
-// `import { SQL } from "bun"` as an external so the Bun runtime can
-// resolve it at execution time.
 const config = defineConfig({
+  envDir: false,
   plugins: [
     devtools(),
     nitro({
-      rollupConfig: { external: [/^@sentry\//, "bun"] },
+      preset: "node-server",
+      features: { runtimeHooks: true },
+      rollupConfig: { external: [/^@sentry\//, /^@electric-sql\/pglite/] },
       routeRules: { "/**": { headers: SECURITY_HEADERS } },
     }),
     tailwindcss(),
     tanstackStart(),
     viteReact(),
   ],
+  ssr: { external: ["@electric-sql/pglite"] },
   resolve: {
     tsconfigPaths: true,
-  },
-  ssr: {
-    external: ["bun"],
-    noExternal: [],
-  },
-  build: {
-    rolldownOptions: {
-      external: ["bun"],
-    },
   },
 });
 

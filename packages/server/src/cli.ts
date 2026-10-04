@@ -1,4 +1,6 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
+import { getRequestListener } from "@hono/node-server";
+import { createServer as createHttpServer } from "node:http";
 import { createServer } from "./server";
 import { createStore } from "./stores";
 import { createTenant, listTenants, deleteTenant, rotateTenantKey } from "./tenant";
@@ -98,7 +100,7 @@ if (cmd === "tenant") {
     default:
       usage(1);
   }
-  store.close();
+  await store.close();
   process.exit(0);
 }
 
@@ -113,7 +115,33 @@ if (cmd && cmd !== "serve") {
 
 const app = await createServer({ port, dbPath, dialect });
 
-Bun.serve({ port, fetch: app.fetch });
+const server = createHttpServer(getRequestListener(app.fetch));
+server.listen(port);
+
+let stopping = false;
+function shutdown() {
+  if (stopping) return;
+  stopping = true;
+  const deadline = setTimeout(() => {
+    server.closeAllConnections();
+  }, 10_000);
+  deadline.unref();
+  server.close(async (err) => {
+    clearTimeout(deadline);
+    try {
+      await app.store.close();
+    } catch (closeError) {
+      console.error("[blockrate-server] failed to close store:", closeError);
+      process.exitCode = 1;
+    }
+    if (err) {
+      console.error("[blockrate-server] failed to close HTTP server:", err);
+      process.exitCode = 1;
+    }
+  });
+}
+process.once("SIGTERM", shutdown);
+process.once("SIGINT", shutdown);
 
 console.log(`[blockrate-server] listening on http://localhost:${port} (${dialect})`);
 console.log(`[blockrate-server] dashboard: http://localhost:${port}/dashboard`);

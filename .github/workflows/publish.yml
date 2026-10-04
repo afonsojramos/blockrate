@@ -46,10 +46,10 @@ jobs:
 
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ~/.bun/install/cache
-          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          path: ~/.cache/nub
+          key: nub-node24-${{ runner.os }}-${{ hashFiles('bun.lock') }}
 
-      - run: bun install --frozen-lockfile
+      - run: nub --no-env-file install --frozen-lockfile
 
       # Verify the tag matches the package's package.json. `GITHUB_REF_NAME`
       # is injected by Actions as the tag string; git's refname rules keep
@@ -67,16 +67,12 @@ jobs:
           echo "Publishing $PACKAGE_NAME@$pkg_version"
 
       - name: Build
-        if: matrix.dir == 'core'
-        working-directory: packages/core
-        run: bun run build
+        working-directory: ${{ env.PACKAGE_DIR }}
+        run: nub --no-env-file run build
 
-      # Node is only needed for `npm publish`; Bun handled everything up
-      # to this point. setup-node also writes an .npmrc pointed at the
-      # public registry, which npm publish needs to pick the right endpoint.
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: "24"
+          node-version: "24.21.0"
           registry-url: "https://registry.npmjs.org"
 
       - name: Publish to npm (trusted publisher + provenance)

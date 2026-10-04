@@ -14,7 +14,7 @@ import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 
-import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type * as schema from "@/lib/db/schema";
 import { DAY_MS } from "@/lib/time";
 
@@ -83,7 +83,7 @@ const HOUR_MS = 3_600_000;
  * non-converters never drag it.
  */
 export async function getOnboardingFunnel(
-  db: BunSQLDatabase<typeof schema>,
+  db: PostgresJsDatabase<typeof schema>,
 ): Promise<OnboardingFunnel> {
   const { appAccounts, apiKeys, events } = await import("@/lib/db/schema");
   const { countDistinct, min } = await import("drizzle-orm");

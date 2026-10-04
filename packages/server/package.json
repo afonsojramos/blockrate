@@ -11,31 +11,55 @@
     "directory": "packages/server"
   },
   "bin": {
-    "blockrate-server": "./src/cli.ts"
+    "blockrate-server": "./dist/src/cli.js"
   },
   "files": [
+    "dist",
     "src",
-    "drizzle"
+    "drizzle",
+    "drizzle-postgres"
   ],
   "type": "module",
-  "main": "./src/index.ts",
+  "main": "./dist/src/index.js",
   "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./ua": "./src/ua.ts",
-    "./rate-limit": "./src/rate-limit.ts",
-    "./validate": "./src/validate.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/src/index.js"
+    },
+    "./ua": {
+      "types": "./src/ua.ts",
+      "default": "./dist/src/ua.js"
+    },
+    "./rate-limit": {
+      "types": "./src/rate-limit.ts",
+      "default": "./dist/src/rate-limit.js"
+    },
+    "./validate": {
+      "types": "./src/validate.ts",
+      "default": "./dist/src/validate.js"
+    }
   },
   "scripts": {
-    "dev": "bun run src/cli.ts",
+    "dev": "nub --no-env-file src/cli.ts",
     "db:generate": "drizzle-kit generate",
-    "test": "bun test"
+    "test": "vitest run",
+    "build": "nub --no-env-file ../../scripts/build-packages.ts server",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "drizzle-orm": "catalog:",
-    "zod": "catalog:"
+    "@electric-sql/pglite": "^0.5.8",
+    "@hono/node-server": "^1.19.9",
+    "@types/better-sqlite3": "^7.6.13",
+    "better-sqlite3": "^12.6.2",
+    "drizzle-orm": "^0.45.3",
+    "postgres": "^3.4.9",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "drizzle-kit": "catalog:"
+  },
+  "engines": {
+    "node": ">=24.21.0"
   }
 }

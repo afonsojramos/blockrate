@@ -4,12 +4,12 @@
  * Gated on BLOCKRATE_SMOKE=1 so CI doesn't red-build when a third-party
  * CDN blips. Run manually before publishing:
  *
- *   bun run test:smoke
+ *   nub run test:smoke
  *
  * What it verifies: every built-in probe URL is still alive and serves
  * CORS headers compatible with the strategy that provider uses at
  * runtime. This closes the gap that let the 1.0.0 ga4/hotjar/meta-pixel
- * URLs decay silently — unit tests mock fetch, so they can't catch a
+ * URLs decay silently , unit tests mock fetch, so they can't catch a
  * dead CDN or a revoked CORS policy.
  *
  * Strategy per provider matches packages/core/src/providers/*.ts:
@@ -17,12 +17,12 @@
  *   - meta-pixel: Meta refuses CORS on HEAD but serves it on GET, so the
  *     runtime detector probes `facebook.com/tr` with a CORS GET. This smoke
  *     check uses the same GET + Origin and asserts the CORS header is
- *     present — a revoked CORS policy here would silently break detection.
+ *     present , a revoked CORS policy here would silently break detection.
  *     (The old <img> probe broke when Meta switched /tr from a 1x1 gif to
  *     an empty text/plain 200, reporting every visitor as blocked.)
  */
 
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect } from "vitest";
 
 const enabled = process.env.BLOCKRATE_SMOKE === "1";
 const d = enabled ? describe : describe.skip;
@@ -75,7 +75,7 @@ d("probe-smoke (live CDNs, BLOCKRATE_SMOKE=1)", () => {
     it(`${target.name} probes ${target.url} with CORS`, async () => {
       const { status, hasCors } = await verify(target);
       // Probe treats any fetch that resolves as "loaded"; it only fails
-      // when fetch throws. A 4xx response with CORS headers is fine —
+      // when fetch throws. A 4xx response with CORS headers is fine ,
       // the only hard failure is no CORS or a network error.
       expect(status).toBeGreaterThanOrEqual(100);
       expect(status).toBeLessThan(500);

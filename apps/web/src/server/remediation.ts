@@ -14,7 +14,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { and, count, eq, gt, sql } from "drizzle-orm";
 
-import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type * as schema from "@/lib/db/schema";
 import type { Plan } from "@/lib/plans";
 import type { Remediation } from "@/lib/providers";
@@ -23,7 +23,7 @@ import { requireAccount } from "@/lib/require-account.server";
 import { DAY_MS } from "@/lib/time";
 import { MIN_SAMPLE_CHECKS, getProviderMeta } from "@/lib/providers";
 
-type Db = BunSQLDatabase<typeof schema>;
+type Db = PostgresJsDatabase<typeof schema>;
 
 /**
  * A month of recent checks is representative for a remediation decision. The

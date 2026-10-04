@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "bun:test";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createServer } from "../src/server";
 
 async function newApp() {
@@ -25,6 +25,10 @@ describe("blockrate-server (sqlite)", () => {
 
   beforeEach(async () => {
     app = await newApp();
+  });
+
+  afterEach(async () => {
+    await app.store.close();
   });
 
   it("rejects unauthenticated POST /ingest", async () => {

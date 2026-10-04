@@ -1,6 +1,6 @@
 # blockrate
 
-> **Know what your ad blockers are hiding from your analytics.** Measure the _per-provider_ block rate of the third-party tools your app depends on — Optimizely, PostHog, GA4, Segment, and the rest. Tiny, zero-dependency, first-party.
+> **Know what your ad blockers are hiding from your analytics.** Measure the _per-provider_ block rate of the third-party tools your app depends on, Optimizely, PostHog, GA4, Segment, and the rest. Tiny, zero-dependency, first-party.
 
 Existing "ad block detectors" tell you whether _a_ blocker exists. `blockrate` tells you **which specific tools are blocked**, so you can decide whether to reverse-proxy Optimizely, migrate PostHog server-side, or just accept the gap.
 
@@ -17,12 +17,12 @@ Existing "ad block detectors" tell you whether _a_ blocker exists. `blockrate` t
 ```
 blockrate/
 ├── packages/
-│   ├── core/                 OSS client library — published as `blockrate` on npm
+│   ├── core/                 OSS client library, published as `blockrate` on npm
 │   │   └── src/              core + react + next + sveltekit + tanstack-start subpaths
-│   └── server/               self-hostable ingestion server — `blockrate-server` on npm
-│       └── src/              Bun + Drizzle, SQLite default, Postgres optional
+│   └── server/               self-hostable ingestion server, `blockrate-server` on npm
+│       └── src/              Node + Drizzle, SQLite default, Postgres optional
 ├── apps/
-│   └── web/                  blockrate.app hosted dashboard — TanStack Start + Better Auth
+│   └── web/                  blockrate.app hosted dashboard, TanStack Start + Better Auth
 ├── docs/
 │   ├── design.md             v0 design charter (tokens, voice, polish principles)
 │   └── plans/                phased build plans
@@ -35,7 +35,7 @@ blockrate/
 ## Quick start (OSS library)
 
 ```bash
-bun add blockrate
+nub add blockrate
 ```
 
 ```ts
@@ -59,18 +59,18 @@ export const POST = createBlockRateHandler({
 });
 ```
 
-Or skip the manual route: `bunx blockrate-init` detects your framework (Next,
+Or skip the manual route: `nubx blockrate-init` detects your framework (Next,
 TanStack Start, SvelteKit, Nuxt, Remix, Astro) and scaffolds the first-party
 route for you.
 
-The client always posts to your own origin; the server route forwards to blockrate.app (or your self-hosted instance) with your API key attached server-side. This is load-bearing — read [Why the reporter endpoint must be first-party](packages/core/README.md#why-the-reporter-endpoint-must-be-first-party) in the core README.
+The client always posts to your own origin; the server route forwards to blockrate.app (or your self-hosted instance) with your API key attached server-side. This is load-bearing, read [Why the reporter endpoint must be first-party](packages/core/README.md#why-the-reporter-endpoint-must-be-first-party) in the core README.
 
 Full library docs (built-in providers, custom providers, framework adapters, query examples) in [`packages/core/README.md`](packages/core/README.md).
 
 ## Quick start (self-hosted)
 
 ```bash
-bunx blockrate-server
+nubx blockrate-server
 # [blockrate-server] listening on http://localhost:4318
 # [blockrate-server] Bootstrapped default tenant. API key: br_xxxxxxxxxxxxxxxxxxxx
 # [blockrate-server] dashboard: http://localhost:4318/dashboard
@@ -85,15 +85,15 @@ If you don't want to operate any infrastructure, [blockrate.app](https://blockra
 - **Free tier**: 10k events/month, 1 API key, 7-day retention
 - Sign-in with magic link, Google, or GitHub
 - Per-account API keys, cascading delete, CSV export
-- Same OSS library — you can move on or off any time
+- Same OSS library, you can move on or off any time
 
 Integration is a single-line server route: [`createBlockRateHandler({ forward: { apiKey: … } })`](packages/core/README.md#why-the-reporter-endpoint-must-be-first-party). Your `br_` key stays on the server; the browser only sees your first-party `/api/block-rate` path.
 
 ## Contributing
 
-PRs welcome — most things in this repo are intentionally small enough to read in one sitting. The OSS library is under 200 lines of TypeScript; the self-hosted server is ~1200 lines. The web app is the largest surface (~3500 lines).
+PRs welcome, most things in this repo are intentionally small enough to read in one sitting. The OSS library is under 200 lines of TypeScript; the self-hosted server is ~1200 lines. The web app is the largest surface (~3500 lines).
 
-Read [`docs/design.md`](docs/design.md) before touching UI — every PR that touches `apps/web` is reviewed against the design charter.
+Read [`docs/design.md`](docs/design.md) before touching UI, every PR that touches `apps/web` is reviewed against the design charter.
 
 ## License
 

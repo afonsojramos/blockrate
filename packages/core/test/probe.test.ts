@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from "bun:test";
+import { describe, it, expect, afterEach } from "vitest";
 import { probe, probeImage } from "../src/probe";
 
 const originalFetch = globalThis.fetch;

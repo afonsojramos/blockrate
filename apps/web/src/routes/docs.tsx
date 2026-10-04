@@ -6,7 +6,7 @@ import { seo } from "@/lib/seo";
 export const Route = createFileRoute("/docs")({
   head: () =>
     seo({
-      title: "docs — blockrate",
+      title: "docs , blockrate",
       description:
         "A 1.6 KB client library that measures per-provider block rate. Quick start, options, built-in providers, and framework guides for Next.js, SvelteKit, Nuxt, SolidStart, TanStack Start, and vanilla JS.",
       path: "/docs",
@@ -69,7 +69,7 @@ function Docs() {
         <section id="install" className="mt-16 space-y-4 scroll-mt-20">
           <h2 className="text-2xl font-semibold tracking-tight">Quick start</h2>
 
-          <CodeBlock filename="terminal">{`bun add blockrate`}</CodeBlock>
+          <CodeBlock filename="terminal">{`nub add blockrate`}</CodeBlock>
 
           <p className="text-sm text-muted-foreground">
             Every integration is two pieces: a client that runs detection and posts to{" "}
@@ -136,7 +136,7 @@ export const POST = createBlockRateHandler({
           </h3>
           <p className="text-sm text-muted-foreground">
             Skip <code className="font-mono text-xs">forward</code> and use{" "}
-            <code className="font-mono text-xs">onResult</code> to write results anywhere you want —
+            <code className="font-mono text-xs">onResult</code> to write results anywhere you want ,
             BigQuery, Datadog, a webhook, your own API. The handler still parses and validates the
             payload, so you only see well-formed{" "}
             <Link to="/docs/api" className="underline-offset-4 hover:underline">
@@ -153,7 +153,7 @@ export const POST = createBlockRateHandler({
 });`}</CodeBlock>
           <p className="text-sm text-muted-foreground">
             You can combine <code className="font-mono text-xs">forward</code> and{" "}
-            <code className="font-mono text-xs">onResult</code> — both fire in parallel on a valid
+            <code className="font-mono text-xs">onResult</code> , both fire in parallel on a valid
             payload, failures are isolated, and the browser always gets a 204.
           </p>
         </section>
@@ -183,7 +183,7 @@ export const POST = createBlockRateHandler({
                   <td className="px-3 py-2 font-mono text-muted-foreground">
                     (string | Provider)[]
                   </td>
-                  <td className="px-3 py-2 text-muted-foreground">—</td>
+                  <td className="px-3 py-2 text-muted-foreground">,</td>
                   <td className="px-3 py-2 text-muted-foreground">
                     List of providers to check. Built-in names (
                     <code className="font-mono">"posthog"</code>,{" "}
@@ -195,7 +195,7 @@ export const POST = createBlockRateHandler({
                 <tr className="border-t border-border">
                   <td className="px-3 py-2 font-mono">reporter</td>
                   <td className="px-3 py-2 font-mono text-muted-foreground">(result) =&gt; void</td>
-                  <td className="px-3 py-2 text-muted-foreground">—</td>
+                  <td className="px-3 py-2 text-muted-foreground">,</td>
                   <td className="px-3 py-2 text-muted-foreground">
                     Called once with the full <code className="font-mono">BlockRateResult</code>{" "}
                     after detection finishes. For the hosted or self-hosted pattern, post to your
@@ -245,7 +245,7 @@ export const POST = createBlockRateHandler({
                   <td className="px-3 py-2 font-mono text-muted-foreground">true</td>
                   <td className="px-3 py-2 text-muted-foreground">
                     Optional consent gate for strict jurisdictions. When false,{" "}
-                    <code className="font-mono">check()</code> is a complete no-op — no network
+                    <code className="font-mono">check()</code> is a complete no-op , no network
                     requests, no data collection. Only needed if your legal counsel requires
                     explicit consent for blockrate; the library is otherwise consent-free by design.
                   </td>
@@ -291,7 +291,7 @@ export const POST = createBlockRateHandler({
             Wiring a consent management platform
           </h3>
           <p className="text-sm text-muted-foreground">
-            blockrate is designed to work without a cookie banner — no cookies, no persistent
+            blockrate is designed to work without a cookie banner , no cookies, no persistent
             storage (by default), no IP addresses, no cross-site tracking. If your legal counsel
             still requires explicit consent in your jurisdiction, pass a predicate that reads from
             your CMP:
@@ -303,7 +303,7 @@ export const POST = createBlockRateHandler({
 }).check();`}</CodeBlock>
           <p className="text-sm text-muted-foreground">
             When the predicate returns <code className="font-mono text-xs">false</code>,{" "}
-            <code className="font-mono text-xs">check()</code> is a complete no-op — nothing is
+            <code className="font-mono text-xs">check()</code> is a complete no-op , nothing is
             loaded, nothing is measured, nothing is sent.
           </p>
 
@@ -311,7 +311,7 @@ export const POST = createBlockRateHandler({
             Stripping PII from URL paths
           </h3>
           <p className="text-sm text-muted-foreground">
-            blockrate already strips query strings and hashes — only{" "}
+            blockrate already strips query strings and hashes , only{" "}
             <code className="font-mono text-xs">location.pathname</code> is reported. If your paths
             themselves contain personal data (email addresses, user IDs, order numbers), use{" "}
             <code className="font-mono text-xs">sanitizeUrl</code> to generalise them before they
@@ -332,7 +332,7 @@ export const POST = createBlockRateHandler({
           <h2 className="text-2xl font-semibold tracking-tight">Built-in providers</h2>
           <p className="text-sm text-muted-foreground">
             Each provider is checked first via a{" "}
-            <strong className="font-medium text-foreground">post-load window flag</strong> — a
+            <strong className="font-medium text-foreground">post-load window flag</strong> , a
             property only the real bundle sets (e.g.{" "}
             <code className="font-mono text-xs">posthog.__loaded</code>,{" "}
             <code className="font-mono text-xs">analytics.initialized</code>,{" "}
@@ -347,13 +347,13 @@ export const POST = createBlockRateHandler({
             similar to their queueing stub), detection falls through to a{" "}
             <code className="font-mono text-xs">fetch</code> HEAD probe to the provider's CDN with{" "}
             <code className="font-mono text-xs">mode: "cors"</code>. If the ad blocker redirects to
-            a local response (which lacks CORS headers), the fetch throws — correctly detected as
+            a local response (which lacks CORS headers), the fetch throws , correctly detected as
             blocked. One exception: <code className="font-mono text-xs">meta-pixel</code> uses a
             CORS <code className="font-mono text-xs">GET</code> fetch (not HEAD), because{" "}
             <code className="font-mono text-xs">fbq</code> sets its own loaded flag on the stub (so
             the global can't be gated) and{" "}
             <code className="font-mono text-xs">facebook.com/tr</code> only serves CORS headers on
-            GET — a blocked request lacks them and throws, the accurate blocked signal.
+            GET , a blocked request lacks them and throws, the accurate blocked signal.
           </p>
           <p className="text-sm text-muted-foreground">
             Every CDN endpoint and CORS policy these detectors rely on is probed daily in CI and
@@ -420,7 +420,7 @@ new BlockRate({
               >
                 examples/
               </a>{" "}
-              directory — clone, <code className="font-mono text-xs">bun install</code>, and run.
+              directory , clone, <code className="font-mono text-xs">nub install</code>, and run.
               Available for Next.js, TanStack Start, SvelteKit, Nuxt, SolidStart, and plain HTML.
             </p>
           </div>
@@ -464,7 +464,7 @@ export function App() {
               Drop the <code className="font-mono text-xs">&lt;BlockRateScript&gt;</code> component
               from <code className="font-mono text-xs">blockrate/next</code> into your root layout.
               It's a pre-built client component that wires up the check once on mount and posts the
-              result to your same-origin route — no wrapper file, no{" "}
+              result to your same-origin route , no wrapper file, no{" "}
               <code className="font-mono text-xs">"use client"</code> directive needed at the import
               site.
             </p>
@@ -485,7 +485,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   );
 }`}</CodeBlock>
             <p className="text-sm text-muted-foreground">
-              Pair it with <code className="font-mono text-xs">createBlockRateHandler</code> —{" "}
+              Pair it with <code className="font-mono text-xs">createBlockRateHandler</code> ,{" "}
               <code className="font-mono text-xs">forward</code> does the server-side hop to the
               ingest endpoint, with your API key read from the server's environment.
             </p>
@@ -645,7 +645,7 @@ export const POST = (event: { request: Request }) => handle(event.request);`}</C
             </h3>
             <p className="text-sm text-muted-foreground">
               Import the library directly in a script tag and post to your same-origin route. Any
-              HTTP server can host the matching forward route — below is a minimal Bun server. The
+              HTTP server can host the matching forward route , below is a minimal Node server. The
               same shape works for any Vite SPA paired with its own backend (Hono, Express, Fastify,
               Bun, Workers): <code className="font-mono text-xs">createWebHandler</code> returns a
               Web-standard{" "}
@@ -662,13 +662,14 @@ export const POST = (event: { request: Request }) => handle(event.request);`}</C
     sampleRate: 0.1,
   }).check();
 </script>`}</CodeBlock>
-            <CodeBlock filename="server.ts">{`import { createWebHandler } from "blockrate";
+            <CodeBlock filename="server.ts">{`import { serve } from "@hono/node-server";
+import { createWebHandler } from "blockrate";
 
 const handle = createWebHandler({
   forward: { apiKey: process.env.BLOCKRATE_API_KEY! },
 });
 
-Bun.serve({
+serve({
   port: 3000,
   fetch: (req) => {
     const url = new URL(req.url);

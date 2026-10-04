@@ -5,7 +5,7 @@
  * providers above the min-sample floor — never fabricated from thin data.
  */
 
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { buildReport, MIN_SAMPLE_CHECKS, PROVIDER_META } from "@/lib/providers";
 
 const TOTAL_PROVIDERS = PROVIDER_META.length;

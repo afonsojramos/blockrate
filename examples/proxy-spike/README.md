@@ -1,7 +1,7 @@
-# proxy-spike — single-provider first-party reverse proxy (PostHog)
+# proxy-spike, single-provider first-party reverse proxy (PostHog)
 
 > **Update:** the subpath variant of this now ships as `blockrate/proxy`
-> (`createBlockRateProxy`) — an in-app route handler, see
+> (`createBlockRateProxy`), an in-app route handler, see
 > `examples/nextjs/app/m/[...path]/route.ts`. This worker remains the option
 > for sites that can't add an app route (static hosting, separate zone).
 
@@ -18,12 +18,12 @@ streaming request and response bodies, forwarding the client IP, and
 stripping hop-by-hop headers. Both surfaces the PostHog SDK needs work
 through it:
 
-- `GET /ph/static/array.js` — the loader script
-- `POST /ph/e/`, `/ph/batch`, `/ph/decide`, … — event ingestion
+- `GET /ph/static/array.js`, the loader script
+- `POST /ph/e/`, `/ph/batch`, `/ph/decide`, …, event ingestion
 
 ## Setup (3 minutes)
 
-1. Install wrangler: `bun add -g wrangler`
+1. Install wrangler: `nub add -g wrangler`
 2. Edit `wrangler.toml`: uncomment the route on your domain (and set
    `account_id`). EU projects: set `POSTHOG_UPSTREAM = "https://eu.i.posthog.com"`.
 3. Deploy: `wrangler deploy`
@@ -38,7 +38,7 @@ through it:
 
 ## Verify
 
-With `bunx wrangler dev` running in this directory:
+With `nubx wrangler dev` running in this directory:
 
 ```bash
 # 1. The loader script passes through (200, JavaScript body):

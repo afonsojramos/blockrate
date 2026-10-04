@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { isPrivateResponseRequest, withPrivateResponseHeaders } from "./private-response";
 
 describe("private response policy", () => {

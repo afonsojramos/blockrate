@@ -3,7 +3,7 @@
  * a customer could otherwise aim the cron's POST at.
  */
 
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { isBlockedWebhookHost } from "@/lib/webhook";
 
 /** Extract the (normalised) hostname the guard actually sees from a URL. */

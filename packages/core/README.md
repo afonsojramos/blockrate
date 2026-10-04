@@ -2,16 +2,16 @@
 
 Know what your ad blockers are hiding from your analytics. A tiny, zero-dependency library that measures the **per-provider** block rate of the third-party tools your app depends on.
 
-> **Reporters welcome.** Pair this OSS client with [`blockrate-server`](https://github.com/afonsojramos/blockrate/tree/main/packages/server) for a one-command self-hosted ingestion server, or use [blockrate.app](https://blockrate.app) for a hosted dashboard with zero infrastructure. The library is identical either way — pick the reporter that fits.
+> **Reporters welcome.** Pair this OSS client with [`blockrate-server`](https://github.com/afonsojramos/blockrate/tree/main/packages/server) for a one-command self-hosted ingestion server, or use [blockrate.app](https://blockrate.app) for a hosted dashboard with zero infrastructure. The library is identical either way, pick the reporter that fits.
 
 ## Why
 
-You're running experiments, but 20% of your users are invisible — blocked by uBlock Origin, Brave, Pi-hole, corporate firewalls. Existing "ad block detectors" only tell you _a_ blocker exists. `blockrate` tells you **which specific tools are blocked**, so you can decide whether to reverse-proxy Optimizely, migrate PostHog server-side, or just accept the gap.
+You're running experiments, but 20% of your users are invisible, blocked by uBlock Origin, Brave, Pi-hole, corporate firewalls. Existing "ad block detectors" only tell you _a_ blocker exists. `blockrate` tells you **which specific tools are blocked**, so you can decide whether to reverse-proxy Optimizely, migrate PostHog server-side, or just accept the gap.
 
 ## Quick start
 
 ```bash
-bun add blockrate
+nub add blockrate
 ```
 
 ```ts
@@ -28,15 +28,15 @@ const br = new BlockRate({
 br.check();
 ```
 
-The client always posts to **your own origin** (`/api/block-rate`) — not directly to `blockrate.app` or a self-hosted instance. See [Why the reporter endpoint must be first-party](#why-the-reporter-endpoint-must-be-first-party) for why this matters, and keep reading for the matching server route.
+The client always posts to **your own origin** (`/api/block-rate`), not directly to `blockrate.app` or a self-hosted instance. See [Why the reporter endpoint must be first-party](#why-the-reporter-endpoint-must-be-first-party) for why this matters, and keep reading for the matching server route.
 
 ## Why the reporter endpoint must be first-party
 
-`blockrate` exists because ad blockers drop third-party analytics requests. For the measurement to be valid, the client must post to your own origin — **never directly to `blockrate.app`, `api.blockrate.app`, or any dedicated analytics host**. A server route on your own domain then forwards the payload to the ingest endpoint with your API key.
+`blockrate` exists because ad blockers drop third-party analytics requests. For the measurement to be valid, the client must post to your own origin, **never directly to `blockrate.app`, `api.blockrate.app`, or any dedicated analytics host**. A server route on your own domain then forwards the payload to the ingest endpoint with your API key.
 
 Two things break if you ignore this:
 
-1. **The measurement itself fails.** `blockrate.app` is, by definition, an analytics domain — the exact shape of thing that lands on EasyPrivacy and other public blocklists. The moment it does, the tool measuring blocking only sees the blocking that _isn't_ blocking blockrate itself: a reflexive, silent failure where "loaded" counts look normal because the "blocked" reports never arrived.
+1. **The measurement itself fails.** `blockrate.app` is, by definition, an analytics domain, the exact shape of thing that lands on EasyPrivacy and other public blocklists. The moment it does, the tool measuring blocking only sees the blocking that _isn't_ blocking blockrate itself: a reflexive, silent failure where "loaded" counts look normal because the "blocked" reports never arrived.
 2. **Your API key leaks.** If the browser needs your `br_...` key to authenticate the ingest request, the key is visible in DevTools, page source, and network inspectors to any visitor. There is no way to rotate or scope a key the browser already knows.
 
 The `forward` option on `createBlockRateHandler` collapses the server-side forwarding into one line:
@@ -69,7 +69,7 @@ type ForwardError =
   | { kind: "upstream"; status: number; statusText: string; body: string };
 ```
 
-It never contains the API key — safe to log as-is. A common pattern:
+It never contains the API key, safe to log as-is. A common pattern:
 
 ```ts
 forward: {
@@ -84,7 +84,7 @@ forward: {
 
 ### Pairing with `onResult`
 
-`forward` composes with `onResult` — both fire in parallel on a valid payload. Failures are isolated (a thrown `onResult` does not prevent the forward, and vice versa), and the browser always receives `204` on a valid body.
+`forward` composes with `onResult`, both fire in parallel on a valid payload. Failures are isolated (a thrown `onResult` does not prevent the forward, and vice versa), and the browser always receives `204` on a valid body.
 
 ```ts
 export const POST = createBlockRateHandler({
@@ -95,7 +95,7 @@ export const POST = createBlockRateHandler({
 
 ## Built-in providers
 
-`optimizely`, `posthog`, `ga4`, `gtm`, `segment`, `hotjar`, `amplitude`, `mixpanel`, `meta-pixel`, `intercom`. Each provider is checked first via a **post-load global** (a property the real bundle sets, not the queueing stub the loader snippet creates), then via a probe to its CDN. Stub-only globals are ignored — the loader snippet runs even when the network request to the CDN is blocked, so checking for the stub would silently misclassify a blocked install as "loaded".
+`optimizely`, `posthog`, `ga4`, `gtm`, `segment`, `hotjar`, `amplitude`, `mixpanel`, `meta-pixel`, `intercom`. Each provider is checked first via a **post-load global** (a property the real bundle sets, not the queueing stub the loader snippet creates), then via a probe to its CDN. Stub-only globals are ignored, the loader snippet runs even when the network request to the CDN is blocked, so checking for the stub would silently misclassify a blocked install as "loaded".
 
 ## Custom providers
 
@@ -193,7 +193,7 @@ export const Route = createFileRoute("/api/block-rate")({
 
 Measurement tells you which providers are blocked; the fix is serving them
 first-party. `blockrate/proxy` ships a route handler that reverse-proxies a
-provider through a **subpath on your own domain** — the most block-resistant
+provider through a **subpath on your own domain**, the most block-resistant
 mount, because filter lists match hostnames and a path can't be blocked
 without blocking your whole site. (A subdomain is simpler to operate but is a
 separately-blockable hostname; if you go that route, use a real server-side
@@ -202,7 +202,7 @@ proxy, never a CNAME, which uBlock Origin uncloaks.)
 v1 supports PostHog (officially documented reverse-proxy support):
 
 ```ts
-// app/m/[...path]/route.ts — Next.js App Router; any Request/Response
+// app/m/[...path]/route.ts, Next.js App Router; any Request/Response
 // framework works the same way.
 import { createBlockRateProxy } from "blockrate/proxy";
 
@@ -220,25 +220,25 @@ posthog.init(token, {
 });
 ```
 
-Pick an unguessable mount segment (not `/analytics` or `/track` — path-token
+Pick an unguessable mount segment (not `/analytics` or `/track`, path-token
 rules already target those). The upstream host is pinned per region, so the
 route is not an open proxy, and `cookie`/`authorization` headers are stripped
 before forwarding so your first-party session credentials never reach the
 vendor. Because blockrate's PostHog detector gates on the post-load global
 (`posthog.__loaded`), your measured block rate falls as the proxy recovers
-users — the before/after is visible in the same dashboard.
+users, the before/after is visible in the same dashboard.
 
 ## Self-hosted server
 
-If you don't want to build ingestion yourself, run `blockrate-server` — a batteries-included Bun server with SQLite storage, validation, rate limiting, multi-tenant API keys, and a one-page dashboard.
+If you don't want to build ingestion yourself, run `blockrate-server`, a batteries-included Node server with SQLite storage, validation, rate limiting, multi-tenant API keys, and a one-page dashboard.
 
 ```bash
-bunx blockrate-server
+nubx blockrate-server
 # [blockrate-server] listening on http://localhost:4318
 # [blockrate-server] Bootstrapped default tenant. API key: br_xxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-Self-hosters are first-party by definition — your server runs on infrastructure you own. The recommended integration is still a same-origin route that forwards to your `blockrate-server` instance, so the rationale above about ad blockers and key handling applies identically:
+Self-hosters are first-party by definition, your server runs on infrastructure you own. The recommended integration is still a same-origin route that forwards to your `blockrate-server` instance, so the rationale above about ad blockers and key handling applies identically:
 
 ```ts
 // app/api/block-rate/route.ts
@@ -252,7 +252,7 @@ export const POST = createBlockRateHandler({
 });
 ```
 
-If you are genuinely running `blockrate-server` on the same origin as your app (reverse-proxied under `/blockrate` or similar), the older `serverReporter` pattern is also fine — nothing cross-origin happens:
+If you are genuinely running `blockrate-server` on the same origin as your app (reverse-proxied under `/blockrate` or similar), the older `serverReporter` pattern is also fine, nothing cross-origin happens:
 
 ```ts
 import { BlockRate, serverReporter } from "blockrate";
@@ -327,14 +327,14 @@ Create a custom event `block_rate_check` and chart `unique sessions` segmented b
 
 ## How it works
 
-1. **Post-load global check** — fast, synchronous-ish. Each provider checks for a property that **only the real bundle sets**, never one the loader snippet creates (e.g. `posthog.__loaded`, `mixpanel.__loaded`, `analytics.initialized`, `google_tag_data`). Stub globals like `window.posthog`, `window.fbq`, or `window.amplitude` are deliberately ignored — they exist whether or not the CDN was reached.
-2. **CDN probe** — `fetch` the provider's CDN URL with `mode: "cors"` (so blockers' `nooptext` redirects, which strip CORS headers, surface as `TypeError` rather than opaque success). Single attempt — honest fast-blocked vs timeout-blocked latency is more valuable than a retry that would pin every blocked-event latency to a backoff constant.
-3. **Image-tag probe (Meta only)** — `connect.facebook.net` and `facebook.com/tr` deliberately serve no CORS headers, so we use an `<img>` and listen for `onerror` instead.
-4. **Dedup (opt-in)** — `sessionDedup: true` writes a flag to `sessionStorage` so the check runs once per session. Off by default to keep the library consent-free; enable it for accurate session-level rates.
-5. **Report** — your reporter is called once with all results.
+1. **Post-load global check**, fast, synchronous-ish. Each provider checks for a property that **only the real bundle sets**, never one the loader snippet creates (e.g. `posthog.__loaded`, `mixpanel.__loaded`, `analytics.initialized`, `google_tag_data`). Stub globals like `window.posthog`, `window.fbq`, or `window.amplitude` are deliberately ignored, they exist whether or not the CDN was reached.
+2. **CDN probe**, `fetch` the provider's CDN URL with `mode: "cors"` (so blockers' `nooptext` redirects, which strip CORS headers, surface as `TypeError` rather than opaque success). Single attempt, honest fast-blocked vs timeout-blocked latency is more valuable than a retry that would pin every blocked-event latency to a backoff constant.
+3. **Image-tag probe (Meta only)**, `connect.facebook.net` and `facebook.com/tr` deliberately serve no CORS headers, so we use an `<img>` and listen for `onerror` instead.
+4. **Dedup (opt-in)**, `sessionDedup: true` writes a flag to `sessionStorage` so the check runs once per session. Off by default to keep the library consent-free; enable it for accurate session-level rates.
+5. **Report**, your reporter is called once with all results.
 
 ## FAQ
 
-**Won't this script get blocked too?** No — it's bundled into your first-party code. Blocklists target third-party hostnames, not your app bundle. The same reasoning is exactly why the reporter endpoint must also be first-party: see [Why the reporter endpoint must be first-party](#why-the-reporter-endpoint-must-be-first-party).
+**Won't this script get blocked too?** No, it's bundled into your first-party code. Blocklists target third-party hostnames, not your app bundle. The same reasoning is exactly why the reporter endpoint must also be first-party: see [Why the reporter endpoint must be first-party](#why-the-reporter-endpoint-must-be-first-party).
 
 **Is this ethical?** Yes. You're measuring, not circumventing.

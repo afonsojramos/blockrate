@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, beforeAll, afterAll } from "bun:test";
+import { describe, it, expect, beforeEach, beforeAll, afterAll, vi } from "vitest";
 import { BlockRate, createProvider } from "../src/index";
 
 const storage: Record<string, string> = {};
@@ -16,14 +16,14 @@ describe("BlockRate", () => {
     };
     (globalThis as any).window = {};
     (globalThis as any).location = { pathname: "/test" };
-    (globalThis as any).navigator = { userAgent: "test-ua" };
+    vi.stubGlobal("navigator", { userAgent: "test-ua" });
   });
 
   afterAll(() => {
     delete (globalThis as any).sessionStorage;
     delete (globalThis as any).window;
     delete (globalThis as any).location;
-    delete (globalThis as any).navigator;
+    vi.unstubAllGlobals();
   });
 
   beforeEach(() => {

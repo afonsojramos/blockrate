@@ -12,7 +12,10 @@
   ],
   "type": "module",
   "scripts": {
-    "build": "bun build ./src/index.ts --outdir ./dist --target node",
-    "test": "bun test"
+    "build": "nub --no-env-file ../../scripts/build-packages.ts cli",
+    "test": "vitest run"
+  },
+  "engines": {
+    "node": ">=24.21.0"
   }
 }
