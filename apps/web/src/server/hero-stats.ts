@@ -14,7 +14,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type * as schema from "@/lib/db/schema";
 import { DAY_MS } from "@/lib/time";
 import { applyFloor, deltaToPoints, PROVIDER_META } from "@/lib/providers";
@@ -149,7 +149,7 @@ const trendCache = new Map<string, { at: number; value: ProviderTrend }>();
  * `>= cutoff` window + `order by date` needs no date casts.
  */
 export async function computeProviderTrend(
-  db: BunSQLDatabase<typeof schema>,
+  db: PostgresJsDatabase<typeof schema>,
   slug: string,
   days: number,
 ): Promise<ProviderTrend> {

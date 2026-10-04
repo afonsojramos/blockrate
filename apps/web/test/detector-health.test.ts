@@ -3,7 +3,7 @@
  * fetch is injected; nothing here touches the network.
  */
 
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 
 import { checkDetectorHealth } from "@/server/detector-health";
 
@@ -76,6 +76,6 @@ describe("checkDetectorHealth", () => {
     const healthy = await checkDetectorHealth((async () =>
       corsResponse()) as unknown as typeof fetch);
     expect(healthy.allOk).toBe(true);
-    expect(healthy.checkedAt).toBeString();
+    expect(typeof healthy.checkedAt).toBe("string");
   });
 });

@@ -5,7 +5,7 @@
  * PostHog) was validated end-to-end by examples/proxy-spike.
  */
 
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 
 import { createBlockRateProxy } from "../src/proxy";
 

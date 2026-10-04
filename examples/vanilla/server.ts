@@ -1,4 +1,4 @@
-// Minimal Bun server that pairs with the vanilla HTML example. In a real
+// Minimal Node server that pairs with the vanilla HTML example. In a real
 // integration the browser POSTs blockrate results to /api/block-rate on
 // this origin, and this handler forwards them upstream with the API key
 // (from the server env — never shipped to the browser).
@@ -9,17 +9,18 @@
 // function; whichever backend you use just needs to route POST
 // /api/block-rate to it.
 //
-// Run with: BLOCKRATE_API_KEY=br_... bun run server.ts
+// Run with: BLOCKRATE_API_KEY=br_... nub --no-env-file server.ts
 //
 // The reporter endpoint must be first-party — see
 // https://github.com/afonsojramos/blockrate/tree/main/packages/core#why-the-reporter-endpoint-must-be-first-party
+import { serve } from "@hono/node-server";
 import { createWebHandler } from "blockrate";
 
 const handle = createWebHandler({
   forward: { apiKey: process.env.BLOCKRATE_API_KEY! },
 });
 
-Bun.serve({
+serve({
   port: 3000,
   fetch: (req) => {
     const url = new URL(req.url);

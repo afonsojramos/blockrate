@@ -15,35 +15,45 @@
  *     fixed in PR #5) and what shows up via /stats end-to-end.
  *   - Customer `onError` actually firing on upstream non-2xx.
  *
- * No mocks: real `Bun.serve`, real fetch, real JSON. Slower than the
+ * No mocks: real Node HTTP, real fetch, real JSON. Slower than the
  * unit tests but still well under a second.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createWebHandler } from "../src/handler";
 import type { ForwardError } from "../src/handler";
 import type { BlockRateResult } from "../src/types";
+import { serve, type ServerType } from "@hono/node-server";
+import { once } from "node:events";
 import { createServer } from "blockrate-server";
 
 const TEST_API_KEY = "br_e2e_test_key_xxxxxxxxxxxx";
 
 interface Harness {
   app: Awaited<ReturnType<typeof createServer>>;
-  server: ReturnType<typeof Bun.serve>;
+  server: ServerType;
   endpoint: string;
-  stop: () => void;
+  stop: () => Promise<void>;
 }
 
 async function startHarness(): Promise<Harness> {
   process.env.BLOCK_RATE_BOOTSTRAP_KEY = TEST_API_KEY;
   process.env.BLOCK_RATE_BOOTSTRAP_NAME = "e2e";
   const app = await createServer({ dbPath: ":memory:" });
-  const server = Bun.serve({ port: 0, fetch: app.fetch });
+  const server = serve({ port: 0, hostname: "127.0.0.1", fetch: app.fetch });
+  await once(server, "listening");
+  const address = server.address();
+  if (!address || typeof address === "string") throw new Error("missing HTTP address");
   return {
     app,
     server,
-    endpoint: `http://localhost:${server.port}`,
-    stop: () => server.stop(true),
+    endpoint: `http://127.0.0.1:${address.port}`,
+    stop: async () => {
+      await new Promise<void>((resolve, reject) =>
+        server.close((err) => (err ? reject(err) : resolve())),
+      );
+      await app.store.close();
+    },
   };
 }
 
@@ -69,8 +79,8 @@ describe("e2e pipeline (client → core handler → server → stats)", () => {
     harness = await startHarness();
   });
 
-  afterEach(() => {
-    harness.stop();
+  afterEach(async () => {
+    await harness.stop();
   });
 
   it("forwards a valid payload through every leg and surfaces it via /stats", async () => {

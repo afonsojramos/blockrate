@@ -17,12 +17,12 @@ import { z } from "zod";
 
 import { requireAccount } from "@/lib/require-account.server";
 
-import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type * as schema from "@/lib/db/schema";
 import type { Plan } from "@/lib/plans";
 import { isBlockedWebhookHost } from "@/lib/webhook";
 
-type Db = BunSQLDatabase<typeof schema>;
+type Db = PostgresJsDatabase<typeof schema>;
 
 // ─── Validation ────────────────────────────────────────────────────────────
 

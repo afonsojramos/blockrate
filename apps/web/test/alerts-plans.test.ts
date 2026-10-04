@@ -4,7 +4,7 @@
  * every Free create (see alerts-crud.test.ts for the enforcement path).
  */
 
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { PLANS, getPlan } from "@/lib/plans";
 
 describe("plan maxAlertRules", () => {

@@ -1,5 +1,5 @@
-import { Database } from "bun:sqlite";
-import { drizzle } from "drizzle-orm/bun-sqlite";
+import Database from "better-sqlite3";
+import { drizzle } from "drizzle-orm/better-sqlite3";
 import { and, eq, gte, sql } from "drizzle-orm";
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -8,7 +8,7 @@ import { tenants, events } from "../schema.sqlite";
 import type { BlockRateStore, NewStoredEvent, StatsQuery, StatsRow, StoredTenant } from "../store";
 
 export class SqliteStore implements BlockRateStore {
-  private sqlite: Database;
+  private sqlite: Database.Database;
   private db: ReturnType<typeof drizzle<{ tenants: typeof tenants; events: typeof events }>>;
 
   constructor(path = "./blockrate.db") {
@@ -22,20 +22,16 @@ export class SqliteStore implements BlockRateStore {
   private runMigrations() {
     const here = dirname(fileURLToPath(import.meta.url));
     const migrationsDir = join(here, "..", "..", "drizzle");
-    let files: string[];
-    try {
-      files = readdirSync(migrationsDir)
-        .filter((f) => f.endsWith(".sql"))
-        .sort();
-    } catch {
-      return;
-    }
+    const files = readdirSync(migrationsDir)
+      .filter((f) => f.endsWith(".sql"))
+      .sort();
+
     this.sqlite.exec(
       "CREATE TABLE IF NOT EXISTS __migrations (name TEXT PRIMARY KEY, applied_at INTEGER NOT NULL);",
     );
     const applied = new Set(
       this.sqlite
-        .query("SELECT name FROM __migrations")
+        .prepare("SELECT name FROM __migrations")
         .all()
         .map((r: any) => r.name as string),
     );
@@ -48,7 +44,7 @@ export class SqliteStore implements BlockRateStore {
           if (trimmed) this.sqlite.exec(trimmed);
         }
         this.sqlite
-          .query("INSERT INTO __migrations (name, applied_at) VALUES (?, ?)")
+          .prepare("INSERT INTO __migrations (name, applied_at) VALUES (?, ?)")
           .run(file, Math.floor(Date.now() / 1000));
       })();
     }

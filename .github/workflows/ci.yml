@@ -26,15 +26,16 @@ jobs:
       - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ~/.bun/install/cache
-          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-      - run: bun install --frozen-lockfile
-      - run: bun run format:check
-      - run: bun run lint
-      - run: cd packages/core && bun run build
-      - run: cd apps/web && bun run typecheck
+          path: ~/.cache/nub
+          key: nub-node24-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+      - run: nub --no-env-file install --frozen-lockfile
+      - run: nub --no-env-file run format:check
+      - run: nub --no-env-file run lint
+      - run: nub --no-env-file run build:packages
+      - run: nub --no-env-file run typecheck
         env:
           BETTER_AUTH_SECRET: ci-placeholder-secret-at-least-32-characters
+          DATABASE_URL: pglite://
 
   test:
     runs-on: ubuntu-latest
@@ -44,14 +45,16 @@ jobs:
       - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ~/.bun/install/cache
-          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-      - run: bun install --frozen-lockfile
+          path: ~/.cache/nub
+          key: nub-node24-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+      - run: nub --no-env-file install --frozen-lockfile
       # apps/web tests import `blockrate`, which resolves to packages/core/dist
-      - run: cd packages/core && bun run build
-      - run: bun run test
+      - run: nub --no-env-file run build:packages
+      - run: nub --no-env-file run test
+      - run: nub --no-env-file run test:package
         env:
           BETTER_AUTH_SECRET: ci-placeholder-secret-at-least-32-characters
+          DATABASE_URL: pglite://
 
   web-build:
     runs-on: ubuntu-latest
@@ -61,11 +64,12 @@ jobs:
       - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ~/.bun/install/cache
-          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-      - run: bun install --frozen-lockfile
-      - run: cd packages/core && bun run build
-      - run: cd apps/web && NODE_ENV=production bun run build
+          path: ~/.cache/nub
+          key: nub-node24-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+      - run: nub --no-env-file install --frozen-lockfile
+      - run: nub --no-env-file run build:packages
+      - run: cd apps/web && NODE_ENV=production nub --no-env-file run build
         env:
           BETTER_AUTH_SECRET: ci-placeholder-secret-at-least-32-characters
-      - run: cd apps/web && bun run test:headers
+          DATABASE_URL: pglite://
+      - run: cd apps/web && nub --no-env-file run test:headers

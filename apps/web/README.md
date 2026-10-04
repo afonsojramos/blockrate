@@ -2,12 +2,12 @@
 
 The hosted dashboard at [blockrate.app](https://blockrate.app). TanStack Start + Better Auth (magic link / OAuth) + Drizzle/Postgres + Tailwind v4 + Base UI via shadcn.
 
-Ingest, API keys, per-provider dashboard, Stripe billing, alerts (email/Slack/webhook), weekly digests, remediation playbook, and the public block-rate index all live here. See root `CLAUDE.md` for pre-ship validation and deploy env vars.
+Ingest, API keys, per-provider dashboard, Stripe billing, alerts (email/Slack/webhook), weekly digests, remediation playbook, and the public block-rate index all live here. See root `AGENTS.md` for pre-ship validation and deploy env vars.
 
 ## Prerequisites
 
-- **Bun ≥ 1.3** (the monorepo's package manager)
-- **No local Postgres needed for dev** — we use [PGlite](https://pglite.dev), an in-process embedded postgres. Production runs real Postgres on Railway.
+- **Node 24.21.0 + Nub 0.9.6**, pinned in root `mise.toml`. Run `mise trust && mise install`, then `nub install --frozen-lockfile` from the repository root. `bun.lock` remains the lockfile, read and written natively by Nub.
+- **No local Postgres needed for dev**, we use [PGlite](https://pglite.dev), an in-process embedded postgres. Production runs real Postgres on Railway.
 
 ## First run
 
@@ -18,43 +18,43 @@ cp .env.example .env
 echo "BETTER_AUTH_SECRET=$(openssl rand -base64 32)" >> .env
 
 # Apply migrations (creates apps/web/.local/blockrate.db with PGlite)
-bun run db:migrate
+nub run db:migrate
 
 # Start the dev server
-bun run dev
+nub run dev
 ```
 
-Open `http://localhost:3000`. Sign in via `/login` — the magic link URL prints to your terminal in dev mode (Resend wires up in Phase 5).
+Open `http://localhost:3000`. Sign in via `/login`, the magic link URL prints to your terminal in dev mode (Resend wires up in Phase 5).
 
 ## Scripts
 
 | Script                  | What it does                                                        |
 | ----------------------- | ------------------------------------------------------------------- |
-| `bun run dev`           | Vite dev server on port 3000                                        |
-| `bun run build`         | Production build via Vite + Nitro                                   |
-| `bun run start`         | Run migrations, then serve `.output/server/index.mjs`               |
-| `bun run typecheck`     | `tsc --noEmit`                                                      |
-| `bun run db:generate`   | `drizzle-kit generate` — produces SQL migration files               |
-| `bun run db:migrate`    | Custom runner that handles both PGlite (dev) and postgres-js (prod) |
-| `bun run auth:generate` | Regenerate `src/lib/db/auth-schema.ts` from `auth.server.ts`        |
+| `nub run dev`           | Vite dev server on port 3000                                        |
+| `nub run build`         | Production build via Vite + Nitro                                   |
+| `nub run start`         | Run migrations, then serve `.output/server/index.mjs`               |
+| `nub run typecheck`     | `tsc --noEmit`                                                      |
+| `nub run db:generate`   | `drizzle-kit generate`, produces SQL migration files                |
+| `nub run db:migrate`    | Custom runner that handles both PGlite (dev) and postgres-js (prod) |
+| `nub run auth:generate` | Regenerate `src/lib/db/auth-schema.ts` from `auth.server.ts`        |
 
 ## Environment variables
 
-**Do not set `NODE_ENV` in `.env`.** Vite reads `.env` at build time, and a hardcoded `NODE_ENV=development` causes `vite build` to bundle a dev-mode build. Mode is determined by the script you run (`bun run dev` vs `bun run start`, the latter sets `NODE_ENV=production`).
+**Do not set `NODE_ENV` in `.env`.** Nub loads `.env` for local development; Vite itself has env-file loading disabled. Use `nub --no-env-file run <script>` for CI or disposable tests with explicit environment variables. A hardcoded `NODE_ENV=development` can cause `vite build` to bundle a dev-mode build. Mode is determined by the script you run (`nub run dev` vs `nub run start`, the latter sets `NODE_ENV=production`).
 
 | Variable               | Required  | Default                           | Notes                                                                      |
 | ---------------------- | --------- | --------------------------------- | -------------------------------------------------------------------------- |
 | `DATABASE_URL`         | no        | `pglite://./.local/blockrate.db`  | Either `pglite://...` (dev) or `postgres://...` (prod)                     |
-| `BETTER_AUTH_SECRET`   | **yes**   | —                                 | ≥32 chars; `openssl rand -base64 32`                                       |
+| `BETTER_AUTH_SECRET`   | **yes**   | ,                                 | ≥32 chars; `openssl rand -base64 32`                                       |
 | `BETTER_AUTH_URL`      | no        | `http://localhost:3000`           | Set to `https://blockrate.app` in prod                                     |
-| `CRON_SECRET`          | prod only | —                                 | ≥32 chars; bearer for `/api/internal/retention` and `/api/internal/alerts` |
-| `RESEND_API_KEY`       | prod only | —                                 | sendMagicLink falls back to console.log when unset (dev only)              |
+| `CRON_SECRET`          | prod only | ,                                 | ≥32 chars; bearer for `/api/internal/retention` and `/api/internal/alerts` |
+| `RESEND_API_KEY`       | prod only | ,                                 | sendMagicLink falls back to console.log when unset (dev only)              |
 | `EMAIL_FROM`           | no        | `blockrate <magic@blockrate.app>` | From address for transactional email                                       |
-| `GOOGLE_CLIENT_ID`     | optional  | —                                 | Enables Google OAuth button when set with secret                           |
-| `GOOGLE_CLIENT_SECRET` | optional  | —                                 |                                                                            |
-| `GITHUB_CLIENT_ID`     | optional  | —                                 | Enables GitHub OAuth button when set with secret                           |
-| `GITHUB_CLIENT_SECRET` | optional  | —                                 | Required scope: `user:email`                                               |
-| `BLOCKRATE_API_KEY`    | optional  | —                                 | Dogfood key — server-only. When unset `/api/block-rate` 204s               |
+| `GOOGLE_CLIENT_ID`     | optional  | ,                                 | Enables Google OAuth button when set with secret                           |
+| `GOOGLE_CLIENT_SECRET` | optional  | ,                                 |                                                                            |
+| `GITHUB_CLIENT_ID`     | optional  | ,                                 | Enables GitHub OAuth button when set with secret                           |
+| `GITHUB_CLIENT_SECRET` | optional  | ,                                 | Required scope: `user:email`                                               |
+| `BLOCKRATE_API_KEY`    | optional  | ,                                 | Dogfood key, server-only. When unset `/api/block-rate` 204s                |
 
 ## Retention sweep (Phase 4)
 
@@ -93,14 +93,14 @@ Manual smoke locally:
 
 ```bash
 echo "CRON_SECRET=$(openssl rand -base64 32)" >> .env
-bun run dev
+nub run dev
 
 # in another terminal, with the same secret
 curl -X POST -H "Authorization: Bearer <secret>" \
   http://localhost:3001/api/internal/retention
 ```
 
-The implementation groups accounts by plan name and runs **one DELETE per plan tier** with `IN (account_ids)` — N queries where N is the number of plans (currently 3), not N accounts. Scales fine to thousands of users.
+The implementation groups accounts by plan name and runs **one DELETE per plan tier** with `IN (account_ids)`, N queries where N is the number of plans (currently 3), not N accounts. Scales fine to thousands of users.
 
 ## Alerts evaluation
 
@@ -111,7 +111,7 @@ Slack incoming-webhook URL), or `webhook` (POST a JSON payload to any https URL)
 Webhook/Slack URLs are validated to https and blocked from internal/loopback hosts, and
 delivery uses `redirect: "manual"` + a timeout (SSRF/hang hardening). Same bearer auth
 and fail-closed behaviour as the retention sweep (503 if `CRON_SECRET` is unset, 401 on
-a missing/wrong bearer). Alerting is a Pro/Team capability — Free accounts have
+a missing/wrong bearer). Alerting is a Pro/Team capability, Free accounts have
 `maxAlertRules = 0` and cannot create rules.
 
 Spam control is built in: a rule is skipped when it has fewer than `minSample` checks
@@ -140,14 +140,14 @@ Response shape:
 }
 ```
 
-Until this cron is wired the rules simply never evaluate — no incorrect behaviour,
+Until this cron is wired the rules simply never evaluate, no incorrect behaviour,
 just inert. Sending requires `RESEND_API_KEY`; without it the alert email is logged to
 stdout (same fallback as magic-link email).
 
 ## Weekly digest
 
 `/api/internal/digest` emails each **opted-in** account a summary of its per-provider
-block rate over the last 7 days — a recurring nudge back to the dashboard. Same
+block rate over the last 7 days, a recurring nudge back to the dashboard. Same
 bearer auth and fail-closed behaviour as the other crons. Only accounts with
 `weekly_digest = true` AND events in the window are emailed; per-account sends are
 isolated so one failure doesn't abort the sweep. Users opt out under Settings →
@@ -191,19 +191,19 @@ Google and GitHub providers are wired in `lib/auth.server.ts` and **conditionall
 
 1. Create an OAuth app at <https://github.com/settings/developers>
 2. Authorization callback URL: `${BETTER_AUTH_URL}/api/auth/callback/github`
-3. **Required scope: `user:email`** — without it, signup fails with `email_not_found` for any user with a private email. The auth config requests this explicitly.
+3. **Required scope: `user:email`**, without it, signup fails with `email_not_found` for any user with a private email. The auth config requests this explicitly.
 4. Set `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` in the deployment env
 
 ## Magic-link email via Resend (Phase 5)
 
 `lib/mailer.server.ts` chooses dev console-log vs real Resend send via this matrix:
 
-| `NODE_ENV`     | `RESEND_API_KEY` | Behaviour                                        |
-| -------------- | ---------------- | ------------------------------------------------ |
-| development    | unset            | `console.log` (dev convenience)                  |
-| development    | set              | real Resend send (handy for QA)                  |
-| **production** | unset            | **throws** — fail-closed against deployment bugs |
-| production     | set              | real Resend send                                 |
+| `NODE_ENV`     | `RESEND_API_KEY` | Behaviour                                       |
+| -------------- | ---------------- | ----------------------------------------------- |
+| development    | unset            | `console.log` (dev convenience)                 |
+| development    | set              | real Resend send (handy for QA)                 |
+| **production** | unset            | **throws**, fail-closed against deployment bugs |
+| production     | set              | real Resend send                                |
 
 Setup:
 
@@ -214,26 +214,26 @@ Setup:
 
 ## Dogfooding (Phase 5)
 
-`components/dogfood.tsx` adds `useBlockRate` from the OSS `blockrate` library to the root layout. The browser posts to the same-origin `/api/block-rate` route (`src/routes/api/block-rate.ts`), which uses `createWebHandler({ forward })` to forward upstream to `/api/ingest` on the same instance — exactly the first-party pattern we recommend to every customer. The blockrate.app marketing surface measures itself the same way customers measure theirs, putting our money where our mouth is for a "your analytics are blocked more than you think" product.
+`components/dogfood.tsx` adds `useBlockRate` from the OSS `blockrate` library to the root layout. The browser posts to the same-origin `/api/block-rate` route (`src/routes/api/block-rate.ts`), which uses `createWebHandler({ forward })` to forward upstream to `/api/ingest` on the same instance, exactly the first-party pattern we recommend to every customer. The blockrate.app marketing surface measures itself the same way customers measure theirs, putting our money where our mouth is for a "your analytics are blocked more than you think" product.
 
 Setup post-deploy:
 
 1. Sign up on the deployed blockrate.app with an internal admin email
 2. Visit `/app/keys`, create a new key named "blockrate-app" with service "blockrate-app"
 3. **Copy the plaintext** (it's shown only once)
-4. Set `BLOCKRATE_API_KEY=<plaintext>` as a Railway env var on the web service — **server-side only**; do not prefix it with `VITE_`
+4. Set `BLOCKRATE_API_KEY=<plaintext>` as a Railway env var on the web service, **server-side only**; do not prefix it with `VITE_`
 5. Trigger a redeploy so the forward route picks up the new env var
 
-When the var is unset (dev or pre-bootstrap), the `/api/block-rate` route returns 204 without forwarding — the client can keep posting, nothing lands upstream. Safe default for local dev.
+When the var is unset (dev or pre-bootstrap), the `/api/block-rate` route returns 204 without forwarding, the client can keep posting, nothing lands upstream. Safe default for local dev.
 
 ## Railway deploy (Phase 5)
 
-The `nixpacks.toml` shipped with the TanStack Start scaffold + the `start` script in `package.json` are sufficient. Steps:
+The root Dockerfile installs pinned Node and Nub, builds all workspace packages, and emits a Nitro `node-server` bundle. Steps:
 
 1. **Create a Railway project** with three services:
-   - `web` — this directory, deploys via Nixpacks
-   - `Postgres` — managed addon
-   - `Cron` — separate service(s) for the nightly retention sweep and the hourly alerts evaluation
+   - `web`, repository root, deploys via the root Dockerfile
+   - `Postgres`, managed addon
+   - `Cron`, separate service(s) for the nightly retention sweep and the hourly alerts evaluation
 2. **Set web service env vars** (in Railway → Variables):
    ```
    DATABASE_URL=${{Postgres.DATABASE_URL}}
@@ -248,9 +248,9 @@ The `nixpacks.toml` shipped with the TanStack Start scaffold + the `start` scrip
    ```
 3. **Custom domain**: Railway → Settings → Domains, add `blockrate.app` and `www.blockrate.app`. TLS auto-provisioned via Let's Encrypt.
 4. **Cron services** (separate Railway services, same project):
-   - Retention sweep — schedule `0 3 * * *`, command:
+   - Retention sweep, schedule `0 3 * * *`, command:
      `curl -fsS -X POST -H "Authorization: Bearer $CRON_SECRET" https://blockrate.app/api/internal/retention`
-   - Alerts evaluation — schedule `0 * * * *`, command:
+   - Alerts evaluation, schedule `0 * * * *`, command:
      `curl -fsS -X POST -H "Authorization: Bearer $CRON_SECRET" https://blockrate.app/api/internal/alerts`
 5. **Bootstrap dogfood key**: see "Dogfooding" above. Then add `BLOCKRATE_API_KEY` to the web service vars and redeploy.
 6. **Smoke tests** post-deploy:
@@ -265,7 +265,8 @@ The `nixpacks.toml` shipped with the TanStack Start scaffold + the `start` scrip
 
 ### Migrations on start (not build)
 
-The `start` script runs `bun run db:migrate` before booting the server. **Do not** put migration in the build step — Railway's build image cannot reach the Postgres addon. Migrations are no-op if already applied.
+The `start` script runs `nub run db:migrate` before booting the server. **Do not** put migration in the build step, Railway's build image cannot reach the Postgres addon. Migrations are no-op if already applied. Nitro's close hook awaits database
+teardown after HTTP drains, including the postgres.js query pool.
 
 ### Multi-instance scaling
 
@@ -283,7 +284,7 @@ src/
 │   ├── index.tsx             landing
 │   ├── pricing.tsx, docs.tsx
 │   ├── login.tsx, signup.tsx
-│   ├── _authed.tsx           layout route — beforeLoad guard via createServerFn
+│   ├── _authed.tsx           layout route, beforeLoad guard via createServerFn
 │   ├── _authed/app.tsx       placeholder dashboard
 │   └── api/
 │       ├── auth.$.ts         Better Auth catch-all
@@ -299,7 +300,7 @@ src/
 │   ├── utils.ts              cn() helper
 │   └── db/
 │       ├── index.server.ts   PGlite/postgres-js switch
-│       ├── schema.ts         single source of truth — events, tenants + auth tables
+│       ├── schema.ts         single source of truth, events, tenants + auth tables
 │       ├── auth-schema.ts    generated by the Better Auth CLI
 │       └── migrate.ts        runs at start, supports both dialects
 └── styles/
@@ -312,8 +313,8 @@ Every UI change answers to [`docs/design.md`](../../docs/design.md). Reviewers c
 
 ## Smoke flow (manual)
 
-1. `bun run db:migrate && bun run dev`
-2. Visit `/`, `/pricing`, `/docs` — each renders
+1. `nub run db:migrate && nub run dev`
+2. Visit `/`, `/pricing`, `/docs`, each renders
 3. `/login` → enter your email → check terminal for magic link URL → paste in browser → end up on `/app`
 4. Hit `/app` while signed out → redirected to `/login`
 5. Theme toggle (top-right): Light → Dark → System persists across reload
@@ -321,19 +322,27 @@ Every UI change answers to [`docs/design.md`](../../docs/design.md). Reviewers c
 ## Production build smoke
 
 ```bash
-bun run build
+nub run build
 NODE_ENV=production \
   DATABASE_URL=postgres://... \
   BETTER_AUTH_SECRET=... \
   BETTER_AUTH_URL=https://... \
-  bun run start
+  nub run start
 ```
 
 The `start` script runs migrations before booting the server. Migrations are no-op if already applied.
 
+`nub --no-env-file run test:headers` verifies the production bundle using a
+disposable PGlite directory. For an isolated Docker fixture, run
+`nub --no-env-file scripts/check-security-headers.ts --postgres-fixture` with
+`NODE_EXTRA_CA_CERTS=/fixture/server.crt`. This mode expects a TLS-enabled
+`blockrate-postgres:5432` container, database `web_fixture`, and the dummy
+`fixture` / `dummy` login. It verifies the real postgres.js startup, ingestion,
+persistence and shutdown path. Use only a disposable database, never live data.
+
 ## Bundle health
 
-After `bun run build`, the landing's first-load JS should be **≤ 200 KB gzipped** with no references to `auth-client`, `better-auth`, `postgres`, `pglite`, or `drizzle`. Verify:
+After `nub run build`, the landing's first-load JS should be **≤ 200 KB gzipped** with no references to `auth-client`, `better-auth`, `postgres`, `pglite`, or `drizzle`. Verify:
 
 ```bash
 cd .output/public/assets

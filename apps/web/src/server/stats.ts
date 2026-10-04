@@ -13,7 +13,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type * as schema from "@/lib/db/schema";
 import { requireAccount } from "@/lib/require-account.server";
 import { DAY_MS } from "@/lib/time";
@@ -163,7 +163,7 @@ export interface BrowserRow {
  * DB-real testable without a session, mirroring setWeeklyDigestForAccount.
  */
 export async function getBrowserBreakdownForAccount(
-  db: BunSQLDatabase<typeof schema>,
+  db: PostgresJsDatabase<typeof schema>,
   accountId: number,
   sinceDays: number,
   service?: string,
@@ -240,7 +240,7 @@ export const getBrowserBreakdown = createServerFn({ method: "GET" })
  * testable without a session, mirroring setWeeklyDigestForAccount.
  */
 export async function hasReceivedEventsForAccount(
-  db: BunSQLDatabase<typeof schema>,
+  db: PostgresJsDatabase<typeof schema>,
   accountId: number,
 ): Promise<boolean> {
   const { usageCounters } = await import("@/lib/db/schema");
@@ -280,7 +280,7 @@ export const getUsageSnapshot = createServerFn({ method: "GET" }).handler(async 
 /** Toggle the caller's weekly-digest opt-out. Account-parameterized core so
  *  it's DB-real testable without a session. */
 export async function setWeeklyDigestForAccount(
-  db: BunSQLDatabase<typeof schema>,
+  db: PostgresJsDatabase<typeof schema>,
   accountId: number,
   enabled: boolean,
 ): Promise<{ enabled: boolean }> {

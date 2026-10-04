@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createWebHandler, type ForwardError } from "../src/handler";
 import { isValidBlockRateResult } from "../src/validate";
 import type { BlockRateResult } from "../src/types";

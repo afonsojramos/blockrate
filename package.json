@@ -19,20 +19,23 @@
       "zod": "^4.6.5"
     }
   },
+  "type": "module",
   "scripts": {
-    "build": "bun run --filter '*' build",
-    "bump": "bun scripts/bump.ts",
-    "test": "bun run --filter '*' test",
-    "test:watch": "bun run --filter '*' test --watch",
-    "test:coverage": "bun run --filter '*' test --coverage",
+    "build": "nub --no-env-file run build:packages && nub --no-env-file run --filter web build",
+    "bump": "nub --no-env-file scripts/bump.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
-    "typecheck": "cd apps/web && bun run typecheck",
-    "check": "bun run format:check && bun run lint && bun run typecheck",
-    "precommit": "bun run check",
-    "prepare": "husky"
+    "typecheck": "tsc --noEmit && nub --no-env-file run --filter blockrate-server --filter blockrate --filter web typecheck",
+    "check": "nub --no-env-file run format:check && nub --no-env-file run lint && nub --no-env-file run typecheck",
+    "precommit": "nub --no-env-file run check",
+    "prepare": "husky",
+    "build:packages": "nub --no-env-file run --filter blockrate-server --filter blockrate --filter blockrate-init build",
+    "test:package": "nub --no-env-file scripts/package-smoke.ts"
   },
   "dependencies": {
     "nitro": "catalog:",
@@ -40,12 +43,26 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "catalog:",
-    "@types/bun": "latest",
+    "@hono/node-server": "^1.19.9",
+    "@nubjs/nub": "0.9.6",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^24.19.1",
     "@types/react": "catalog:",
+    "@vitest/coverage-v8": "^4.1.0",
+    "esbuild": "^0.27.7",
     "husky": "^9.1.7",
     "oxfmt": "^0.71.0",
     "oxlint": "^1.86.0",
     "react": "catalog:",
-    "typescript": "^7.0.2"
-  }
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.0"
+  },
+  "engines": {
+    "node": ">=24.21.0"
+  },
+  "trustedDependencies": [
+    "better-sqlite3",
+    "esbuild",
+    "@nubjs/nub"
+  ]
 }

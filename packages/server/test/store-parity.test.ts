@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { SqliteStore } from "../src/stores/sqlite";
 import { PostgresStore } from "../src/stores/postgres";
 import type { BlockRateStore } from "../src/store";
@@ -20,8 +20,8 @@ for (const [name, factory] of backends) {
       store = await factory();
     });
 
-    afterEach(() => {
-      store.close();
+    afterEach(async () => {
+      await store.close();
     });
 
     it("creates and finds a tenant", async () => {

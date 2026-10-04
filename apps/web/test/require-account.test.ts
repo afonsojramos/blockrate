@@ -9,13 +9,13 @@
  *   requireAccountForApiForSession — API-route variant, returns Response
  */
 
-import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { resolve } from "node:path";
 
-import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import * as schema from "@/lib/db/schema";
 import { user as userTable } from "@/lib/db/auth-schema";
 import {
@@ -23,9 +23,9 @@ import {
   requireAccountForSession,
 } from "@/lib/require-account.server";
 
-const MIGRATIONS_FOLDER = resolve(__dirname, "..", "drizzle");
+const MIGRATIONS_FOLDER = resolve(import.meta.dirname, "..", "drizzle");
 
-type RealDb = BunSQLDatabase<typeof schema>;
+type RealDb = PostgresJsDatabase<typeof schema>;
 let db: RealDb;
 
 beforeEach(async () => {
@@ -35,7 +35,7 @@ beforeEach(async () => {
 });
 
 // Close the per-test PGlite so its WASM heap is reclaimed; otherwise instances
-// accumulate across the single bun-test process and OOM intermittently.
+// accumulate across the single test worker and OOM intermittently.
 afterEach(async () => {
   await (db as unknown as { $client: { close: () => Promise<void> } }).$client.close();
 });

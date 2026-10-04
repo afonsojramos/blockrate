@@ -1,85 +1,39 @@
-# Monorepo Dockerfile for deploying the blockrate.app web app.
-# Railway auto-detects this at the repo root.
-#
-# Uses Bun throughout because:
-#   1. The lockfile is bun.lock (npm/yarn can't read it)
-#   2. The migration runner (src/lib/db/migrate.ts) is TypeScript — Bun runs it natively
-#   3. The Nitro output (.output/server/index.mjs) runs fine under both Node and Bun
-#   4. oven/bun:1.3.11-alpine is ~150MB, comparable to node:22-alpine
-#
-# IMPORTANT: pin the exact Bun version so --frozen-lockfile never drifts
-# between local dev and Railway. Update this + mise.toml together.
-
-FROM oven/bun:1.4.2-alpine AS base
-
-# ─── Dependencies ────────────────────────────────────────────────────────
+# Railway deploys the hosted dashboard from the repository root.
+FROM node:24.21.0-bookworm-slim AS base
+RUN npm install --global @nubjs/nub@0.9.6
 
 FROM base AS deps
 WORKDIR /app
-
-# Copy workspace root + ALL workspace members' package.json files.
-# Missing any member causes bun --frozen-lockfile to recompute a different
-# resolution graph and fail. The workspace glob in root package.json is
-# ["packages/*", "apps/*", "examples/*"].
-COPY package.json bun.lock ./
+# Native SQLite can fall back to a source build when no prebuilt addon exists.
+RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ && rm -rf /var/lib/apt/lists/*
+COPY package.json bun.lock .npmrc ./
 COPY packages/core/package.json packages/core/
 COPY packages/server/package.json packages/server/
 COPY packages/cli/package.json packages/cli/
 COPY apps/web/package.json apps/web/
 COPY examples/vanilla/package.json examples/vanilla/
-
-RUN bun install --frozen-lockfile
-
-# ─── Build ───────────────────────────────────────────────────────────────
+RUN nub --no-env-file install --frozen-lockfile
 
 FROM base AS build
 WORKDIR /app
-
-COPY --from=deps /app/node_modules node_modules
-COPY --from=deps /app/packages/core/node_modules packages/core/node_modules
-COPY --from=deps /app/packages/server/node_modules packages/server/node_modules
-COPY --from=deps /app/apps/web/node_modules apps/web/node_modules
+# The hoisted install stays entirely under /app, including workspace links.
+COPY --from=deps /app .
 COPY . .
+RUN nub --no-env-file run build:packages
 
-# Build packages/core first (apps/web imports from it at build time)
-RUN cd packages/core && bun run build
-
-# VITE_* env vars must be available at build time for Vite to bake them
-# into the bundle. Railway passes service variables as Docker build args
-# automatically — we just need to declare + export them. VITE_SITE_URL is
-# load-bearing for SEO: if it is empty at build time, robots.txt serves
-# `Disallow: /`, sitemap.xml returns 204, and canonical tags are omitted —
-# i.e. the whole site is non-indexable. Keep this list in sync with every
-# VITE_-prefixed variable read via import.meta.env.
+# Vite inlines these public values at build time, not server startup.
 ARG VITE_BLOCKRATE_PUBLIC_KEY
 ENV VITE_BLOCKRATE_PUBLIC_KEY=$VITE_BLOCKRATE_PUBLIC_KEY
 ARG VITE_SITE_URL
 ENV VITE_SITE_URL=$VITE_SITE_URL
-
-# Build apps/web — production Vite + Nitro bundle
-RUN cd apps/web && NODE_ENV=production bun run build
-
-# ─── Runtime ─────────────────────────────────────────────────────────────
+RUN cd apps/web && NODE_ENV=production nub --no-env-file run build
 
 FROM base AS runtime
 WORKDIR /app
-
-# Copy the built server output
-COPY --from=build /app/apps/web/.output apps/web/.output
-
-# Copy the ENTIRE workspace — Bun's pnpm-style hoisting puts real packages
-# in node_modules/.bun/ at the repo root, with symlinks from each workspace
-# member's node_modules. Copying individual dirs breaks the symlink chain.
-# The .output/ is already built so the extra source files don't matter — they
-# just aren't referenced at runtime (only the migration runner + .output are).
+# Startup migrations use workspace dependencies; keep their links and assets.
 COPY --from=build /app .
-
 ENV NODE_ENV=production
 ENV PORT=8080
 EXPOSE 8080
-
-# Migrations run before server boot. On Railway, DATABASE_URL is the
-# managed Postgres addon's URL — the migration runner detects postgres://
-# vs pglite:// automatically.
-# Echo early so Railway shows SOMETHING in the logs even if the process crashes
-CMD ["sh", "-c", "echo '[blockrate] starting...' && cd apps/web && echo '[blockrate] running migrations...' && bun run db:migrate 2>&1 && echo '[blockrate] starting server...' && bun .output/server/index.mjs"]
+# exec delivers shutdown signals to Nitro after migrations finish successfully.
+CMD ["sh", "-c", "cd apps/web && nub --no-env-file run db:migrate && exec node .output/server/index.mjs"]
