@@ -2,7 +2,16 @@ export type ProviderStatus = "loaded" | "blocked";
 
 export interface Provider {
   name: string;
-  detect: () => Promise<ProviderStatus>;
+  /** The signal aborts on deadline expiry when AbortController is available. */
+  detect: (signal?: AbortSignal) => Promise<ProviderStatus>;
+  /**
+   * Detection deadline in ms for `BlockRate.check()`. Custom providers default
+   * to 3000; built-in providers keep their probe timeouts unless set explicitly.
+   * Must be an integer from 1 to 2147483647. Invalid values throw a RangeError
+   * when constructing BlockRate. Expiry reports "blocked" and logs a warning.
+   * Detection can use the optional signal to cancel work cooperatively.
+   */
+  timeoutMs?: number;
 }
 
 export interface ProviderResult {
@@ -19,6 +28,11 @@ export interface BlockRateResult {
   providers: ProviderResult[];
 }
 
+/**
+ * Called once with the measurement. Returned promises are observed for rejection
+ * without awaiting completion; their values are ignored. Failures warn without
+ * rejecting `check()`.
+ */
 export type Reporter = (result: BlockRateResult) => void;
 
 export interface BlockRateOptions {

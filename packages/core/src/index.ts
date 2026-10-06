@@ -1,6 +1,13 @@
 import { builtInProviders } from "./providers";
 import { hasCheckedThisSession, markChecked, shouldSample } from "./session";
-import type { BlockRateOptions, BlockRateResult, Provider, ProviderResult } from "./types";
+import { warn } from "./warn";
+import type {
+  BlockRateOptions,
+  BlockRateResult,
+  Provider,
+  ProviderResult,
+  ProviderStatus,
+} from "./types";
 
 export * from "./types";
 export { beaconReporter, serverReporter } from "./reporter";
@@ -23,6 +30,12 @@ export {
   intercom,
 } from "./providers";
 
+const DEFAULT_DETECT_TIMEOUT_MS = 3000;
+
+function warnReporter(error: unknown): void {
+  warn("[blockrate] reporter threw:", error);
+}
+
 export function createProvider(provider: Provider): Provider {
   return provider;
 }
@@ -42,6 +55,17 @@ export class BlockRate {
     this.providers = options.providers
       .map((p) => (typeof p === "string" ? builtInProviders[p] : p))
       .filter((p): p is Provider => !!p);
+    for (const provider of this.providers) {
+      const timeoutMs = provider.timeoutMs;
+      if (
+        timeoutMs !== undefined &&
+        (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 2147483647)
+      ) {
+        throw new RangeError(
+          `[blockrate] provider "${provider.name}" timeoutMs must be an integer from 1 to 2147483647`,
+        );
+      }
+    }
     this.reporter = options.reporter;
     this.sampleRate = options.sampleRate ?? 1;
     this.delay = options.delay ?? 3000;
@@ -75,19 +99,33 @@ export class BlockRate {
     const providerResults = await Promise.all(
       this.providers.map(async (p): Promise<ProviderResult> => {
         const start = typeof performance !== "undefined" ? performance.now() : Date.now();
-        // A throwing `detect()` is treated as "blocked" because that is the
-        // closest defensible classification — but a probe bug (or a custom
-        // provider crash) inflating the numerator silently is a debugging
-        // hole, so log the underlying error. Use console.warn so it lands
-        // in DevTools without escalating to the page's error pipeline.
-        const status = await p.detect().catch((err): "blocked" => {
-          try {
-            console.warn(`[blockrate] provider "${p.name}" detect() threw:`, err);
-          } catch {
-            // ignore environments where console.warn is itself broken
-          }
-          return "blocked";
-        });
+        let status: ProviderStatus;
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        try {
+          const timeoutMs =
+            p.timeoutMs ?? (builtInProviders[p.name] === p ? undefined : DEFAULT_DETECT_TIMEOUT_MS);
+          const controller =
+            timeoutMs !== undefined && typeof AbortController !== "undefined"
+              ? new AbortController()
+              : undefined;
+          const detection = p.detect(controller?.signal);
+          status = await (timeoutMs === undefined
+            ? detection
+            : Promise.race([
+                detection,
+                new Promise<ProviderStatus>((_, reject) => {
+                  timer = setTimeout(() => {
+                    reject(new Error(`detect() timed out after ${timeoutMs} ms`));
+                    controller?.abort();
+                  }, timeoutMs);
+                }),
+              ]));
+        } catch (err) {
+          status = "blocked";
+          warn(`[blockrate] provider "${p.name}" detect() threw:`, err);
+        } finally {
+          if (timer !== undefined) clearTimeout(timer);
+        }
         const end = typeof performance !== "undefined" ? performance.now() : Date.now();
         return { name: p.name, status, latency: Math.round(end - start) };
       }),
@@ -105,17 +143,9 @@ export class BlockRate {
     };
 
     try {
-      this.reporter(result);
+      Promise.resolve(this.reporter(result)).catch(warnReporter);
     } catch (err) {
-      // A throwing reporter means the entire measurement pipeline is dark
-      // — no events reach the dashboard, and the customer has no signal
-      // about why. Surface it via console.warn so the failure is visible
-      // in DevTools rather than swallowed silently.
-      try {
-        console.warn("[blockrate] reporter threw:", err);
-      } catch {
-        // ignore environments where console.warn is itself broken
-      }
+      warnReporter(err);
     }
 
     return result;

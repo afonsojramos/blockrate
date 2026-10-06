@@ -104,11 +104,71 @@ import { BlockRate, createProvider } from "blockrate";
 
 const mine = createProvider({
   name: "my-analytics",
+  timeoutMs: 5000,
   detect: async () => (window.myAnalytics ? "loaded" : "blocked"),
 });
 
 new BlockRate({ providers: [mine], reporter: console.log }).check();
 ```
+
+### Detection deadlines
+
+Custom provider objects, whether passed directly or through `createProvider`, have a
+**3000 ms deadline** by default. Set `Provider.timeoutMs` to override it per provider.
+The value must be an integer from `1` to `2147483647` ms; invalid values (including
+zero, negative numbers, fractions, non-finite numbers, and non-numbers) throw a
+`RangeError` when constructing `BlockRate`. Omit the field to use the default.
+
+Each deadline starts when its detector is invoked, after the optional `delay`.
+Expiry contributes a `blocked` result and a warning, allowing healthy providers to
+be reported together with the timed-out provider. The deadline timer is cleared
+on success, failure, or timeout. Late settlements cannot change the result or
+cause another report; late rejections remain observed.
+
+Built-in names and exported built-in provider instances retain their existing
+probe timeouts, with no extra deadline by default. An explicit `timeoutMs` on a
+provider object bounds the whole detection, but does not change the timeout
+arguments of `probe(url, timeoutMs)` or `probeImage(url, timeoutMs)`. Set both
+appropriately if a custom detector needs a longer probe.
+
+A detector receives an optional `AbortSignal` that aborts when its deadline expires,
+where `AbortController` is available. Pass it to work that supports cancellation:
+
+```ts
+const mine = createProvider({
+  name: "my-analytics",
+  timeoutMs: 5000,
+  detect: async (signal) => {
+    await fetch("https://cdn.example.com/analytics.js", { method: "HEAD", signal });
+    return "loaded";
+  },
+});
+```
+
+A deadline bounds **waiting**. Detectors must cooperate with the signal to cancel
+their work. The SDK cannot stop arbitrary network requests or synchronous work.
+Timers also need a responsive event loop and can be delayed by browser throttling.
+Existing detectors that take no argument remain compatible.
+
+### Error containment
+
+The React `useBlockRate` hook and Next.js `BlockRateScript` component catch
+initialization errors, warn via `[blockrate] initialization failed:`, and skip
+measurement without unmounting the host application.
+
+A detector that throws synchronously or rejects asynchronously contributes
+`blocked` without preventing healthy providers from being reported. Detector
+errors and deadline expiry use the existing warning channel:
+`[blockrate] provider "<name>" detect() threw:`. This conservative fallback can
+inflate the measured block rate, so inspect warnings before attributing failures
+to an ad blocker.
+
+The reporter is invoked once with the result. Synchronous throws and **returned**
+promise rejections warn via `[blockrate] reporter threw:` without rejecting
+`check()`. Reporter completion is never awaited, so a hanging promise cannot hold
+up `check()`. Receiving a result from `check()` is not confirmation of delivery.
+Detached async work that the reporter does not return must handle its own errors.
+Logging failures are contained as well.
 
 ## Options
 
