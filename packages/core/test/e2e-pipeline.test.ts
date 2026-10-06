@@ -15,12 +15,12 @@
  *     fixed in PR #5) and what shows up via /stats end-to-end.
  *   - Customer `onError` actually firing on upstream non-2xx.
  *
- * No mocks: real Node HTTP, real fetch, real JSON. Slower than the
- * unit tests but still well under a second.
+ * Real Node HTTP, fetch and JSON; detector timing can be controlled.
+ * Slower than the unit tests but still well under a second.
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { BlockRate, createProvider } from "../src/index";
+import { BlockRate, createProvider, isValidBlockRateResult } from "../src/index";
 import { createWebHandler } from "../src/handler";
 import type { ForwardError } from "../src/handler";
 import type { BlockRateResult } from "../src/types";
@@ -144,6 +144,70 @@ describe("e2e pipeline (client → core handler → server → stats)", () => {
       vi.unstubAllGlobals();
     }
   });
+
+  it.each([60_000, 60_001])(
+    "ingests a maximum-deadline expiry measured at %i ms with its healthy peer",
+    async (elapsedMs) => {
+      vi.stubGlobal("window", {});
+      vi.stubGlobal("location", { pathname: "/checkout" });
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const reporter = vi.fn();
+      let elapsed = 0;
+      vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+      const now = vi.spyOn(performance, "now").mockImplementation(() => elapsed);
+      try {
+        const checking = new BlockRate({
+          providers: [
+            { name: "healthy", detect: async () => "loaded" },
+            { name: "hanging", timeoutMs: 60_000, detect: () => new Promise(() => {}) },
+          ],
+          reporter,
+          delay: 0,
+        }).check();
+        await vi.advanceTimersByTimeAsync(0);
+        elapsed = elapsedMs;
+        await vi.advanceTimersByTimeAsync(60_000);
+        const result = await checking;
+        vi.useRealTimers();
+        now.mockRestore();
+
+        expect(reporter).toHaveBeenCalledExactlyOnceWith(result);
+        expect(isValidBlockRateResult(result)).toBe(true);
+        expect(result?.providers).toEqual([
+          { name: "healthy", status: "loaded", latency: 0 },
+          { name: "hanging", status: "blocked", latency: 60_000 },
+        ]);
+        const handler = createWebHandler({
+          forward: { apiKey: TEST_API_KEY, endpoint: harness.endpoint },
+        });
+        const response = await handler(
+          new Request("http://customer.test/api/block-rate", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(result),
+          }),
+        );
+        expect(response.status).toBe(204);
+        const tenant = await harness.app.store.findTenantByApiKey(TEST_API_KEY);
+        const stats = await harness.app.store.getStats({
+          tenantId: tenant!.id,
+          since: new Date(0),
+        });
+        expect(stats.map(({ provider, total, blocked }) => ({ provider, total, blocked }))).toEqual(
+          expect.arrayContaining([
+            { provider: "healthy", total: 1, blocked: 0 },
+            { provider: "hanging", total: 1, blocked: 1 },
+          ]),
+        );
+        expect(stats).toHaveLength(2);
+      } finally {
+        vi.useRealTimers();
+        now.mockRestore();
+        warn.mockRestore();
+        vi.unstubAllGlobals();
+      }
+    },
+  );
 
   it("forwards a valid payload through every leg and surfaces it via /stats", async () => {
     const handler = createWebHandler({

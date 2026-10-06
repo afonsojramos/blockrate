@@ -7,7 +7,7 @@ export interface Provider {
   /**
    * Detection deadline in ms for `BlockRate.check()`. Custom providers default
    * to 3000; built-in providers keep their probe timeouts unless set explicitly.
-   * Must be an integer from 1 to 2147483647. Invalid values throw a RangeError
+   * Must be an integer from 1 to 60000. Invalid values throw a RangeError
    * when constructing BlockRate. Expiry reports "blocked" and logs a warning.
    * Detection can use the optional signal to cancel work cooperatively.
    */
@@ -17,6 +17,7 @@ export interface Provider {
 export interface ProviderResult {
   name: string;
   status: ProviderStatus;
+  /** Elapsed detection time in ms, rounded and capped at 60000 for ingestion. */
   latency: number;
 }
 

@@ -1,6 +1,7 @@
 import { builtInProviders } from "./providers";
 import { hasCheckedThisSession, markChecked, shouldSample } from "./session";
 import { warn } from "./warn";
+import { MAX_PROVIDER_LATENCY_MS } from "./validate";
 import type {
   BlockRateOptions,
   BlockRateResult,
@@ -59,10 +60,10 @@ export class BlockRate {
       const timeoutMs = provider.timeoutMs;
       if (
         timeoutMs !== undefined &&
-        (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 2147483647)
+        (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > MAX_PROVIDER_LATENCY_MS)
       ) {
         throw new RangeError(
-          `[blockrate] provider "${provider.name}" timeoutMs must be an integer from 1 to 2147483647`,
+          `[blockrate] provider "${provider.name}" timeoutMs must be an integer from 1 to ${MAX_PROVIDER_LATENCY_MS}`,
         );
       }
     }
@@ -127,7 +128,11 @@ export class BlockRate {
           if (timer !== undefined) clearTimeout(timer);
         }
         const end = typeof performance !== "undefined" ? performance.now() : Date.now();
-        return { name: p.name, status, latency: Math.round(end - start) };
+        return {
+          name: p.name,
+          status,
+          latency: Math.min(MAX_PROVIDER_LATENCY_MS, Math.round(end - start)),
+        };
       }),
     );
 

@@ -1,5 +1,7 @@
 import type { BlockRateResult } from "./types";
 
+export const MAX_PROVIDER_LATENCY_MS = 60_000;
+
 /**
  * Lightweight shape + bounds validator mirroring the strict zod schema in
  * `packages/server/src/validate.ts`. This is intentionally core-local so the
@@ -52,7 +54,7 @@ export function isValidBlockRateResult(value: unknown): value is BlockRateResult
       typeof p.latency !== "number" ||
       !Number.isInteger(p.latency) ||
       p.latency < 0 ||
-      p.latency > 60_000
+      p.latency > MAX_PROVIDER_LATENCY_MS
     ) {
       return false;
     }

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, beforeAll, afterEach, afterAll, vi } from "vitest";
-import { BlockRate, createProvider, ga4, probe } from "../src/index";
+import { BlockRate, createProvider, ga4, isValidBlockRateResult, probe } from "../src/index";
 import type { ProviderStatus } from "../src/types";
 
 const storage: Record<string, string> = {};
@@ -256,27 +256,37 @@ describe("BlockRate", () => {
       );
     });
 
-    it.each([0, -1, 0.5, NaN, Infinity, -Infinity, 2147483648, "50", null, true])(
-      "rejects invalid provider timeoutMs %s at construction",
-      (timeoutMs) => {
-        expect(
-          () =>
-            new BlockRate({
-              providers: [
-                {
-                  name: "invalid",
-                  timeoutMs: timeoutMs as number,
-                  detect: async () => "loaded",
-                },
-              ],
-              reporter: () => {},
-              delay: 0,
-            }),
-        ).toThrow(RangeError);
-      },
-    );
+    it.each([
+      0,
+      -1,
+      0.5,
+      NaN,
+      Infinity,
+      -Infinity,
+      60_001,
+      2147483647,
+      2147483648,
+      "50",
+      null,
+      true,
+    ])("rejects invalid provider timeoutMs %s at construction", (timeoutMs) => {
+      expect(
+        () =>
+          new BlockRate({
+            providers: [
+              {
+                name: "invalid",
+                timeoutMs: timeoutMs as number,
+                detect: async () => "loaded",
+              },
+            ],
+            reporter: () => {},
+            delay: 0,
+          }),
+      ).toThrow(RangeError);
+    });
 
-    it.each([undefined, 1, 3000, 5000, 2147483647])(
+    it.each([undefined, 1, 3000, 5000, 60_000])(
       "accepts supported provider timeoutMs %s",
       (timeoutMs) => {
         expect(
@@ -288,6 +298,21 @@ describe("BlockRate", () => {
         ).not.toThrow();
       },
     );
+
+    it("keeps a late successful detector result within ingestion latency bounds", async () => {
+      vi.spyOn(performance, "now").mockReturnValueOnce(0).mockReturnValue(60_001);
+      const reporter = vi.fn();
+      const result = await new BlockRate({
+        providers: [{ name: "healthy", detect: async () => "loaded" }],
+        reporter,
+        delay: 0,
+      }).check();
+
+      expect(result?.providers).toEqual([{ name: "healthy", status: "loaded", latency: 60_000 }]);
+      expect(isValidBlockRateResult(result)).toBe(true);
+      expect(reporter).toHaveBeenCalledExactlyOnceWith(result);
+      expect(vi.getTimerCount()).toBe(0);
+    });
 
     it("keeps healthy detection before the deadline and clears the timer", async () => {
       let detectionSignal: AbortSignal | undefined;

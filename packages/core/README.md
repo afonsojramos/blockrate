@@ -115,7 +115,7 @@ new BlockRate({ providers: [mine], reporter: console.log }).check();
 
 Custom provider objects, whether passed directly or through `createProvider`, have a
 **3000 ms deadline** by default. Set `Provider.timeoutMs` to override it per provider.
-The value must be an integer from `1` to `2147483647` ms; invalid values (including
+The value must be an integer from `1` to `60000` ms; invalid values (including
 zero, negative numbers, fractions, non-finite numbers, and non-numbers) throw a
 `RangeError` when constructing `BlockRate`. Omit the field to use the default.
 
@@ -123,7 +123,8 @@ Each deadline starts when its detector is invoked, after the optional `delay`.
 Expiry contributes a `blocked` result and a warning, allowing healthy providers to
 be reported together with the timed-out provider. The deadline timer is cleared
 on success, failure, or timeout. Late settlements cannot change the result or
-cause another report; late rejections remain observed.
+cause another report; late rejections remain observed. Reported latency is capped
+at `60000` ms, including when a delayed timer runs after its deadline.
 
 Built-in names and exported built-in provider instances retain their existing
 probe timeouts, with no extra deadline by default. An explicit `timeoutMs` on a
