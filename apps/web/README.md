@@ -3,6 +3,8 @@
 The hosted dashboard at [blockrate.app](https://blockrate.app). TanStack Start + Better Auth (magic link / OAuth) + Drizzle/Postgres + Tailwind v4 + Base UI via shadcn.
 
 Ingest, API keys, per-provider dashboard, Stripe billing, alerts (email/Slack/webhook), weekly digests, remediation playbook, and the public block-rate index all live here. See root `CLAUDE.md` for pre-ship validation and deploy env vars.
+The repository-wide [`web performance playbook`](../../docs/web-performance-playbook.md)
+defines the hosted measurement protocol, bundle/origin budgets, and deployment checks.
 
 ## Prerequisites
 
