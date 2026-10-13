@@ -31,8 +31,7 @@
     "format:check": "oxfmt --check .",
     "typecheck": "cd apps/web && bun run typecheck",
     "check": "bun run format:check && bun run lint && bun run typecheck",
-    "precommit": "bun run check",
-    "prepare": "husky"
+    "hooks:install": "hk install --mise"
   },
   "dependencies": {
     "nitro": "catalog:",
@@ -42,7 +41,6 @@
     "@electric-sql/pglite": "catalog:",
     "@types/bun": "latest",
     "@types/react": "catalog:",
-    "husky": "^9.1.7",
     "oxfmt": "^0.71.0",
     "oxlint": "^1.86.0",
     "react": "catalog:",
