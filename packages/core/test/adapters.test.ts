@@ -10,7 +10,7 @@
  * per adapter. We only test the shape contract here.
  */
 
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect } from "vitest";
 import { createBlockRateHandler as nextHandler } from "../src/next/handler";
 import { createBlockRateHandler as sveltekitHandler } from "../src/sveltekit";
 import { createBlockRateHandler as tanstackHandler } from "../src/tanstack-start";

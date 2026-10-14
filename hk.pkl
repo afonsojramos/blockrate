@@ -2,7 +2,7 @@ amends "package://github.com/jdx/hk/releases/download/v2.6.0/hk@2.6.0#/Config.pk
 
 steps {
   ["check"] {
-    check = "bun run check"
+    check = "nub --no-env-file run check"
   }
 }
 

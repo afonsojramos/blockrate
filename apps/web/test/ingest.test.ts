@@ -3,7 +3,7 @@
  * Real route handler + in-memory PGlite (same harness as retention/stripe tests).
  */
 
-import { beforeEach, describe, expect, it } from "bun:test";
+import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { eq } from "drizzle-orm";
 import { resolve } from "node:path";
@@ -13,7 +13,7 @@ import { user as userTable } from "@/lib/db/auth-schema";
 import { generateApiKey } from "@/lib/keys.server";
 import { PLANS } from "@/lib/plans";
 
-const MIGRATIONS_FOLDER = resolve(__dirname, "..", "drizzle");
+const MIGRATIONS_FOLDER = resolve(import.meta.dirname, "..", "drizzle");
 
 type PgliteDb = ReturnType<typeof import("drizzle-orm/pglite").drizzle<typeof schema>>;
 const { db } = (await import("@/lib/db/index.server")) as unknown as { db: PgliteDb };
@@ -154,4 +154,8 @@ describe("hosted /api/ingest", () => {
     const res = await POST({ request: request(plaintext, payload()) });
     expect(res.status).toBe(401);
   });
+});
+
+afterAll(async () => {
+  await db.$client.close();
 });

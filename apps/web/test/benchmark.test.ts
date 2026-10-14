@@ -4,7 +4,7 @@
  * delta math is own − benchmark, and the account's OWN rate is never floored.
  */
 
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { attachBenchmark } from "@/server/stats";
 import { deltaToPoints, MIN_SAMPLE_CHECKS } from "@/lib/providers";
 

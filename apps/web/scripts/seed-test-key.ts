@@ -4,7 +4,7 @@
  * without going through the magic-link flow.
  *
  * Usage:
- *   bun run scripts/seed-test-key.ts
+ *   nub run scripts/seed-test-key.ts
  */
 
 import { db } from "../src/lib/db/index.server";

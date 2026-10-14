@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, beforeAll, afterAll } from "bun:test";
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
 import { hasCheckedThisSession, markChecked, shouldSample } from "../src/session";
 
 const storage: Record<string, string> = {};

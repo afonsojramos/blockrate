@@ -42,9 +42,7 @@ export class PostgresStore implements BlockRateStore {
     const exec = async (s: string) => {
       await client.exec(s);
     };
-    const close = () => {
-      void client.close();
-    };
+    const close = () => client.close();
     const store = new PostgresStore(db, exec, close);
     await store.runMigrations();
     return store;
@@ -53,14 +51,9 @@ export class PostgresStore implements BlockRateStore {
   private async runMigrations() {
     const here = dirname(fileURLToPath(import.meta.url));
     const migrationsDir = join(here, "..", "..", "drizzle-postgres");
-    let files: string[];
-    try {
-      files = readdirSync(migrationsDir)
-        .filter((f) => f.endsWith(".sql"))
-        .sort();
-    } catch {
-      return;
-    }
+    const files = readdirSync(migrationsDir)
+      .filter((f) => f.endsWith(".sql"))
+      .sort();
 
     await this.execRaw(
       `CREATE TABLE IF NOT EXISTS __migrations (
@@ -165,7 +158,7 @@ export class PostgresStore implements BlockRateStore {
     }));
   }
 
-  close(): void {
-    void this.closeFn();
+  close(): void | Promise<void> {
+    return this.closeFn();
   }
 }

@@ -1,9 +1,9 @@
 /**
  * Generate the Open Graph / Twitter share image → public/og.png (1200×630).
  *
- * Programmatic + repeatable: edit this file and run `bun run og`. The PNG is
+ * Programmatic + repeatable: edit this file and run `nub run og`. The PNG is
  * committed so the production Docker build needs no rasterizer. Mirrors the
- * resvg + wawoff2 approach from afonsojramos.me — resvg-js can't read woff2, so
+ * resvg + wawoff2 approach from afonsojramos.me , resvg-js can't read woff2, so
  * the bundled Geist weights are decompressed to TTF first.
  *
  * On-brand per docs/design.md: dark-first surface, lowercase wordmark, and the

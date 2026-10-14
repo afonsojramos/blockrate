@@ -6,7 +6,7 @@
  * and value exactly.
  */
 
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect } from "vitest";
 import { blockRateBadge } from "@/lib/badge";
 import { badgeColor, formatRatePercent } from "@/lib/providers";
 

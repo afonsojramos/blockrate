@@ -4,12 +4,12 @@
  * (planFromPriceId); a wrong mapping silently provisions the wrong tier.
  *
  * plans.ts reads price IDs from process.env at call time and does not import
- * env.server. The price-id values come from test/setup.ts (bun test preload);
+ * env.server. The price-id values come from test/setup.ts (Vitest setup);
  * this file reads them rather than mutating them, since the webhook handler
  * reads the same process.env values at call time in the same test process.
  */
 
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { getPlan, planFromPriceId, resolvePriceId } from "@/lib/plans";
 
 const PRO_M = process.env.STRIPE_PRO_MONTHLY_PRICE_ID!;

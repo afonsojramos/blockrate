@@ -4,14 +4,14 @@
  * fresh in-memory PGlite (closed in afterEach so its WASM heap is reclaimed).
  */
 
-import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { eq } from "drizzle-orm";
 import { resolve } from "node:path";
 
-import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import * as schema from "@/lib/db/schema";
 import { user as userTable } from "@/lib/db/auth-schema";
 import { digestEmailBody } from "@/lib/mailer.server";
@@ -35,8 +35,8 @@ describe("digestEmailBody", () => {
   });
 });
 
-const MIGRATIONS_FOLDER = resolve(__dirname, "..", "drizzle");
-type RealDb = BunSQLDatabase<typeof schema>;
+const MIGRATIONS_FOLDER = resolve(import.meta.dirname, "..", "drizzle");
+type RealDb = PostgresJsDatabase<typeof schema>;
 let db: RealDb;
 
 async function seedAccount(userId: string): Promise<number> {

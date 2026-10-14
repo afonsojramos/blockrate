@@ -1,8 +1,8 @@
 /**
  * Migration runner. Runs at app start (via the `start` script in package.json)
- * and from `bun run db:migrate` for local dev.
+ * and from `nub run db:migrate` for local dev.
  *
- * - postgres:// URL → uses drizzle-orm/bun-sql/migrator
+ * - postgres:// URL → uses drizzle-orm/postgres-js/migrator
  * - pglite:// URL   → uses drizzle-orm/pglite/migrator
  *
  * Drizzle's per-driver migrators handle the __drizzle_migrations bookkeeping
@@ -10,11 +10,12 @@
  * every start.
  */
 
-import { migrate as migrateBunSql } from "drizzle-orm/bun-sql/migrator";
+import { migrate as migratePostgres } from "drizzle-orm/postgres-js/migrator";
 import { migrate as migratePglite } from "drizzle-orm/pglite/migrator";
-import { drizzle as drizzleBunSql } from "drizzle-orm/bun-sql";
+import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js";
 import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
-import { SQL } from "bun";
+import postgres from "postgres";
+import { postgresOptions } from "./postgres-options";
 import { PGlite } from "@electric-sql/pglite";
 import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -24,7 +25,7 @@ const MIGRATIONS_FOLDER = resolve(import.meta.dirname, "../../..", "drizzle");
 
 async function main() {
   const url = env.DATABASE_URL;
-  console.log(`[migrate] DATABASE_URL=${url.replace(/:[^:@]+@/, ":***@")}`);
+  console.log(`[migrate] backend=${url.startsWith("pglite://") ? "pglite" : "postgres"}`);
   console.log(`[migrate] migrationsFolder=${MIGRATIONS_FOLDER}`);
 
   if (url.startsWith("pglite://")) {
@@ -34,21 +35,22 @@ async function main() {
     }
     const client = dataDir ? new PGlite(dataDir) : new PGlite();
     const db = drizzlePglite(client);
-    await migratePglite(db, { migrationsFolder: MIGRATIONS_FOLDER });
-    await client.close();
+    try {
+      await migratePglite(db, { migrationsFolder: MIGRATIONS_FOLDER });
+    } finally {
+      await client.close();
+    }
     console.log("[migrate] pglite migrations applied");
     return;
   }
 
-  const client = new SQL({
-    url,
-    tls: env.NODE_ENV === "production",
-    prepare: false,
-    max: 1,
-  });
-  const db = drizzleBunSql(client);
-  await migrateBunSql(db, { migrationsFolder: MIGRATIONS_FOLDER });
-  await client.close();
+  const client = postgres(url, postgresOptions(env.NODE_ENV, 1));
+  const db = drizzlePostgres(client);
+  try {
+    await migratePostgres(db, { migrationsFolder: MIGRATIONS_FOLDER });
+  } finally {
+    await client.end({ timeout: 2 });
+  }
   console.log("[migrate] postgres migrations applied");
 }
 

@@ -5,10 +5,10 @@
  * the real index.server db singleton, pointed at an in-memory PGlite so handler
  * and test share one database. The 503-when-CRON_SECRET-unset branch is trivial
  * defensive code (verified by inspection). Env (DATABASE_URL, CRON_SECRET) is
- * set by test/setup.ts (bun test preload) before any module reads it.
+ * set by test/setup.ts (Vitest setup) before any module reads it.
  */
 
-import { beforeEach, describe, expect, it } from "bun:test";
+import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { eq } from "drizzle-orm";
 import { resolve } from "node:path";
@@ -18,7 +18,7 @@ const CRON_SECRET = process.env.CRON_SECRET!;
 import * as schema from "@/lib/db/schema";
 import { user as userTable } from "@/lib/db/auth-schema";
 
-const MIGRATIONS_FOLDER = resolve(__dirname, "..", "drizzle");
+const MIGRATIONS_FOLDER = resolve(import.meta.dirname, "..", "drizzle");
 
 type PgliteDb = ReturnType<typeof import("drizzle-orm/pglite").drizzle<typeof schema>>;
 const { db } = (await import("@/lib/db/index.server")) as unknown as { db: PgliteDb };
@@ -250,4 +250,8 @@ describe("retention cron — daily rollup", () => {
     expect(rows[0]!.totalChecks).toBe(4);
     expect(rows[0]!.blocked).toBe(3);
   });
+});
+
+afterAll(async () => {
+  await db.$client.close();
 });

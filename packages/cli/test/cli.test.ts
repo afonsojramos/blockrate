@@ -1,24 +1,24 @@
 /**
  * blockrate-init CLI — end-to-end against temp directories with fixture
- * package.json files. Spawns the CLI from source (bun runs TS directly);
- * the build artifact is verified separately by `bun run build`.
+ * package.json files. Spawns the published Node build;
+ * the build artifact is verified separately by `nub run build`.
  */
 
-import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { spawnSync } from "node:child_process";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve, dirname } from "node:path";
 
-const CLI = resolve(__dirname, "..", "src", "index.ts");
+const CLI = resolve(import.meta.dirname, "..", "dist", "index.js");
 
 function runCli(cwd: string, args: string[] = []) {
-  const proc = Bun.spawnSync(["bun", CLI, ...args], {
+  const proc = spawnSync(process.execPath, [CLI, ...args], {
     cwd,
-    stdout: "pipe",
-    stderr: "pipe",
+    encoding: "utf8",
   });
   return {
-    code: proc.exitCode,
+    code: proc.status,
     stdout: proc.stdout.toString(),
     stderr: proc.stderr.toString(),
   };

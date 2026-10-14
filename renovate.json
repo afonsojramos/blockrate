@@ -1,0 +1,39 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests", ":dependencyDashboard"],
+  "dependencyDashboardApproval": true,
+  "vulnerabilityAlerts": {
+    "dependencyDashboardApproval": true
+  },
+  "minimumReleaseAge": "1 day",
+  "packageRules": [
+    {
+      "groupName": "tanstack",
+      "matchPackageNames": ["@tanstack/**"]
+    },
+    {
+      "groupName": "cloudflare",
+      "matchPackageNames": ["wrangler", "miniflare", "@cloudflare/**"]
+    },
+    {
+      "groupName": "oxc",
+      "matchPackageNames": ["oxlint", "oxfmt", "oxlint-tsgolint"]
+    },
+    {
+      "groupName": "react",
+      "matchPackageNames": ["react", "react-dom", "@types/react", "@types/react-dom"]
+    },
+    {
+      "groupName": "sentry",
+      "matchPackageNames": ["@sentry/**"]
+    },
+    {
+      "groupName": "github actions",
+      "matchManagers": ["github-actions"]
+    },
+    {
+      "groupName": "repository toolchain",
+      "matchManagers": ["mise"]
+    }
+  ]
+}

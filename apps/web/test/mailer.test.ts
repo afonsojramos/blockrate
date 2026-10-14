@@ -3,7 +3,7 @@
  * helper that sendEmail always calls before logging or Resend.
  */
 
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { assertCanSendEmail } from "@/lib/mailer.server";
 
 describe("assertCanSendEmail", () => {

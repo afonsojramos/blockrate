@@ -1,6 +1,6 @@
 /**
  * Cloudflare Worker that hosts blockrate's first-party reporter endpoint
- * at the customer's own domain — no app code change required.
+ * at the customer's own domain , no app code change required.
  *
  * Why a worker rather than a route in your app?
  *
@@ -15,7 +15,7 @@
  *
  * Setup (3 minutes):
  *
- *   1. Install wrangler:                  bun add -g wrangler
+ *   1. Install wrangler:                  nub add -g wrangler
  *   2. Edit `wrangler.toml`:              fill in your account_id and the
  *                                          route on your domain.
  *   3. Set the BLOCKRATE_API_KEY secret:   wrangler secret put BLOCKRATE_API_KEY
@@ -50,7 +50,7 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (!env.BLOCKRATE_API_KEY) {
       // Surface the missing-secret case loudly rather than silently
-      // posting `x-blockrate-key: undefined` upstream — that would 401
+      // posting `x-blockrate-key: undefined` upstream , that would 401
       // every request and the dashboard would go dark with no obvious
       // cause.
       return new Response("missing BLOCKRATE_API_KEY secret", { status: 500 });
@@ -97,7 +97,7 @@ function corsHeaders(request: Request, env: Env): Record<string, string> {
   const allowed = env.BLOCKRATE_ALLOWED_ORIGINS?.split(",").map((s) => s.trim()) ?? [];
   // If no allowlist configured, mirror the request origin (lenient, but
   // safe because no cookies are involved and the worker forwards a
-  // server-side API key — there's nothing for a CSRF attacker to steal).
+  // server-side API key , there's nothing for a CSRF attacker to steal).
   // For tighter posture, set BLOCKRATE_ALLOWED_ORIGINS.
   const allowOrigin = allowed.length === 0 ? origin || "*" : allowed.includes(origin) ? origin : "";
   return {

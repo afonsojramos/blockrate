@@ -18,12 +18,12 @@
  * session — the same parameterization pattern as src/server/alerts.ts.
  */
 
-import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type * as schema from "@/lib/db/schema";
 import type { AppAccount } from "@/lib/db/schema";
 import { jsonError } from "@/lib/api-utils.server";
 
-type Db = BunSQLDatabase<typeof schema>;
+type Db = PostgresJsDatabase<typeof schema>;
 
 /** Structural minimum of a Better Auth session that this boundary reads. */
 export interface SessionWithUser {

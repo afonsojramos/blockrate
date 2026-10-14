@@ -11,7 +11,7 @@ a no-code-on-the-app-side install.
 If the browser posts directly to `blockrate.app`, the moment that domain
 lands on EasyPrivacy your "blocked" reports stop arriving and the
 dashboard silently shows "everything loaded." This worker bound to a
-route on your own domain is a first-party endpoint — no app changes
+route on your own domain is a first-party endpoint, no app changes
 required.
 
 ## Setup (3 minutes)
@@ -19,14 +19,14 @@ required.
 Prereqs: a Cloudflare account, your domain on Cloudflare, [`wrangler`](https://developers.cloudflare.com/workers/wrangler/) installed.
 
 ```bash
-bun add -g wrangler
+nub add -g wrangler
 wrangler login
 ```
 
 Edit `wrangler.toml`:
 
 - Set `account_id` to your Cloudflare account ID (find it in `dash.cloudflare.com` → right sidebar).
-- Uncomment and configure the `routes` block. Bind the worker to a route on **your** domain — typically a subdomain like `metrics.example.com/block-rate`.
+- Uncomment and configure the `routes` block. Bind the worker to a route on **your** domain, typically a subdomain like `metrics.example.com/block-rate`.
 
 Set the API key as a secret (the worker never sees it as plaintext in the source):
 
@@ -69,7 +69,7 @@ wrangler secret put BLOCKRATE_ENDPOINT
 
 ## Tightening CORS
 
-By default the worker mirrors the request `Origin` (safe — no cookies, no
+By default the worker mirrors the request `Origin` (safe, no cookies, no
 client-known credentials). For tighter posture, allowlist your origins:
 
 ```bash

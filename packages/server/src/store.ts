@@ -51,7 +51,7 @@ export interface BlockRateStore {
   getStats(query: StatsQuery): Promise<StatsRow[]>;
 
   /** Close the underlying connection. */
-  close(): void;
+  close(): void | Promise<void>;
 }
 
 export type Dialect = "sqlite" | "postgres";

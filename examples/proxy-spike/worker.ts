@@ -1,5 +1,5 @@
 /**
- * SPIKE — single-provider first-party reverse proxy (PostHog only).
+ * SPIKE , single-provider first-party reverse proxy (PostHog only).
  *
  * This is the proof-of-concept for the managed first-party proxy design
  * (docs/brainstorms/2026-07-21-managed-first-party-proxy.md). It answers one
@@ -8,12 +8,12 @@
  * breaking the provider's SDK?
  *
  * Why a spike and not a feature: proxying a provider makes this worker part
- * of the customer's analytics critical path. The design doc — not this
- * directory — is where the rollout decision lives.
+ * of the customer's analytics critical path. The design doc , not this
+ * directory , is where the rollout decision lives.
  *
  * Setup (3 minutes, mirroring examples/cloudflare-worker):
  *
- *   1. Install wrangler:             bun add -g wrangler
+ *   1. Install wrangler:             nub add -g wrangler
  *   2. Edit `wrangler.toml`:         uncomment the route on YOUR domain.
  *   3. Deploy:                       wrangler deploy
  *   4. Point your PostHog SDK at the proxy:
@@ -83,7 +83,7 @@ export default {
     }
     // The upstream virtual-hosts on its own domain.
     headers.set("host", upstreamUrl.host);
-    // Preserve the client IP for PostHog's geo resolution — the SDK's
+    // Preserve the client IP for PostHog's geo resolution , the SDK's
     // documented reverse-proxy requirement.
     const clientIp = request.headers.get("cf-connecting-ip");
     if (clientIp) headers.set("x-forwarded-for", clientIp);
@@ -94,7 +94,7 @@ export default {
       headers,
       // Streaming passthrough: pipe the body, never buffer it whole.
       body: hasBody ? request.body : null,
-      // @ts-expect-error — required by the Fetch spec when body is a stream;
+      // @ts-expect-error , required by the Fetch spec when body is a stream;
       // the Workers types don't model it.
       duplex: hasBody ? "half" : undefined,
       // Never edge-cache in the spike: event ingestion must never be cached,

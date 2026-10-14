@@ -1,17 +1,19 @@
 /**
- * Drizzle client. Switches between bun:sql (production) and PGlite
+ * Drizzle client. Switches between postgres.js (production) and PGlite
  * (local dev) based on the DATABASE_URL scheme:
  *
  *   pglite://./.local/blockrate.db   → PGlite, persistent file
  *   pglite://                        → PGlite, in-memory
- *   postgres://...                   → bun:sql with Railway-safe options
+ *   postgres://...                   → postgres.js with Railway-safe options
  *
  * Production deploys (Railway) MUST use a postgres:// URL. PGlite is dev-only.
  */
 
-import { drizzle as drizzleBunSql, type BunSQLDatabase } from "drizzle-orm/bun-sql";
+import { drizzle as drizzlePostgres, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
-import { SQL } from "bun";
+import postgres from "postgres";
+import { postgresOptions } from "./postgres-options";
+import { useNitroHooks } from "nitro/app";
 import { PGlite } from "@electric-sql/pglite";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
@@ -34,31 +36,22 @@ function createDb() {
     const dataDir = pgliteDataDir(env.DATABASE_URL);
     if (dataDir) {
       // Ensure parent directory exists for PGlite's persistent file
-      try {
-        mkdirSync(dirname(dataDir), { recursive: true });
-      } catch {
-        /* already exists */
-      }
+      mkdirSync(dirname(dataDir), { recursive: true });
     }
     const client = dataDir ? new PGlite(dataDir) : new PGlite();
     return drizzlePglite(client, { schema });
   }
 
-  const client = new SQL({
-    url: env.DATABASE_URL,
-    tls: env.NODE_ENV === "production",
-    prepare: false, // PgBouncer / Railway pooler safe
-    max: 5, // Phase 1 single instance; Phase 5 multi-instance: 8 per instance
-    idle_timeout: 20,
-    connection_timeout: 10,
-  });
-  return drizzleBunSql(client, { schema });
+  const client = postgres(env.DATABASE_URL, postgresOptions(env.NODE_ENV));
+  return drizzlePostgres(client, { schema });
 }
 
-/**
- * The PGlite and bun:sql Drizzle adapters return slightly different
- * concrete types, but they share the same query API surface. Cast to the
- * bun:sql shape (the production target) so TypeScript exposes the full
- * `.returning()` overloads on every consumer.
- */
-export const db = createDb() as unknown as BunSQLDatabase<typeof schema>;
+const database = createDb();
+// SAFETY: Both adapters share this PostgreSQL schema and query API.
+export const db = database as unknown as PostgresJsDatabase<typeof schema>;
+
+useNitroHooks().hook("close", async () => {
+  const client = database.$client;
+  if (client instanceof PGlite) await client.close();
+  else await client.end({ timeout: 2 });
+});

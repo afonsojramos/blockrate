@@ -1,5 +1,12 @@
 {
   "name": "block-rate-example-vanilla",
   "version": "0.0.0",
-  "private": true
+  "private": true,
+  "scripts": {
+    "start": "nub --no-env-file server.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.9",
+    "blockrate": "link:../../packages/core"
+  }
 }

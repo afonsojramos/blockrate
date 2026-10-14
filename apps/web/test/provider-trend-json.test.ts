@@ -5,13 +5,13 @@
  * test uses a DISTINCT real provider slug to avoid cross-test cache hits.
  */
 
-import { beforeEach, describe, expect, it } from "bun:test";
+import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { resolve } from "node:path";
 
 import * as schema from "@/lib/db/schema";
 
-const MIGRATIONS_FOLDER = resolve(__dirname, "..", "drizzle");
+const MIGRATIONS_FOLDER = resolve(import.meta.dirname, "..", "drizzle");
 type PgliteDb = ReturnType<typeof import("drizzle-orm/pglite").drizzle<typeof schema>>;
 const { db } = (await import("@/lib/db/index.server")) as unknown as { db: PgliteDb };
 await migrate(db, { migrationsFolder: MIGRATIONS_FOLDER });
@@ -78,4 +78,8 @@ describe("GET /block-rate/$provider/trend.json", () => {
     expect(body.summary).toBeNull();
     expect(body.points[0]!.rate).toBeNull();
   });
+});
+
+afterAll(async () => {
+  await db.$client.close();
 });

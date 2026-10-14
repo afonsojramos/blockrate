@@ -4,7 +4,7 @@
  * shipped template defines esc() and uses it for provider/tenant sinks.
  */
 
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { dashboardHtml } from "../src/dashboard";
 
 describe("dashboardHtml XSS hardening", () => {

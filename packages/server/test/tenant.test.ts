@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "bun:test";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createStore } from "../src/stores";
 import {
   createTenant,
@@ -14,6 +14,10 @@ describe("tenant management (sqlite)", () => {
 
   beforeEach(async () => {
     store = await createStore({ dialect: "sqlite", url: ":memory:" });
+  });
+
+  afterEach(async () => {
+    await store.close();
   });
 
   it("creates a tenant with a generated key", async () => {

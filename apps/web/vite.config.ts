@@ -1,6 +1,5 @@
 import { defineConfig } from "vite";
 import { devtools } from "@tanstack/devtools-vite";
-import tsconfigPaths from "vite-tsconfig-paths";
 
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 
@@ -8,31 +7,25 @@ import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
 
-import { SECURITY_HEADERS } from "./src/lib/security-headers";
+import { SECURITY_HEADERS } from "./src/lib/security-headers.ts";
 
-// `bun` is a runtime-only module (no npm package). Rollup must leave
-// `import { SQL } from "bun"` as an external so the Bun runtime can
-// resolve it at execution time.
 const config = defineConfig({
+  envDir: false,
   plugins: [
     devtools(),
     nitro({
-      rollupConfig: { external: [/^@sentry\//, "bun"] },
+      preset: "node-server",
+      features: { runtimeHooks: true },
+      rollupConfig: { external: [/^@sentry\//, /^@electric-sql\/pglite/] },
       routeRules: { "/**": { headers: SECURITY_HEADERS } },
     }),
-    tsconfigPaths({ projects: ["./tsconfig.json"] }),
     tailwindcss(),
     tanstackStart(),
     viteReact(),
   ],
-  ssr: {
-    external: ["bun"],
-    noExternal: [],
-  },
-  build: {
-    rollupOptions: {
-      external: ["bun"],
-    },
+  ssr: { external: ["@electric-sql/pglite"] },
+  resolve: {
+    tsconfigPaths: true,
   },
 });
 

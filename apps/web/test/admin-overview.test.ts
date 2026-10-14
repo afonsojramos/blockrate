@@ -11,7 +11,7 @@
  *      covered by other tests).
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
@@ -22,7 +22,7 @@ import * as schema from "@/lib/db/schema";
 import { user as userTable } from "@/lib/db/auth-schema";
 import { isAdminEmail } from "@/lib/admin.server";
 
-const MIGRATIONS_FOLDER = resolve(__dirname, "..", "drizzle");
+const MIGRATIONS_FOLDER = resolve(import.meta.dirname, "..", "drizzle");
 
 type TestDb = ReturnType<typeof drizzle<typeof schema>>;
 
@@ -221,7 +221,7 @@ describe("admin overview queries", () => {
   });
 
   // Close the per-test PGlite so its WASM heap is reclaimed; otherwise instances
-  // accumulate across the single bun-test process and OOM intermittently.
+  // accumulate across the single test worker and OOM intermittently.
   afterEach(async () => {
     await db.$client.close();
   });

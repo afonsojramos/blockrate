@@ -78,8 +78,8 @@ function OnboardingChecklist() {
           <li className="flex gap-3">
             <span className="font-medium tabular-nums text-muted-foreground">2.</span>
             <span>
-              Add the first-party reporter route to your app —{" "}
-              <code className="rounded bg-accent px-1.5 py-0.5 text-xs">bunx blockrate-init</code>{" "}
+              Add the first-party reporter route to your app ,{" "}
+              <code className="rounded bg-accent px-1.5 py-0.5 text-xs">nubx blockrate-init</code>{" "}
               scaffolds it for your framework.
             </span>
           </li>

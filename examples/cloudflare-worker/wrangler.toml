@@ -15,8 +15,7 @@ compatibility_date = "2026-01-01"
 #   { pattern = "metrics.example.com/block-rate", zone_name = "example.com" }
 # ]
 
-# Bun-style TypeScript imports work because workers-types is shipped
-# alongside the wrangler runtime.
+# Wrangler bundles the TypeScript worker for the Workers runtime.
 
 # Required at deploy time:
 #   wrangler secret put BLOCKRATE_API_KEY

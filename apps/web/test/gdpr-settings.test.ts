@@ -21,7 +21,7 @@
  * and constraints are the production shape, not an SQLite knockoff.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
@@ -31,7 +31,7 @@ import { eq, and } from "drizzle-orm";
 import * as schema from "@/lib/db/schema";
 import { user as userTable } from "@/lib/db/auth-schema";
 
-const MIGRATIONS_FOLDER = resolve(__dirname, "..", "drizzle");
+const MIGRATIONS_FOLDER = resolve(import.meta.dirname, "..", "drizzle");
 
 type TestDb = ReturnType<typeof drizzle<typeof schema>>;
 
@@ -154,7 +154,7 @@ describe("GDPR: exportEventsCsv", () => {
   });
 
   // Close the per-test PGlite so its WASM heap is reclaimed (prevents the
-  // single bun-test process from OOMing as instances accumulate).
+  // single test worker from OOMing as instances accumulate).
   afterEach(async () => {
     await db.$client.close();
   });
@@ -230,7 +230,7 @@ describe("GDPR: deleteAccount cascade", () => {
   });
 
   // Close the per-test PGlite so its WASM heap is reclaimed (prevents the
-  // single bun-test process from OOMing as instances accumulate).
+  // single test worker from OOMing as instances accumulate).
   afterEach(async () => {
     await db.$client.close();
   });

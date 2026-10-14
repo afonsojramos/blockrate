@@ -29,7 +29,7 @@
  * only assert the probe always fires regardless of `window` state.
  */
 
-import { describe, it, expect, afterEach, beforeEach } from "bun:test";
+import { describe, it, expect, afterEach, beforeEach } from "vitest";
 import {
   optimizely,
   posthog,

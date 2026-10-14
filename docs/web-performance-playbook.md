@@ -127,7 +127,7 @@ payload budgets, provider smoke tests, production bundle inspection, or runtime 
 
 ## Completion gates
 
-1. Run `bun run check`, core/server tests, hosted-app tests, the production build, and
+1. Run `nub run check`, core/server tests, hosted-app tests, the production build, and
    the live provider smoke test when publishing the client.
 2. Inspect publish tarballs and hosted production output.
 3. Deploy through the normal environment and repeat the same route/interaction trace.

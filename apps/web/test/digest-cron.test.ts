@@ -5,7 +5,7 @@
  * digest is logged rather than sent — no network.
  */
 
-import { beforeEach, describe, expect, it, spyOn } from "bun:test";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { resolve } from "node:path";
 
@@ -14,7 +14,7 @@ import { user as userTable } from "@/lib/db/auth-schema";
 import * as mailer from "@/lib/mailer.server";
 
 const CRON_SECRET = process.env.CRON_SECRET!;
-const MIGRATIONS_FOLDER = resolve(__dirname, "..", "drizzle");
+const MIGRATIONS_FOLDER = resolve(import.meta.dirname, "..", "drizzle");
 
 type PgliteDb = ReturnType<typeof import("drizzle-orm/pglite").drizzle<typeof schema>>;
 const { db } = (await import("@/lib/db/index.server")) as unknown as { db: PgliteDb };
@@ -137,7 +137,7 @@ describe("digest cron — sending rules", () => {
       await insertEvent(accountId, apiKeyId, { provider: "ga4", status: "loaded" });
     }
 
-    const spy = spyOn(mailer, "sendEmail").mockResolvedValue(undefined);
+    const spy = vi.spyOn(mailer, "sendEmail").mockResolvedValue(undefined);
     try {
       const body = await run();
       expect(body.sent).toBe(1);
@@ -170,4 +170,8 @@ describe("digest cron — sending rules", () => {
       body.accountsConsidered,
     );
   });
+});
+
+afterAll(async () => {
+  await db.$client.close();
 });

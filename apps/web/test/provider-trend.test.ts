@@ -5,19 +5,19 @@
  * mocks the DB.
  */
 
-import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { resolve } from "node:path";
 
-import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import * as schema from "@/lib/db/schema";
 import { MIN_SAMPLE_CHECKS } from "@/lib/providers";
 import { computeProviderTrend, summarizeTrend, type TrendPoint } from "@/server/hero-stats";
 
-const MIGRATIONS_FOLDER = resolve(__dirname, "..", "drizzle");
-type RealDb = BunSQLDatabase<typeof schema>;
+const MIGRATIONS_FOLDER = resolve(import.meta.dirname, "..", "drizzle");
+type RealDb = PostgresJsDatabase<typeof schema>;
 let db: RealDb;
 
 const DAY = 86_400_000;
@@ -39,7 +39,7 @@ beforeEach(async () => {
 });
 
 // Close the per-test PGlite so its WASM heap is reclaimed; otherwise instances
-// accumulate across the single bun-test process and OOM intermittently.
+// accumulate across the single test worker and OOM intermittently.
 afterEach(async () => {
   await (db as unknown as { $client: { close: () => Promise<void> } }).$client.close();
 });

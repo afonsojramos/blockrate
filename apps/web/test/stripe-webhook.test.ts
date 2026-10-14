@@ -11,10 +11,10 @@
  * exercised manually against Stripe, not in unit tests.
  *
  * Env (DATABASE_URL, Stripe secrets, price IDs) is set by test/setup.ts, the
- * bun test preload, before any module that reads it is imported.
+ * Vitest setup, before any module that reads it is imported.
  */
 
-import { beforeEach, describe, expect, it } from "bun:test";
+import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { eq } from "drizzle-orm";
 import { createHmac } from "node:crypto";
@@ -23,11 +23,11 @@ import { resolve } from "node:path";
 import * as schema from "@/lib/db/schema";
 import { user as userTable } from "@/lib/db/auth-schema";
 
-const MIGRATIONS_FOLDER = resolve(__dirname, "..", "drizzle");
+const MIGRATIONS_FOLDER = resolve(import.meta.dirname, "..", "drizzle");
 
 // The real db singleton — same instance the handler resolves via index.server.
-// Cast through unknown because index.server's exported type is a BunSQL|Pglite
-// union; here it is always the in-memory Pglite selected by DATABASE_URL above.
+// The production postgres.js shape is cast to the in-memory PGlite adapter
+// selected by the test setup.
 type PgliteDb = ReturnType<typeof import("drizzle-orm/pglite").drizzle<typeof schema>>;
 const { db } = (await import("@/lib/db/index.server")) as unknown as { db: PgliteDb };
 await migrate(db, { migrationsFolder: MIGRATIONS_FOLDER });
@@ -78,8 +78,7 @@ const POST = (
 /**
  * Sign a payload exactly as Stripe does: HMAC-SHA256 over `${t}.${payload}` with
  * the webhook secret, formatted `t=<ts>,v1=<hex>`. Computed with node:crypto so
- * it works synchronously under Bun (the SDK's signer resolves to the async-only
- * SubtleCrypto provider here); the handler's constructEventAsync verifies it.
+ * the test signs synchronously; the handler verifies with constructEventAsync.
  */
 function sign(payload: string): string {
   const t = Math.floor(Date.now() / 1000);
@@ -302,4 +301,8 @@ describe("stripe webhook — idempotency", () => {
     expect(acct.plan).toBe("free");
     expect(acct.stripeSubscriptionId).toBeNull();
   });
+});
+
+afterAll(async () => {
+  await db.$client.close();
 });

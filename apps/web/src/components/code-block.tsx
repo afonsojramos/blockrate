@@ -3,7 +3,7 @@ import { highlight } from "sugar-high";
 import { Clipboard, Check } from "lucide-react";
 
 /**
- * Editor-style syntax-highlighted code block using sugar-high (~1KB, zero-config).
+ * Editor-style syntax-highlighted code block using sugar-high (zero-config).
  * Renders at component render time — no WASM, no async, no layout shift.
  *
  * Token colors are set via CSS custom properties so they follow our
