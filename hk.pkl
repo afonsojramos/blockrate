@@ -1,0 +1,14 @@
+amends "package://github.com/jdx/hk/releases/download/v2.6.0/hk@2.6.0#/Config.pkl"
+
+steps {
+  ["check"] {
+    check = "nub --no-env-file run check"
+  }
+}
+
+hooks {
+  ["pre-commit"] {
+    fix = true
+    stash = "git"
+  }
+}

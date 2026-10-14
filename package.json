@@ -32,8 +32,7 @@
     "format:check": "oxfmt --check .",
     "typecheck": "tsc --noEmit && nub --no-env-file run --filter blockrate-server --filter blockrate --filter web typecheck",
     "check": "nub --no-env-file run format:check && nub --no-env-file run lint && nub --no-env-file run typecheck",
-    "precommit": "nub --no-env-file run check",
-    "prepare": "husky",
+    "hooks:install": "hk install --mise",
     "build:packages": "nub --no-env-file run --filter blockrate-server --filter blockrate --filter blockrate-init build",
     "test:package": "nub --no-env-file scripts/package-smoke.ts"
   },
@@ -50,7 +49,6 @@
     "@types/react": "catalog:",
     "@vitest/coverage-v8": "^4.1.0",
     "esbuild": "^0.27.7",
-    "husky": "^9.1.7",
     "oxfmt": "^0.71.0",
     "oxlint": "^1.86.0",
     "react": "catalog:",

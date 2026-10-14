@@ -17,7 +17,6 @@
         "@types/react": "catalog:",
         "@vitest/coverage-v8": "^4.1.0",
         "esbuild": "^0.27.7",
-        "husky": "^9.1.7",
         "oxfmt": "^0.71.0",
         "oxlint": "^1.86.0",
         "react": "catalog:",
@@ -93,7 +92,7 @@
     },
     "packages/core": {
       "name": "blockrate",
-      "version": "1.1.0",
+      "version": "2.0.0",
       "devDependencies": {
         "blockrate-server": "link:../server",
       },
@@ -104,7 +103,7 @@
     },
     "packages/server": {
       "name": "blockrate-server",
-      "version": "1.1.0",
+      "version": "2.0.0",
       "bin": { "blockrate-server": "./dist/src/cli.js" },
       "dependencies": {
         "@electric-sql/pglite": "^0.5.8",
@@ -1296,8 +1295,6 @@
     "httpxy": ["httpxy@0.5.5", "https://registry.npmjs.org/httpxy/-/httpxy-0.5.5.tgz", {}, "sha512-uDjmnPyp1q4Sgzf3w+J/Fc6UqcCEj0x4Wjp7OqK5dGhNeDgpyrAmnS6ey8QWrX3SWDon2DMKf9sBa5X9+CVyMA=="],
 
     "human-signals": ["human-signals@8.0.1", "https://registry.npmjs.org/human-signals/-/human-signals-8.0.1.tgz", {}, "sha512-eKCa6bwnJhvxj14kZk5NCPc6Hb6BdsU9DZcOnmQKSnO1VKrfV0zCvtttPZUsBvjmNDn8rpcJfpwSYnHBjc95MQ=="],
-
-    "husky": ["husky@9.1.7", "https://registry.npmjs.org/husky/-/husky-9.1.7.tgz", { "bin": { "husky": "bin.js" } }, "sha512-5gs5ytaNjBrh5Ow3zrvdUUY+0VxIuWVL4i9irt6friV+BqdCfmV11CQTWMiBYWHbXhco+J1kHfTOUkePhCDvMA=="],
 
     "iconv-lite": ["iconv-lite@0.7.3", "https://registry.npmjs.org/iconv-lite/-/iconv-lite-0.7.3.tgz", { "dependencies": { "safer-buffer": ">= 2.1.2 < 3.0.0" } }, "sha512-IKXpvIzjnC9XTAUbVBcMfGS0EPaIXtW6v+zr+RRp+hqULEpo0owZax6wyRwPOJbWbzjYspQwusTsfVr0ifh4uQ=="],
 

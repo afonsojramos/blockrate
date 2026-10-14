@@ -94,6 +94,8 @@ Integration is a single-line server route: [`createBlockRateHandler({ forward: {
 PRs welcome, most things in this repo are intentionally small enough to read in one sitting. The OSS library is under 200 lines of TypeScript; the self-hosted server is ~1200 lines. The web app is the largest surface (~3500 lines).
 
 Read [`docs/design.md`](docs/design.md) before touching UI, every PR that touches `apps/web` is reviewed against the design charter.
+Use the [`web performance playbook`](docs/web-performance-playbook.md) for payload
+budgets, hosted Core Web Vitals, ingestion measurements, and post-deploy verification.
 
 ## License
 

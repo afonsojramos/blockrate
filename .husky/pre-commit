@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-if command -v mise &> /dev/null; then
-  eval "$(mise activate bash --shims)"
-fi
-nub --no-env-file run precommit
