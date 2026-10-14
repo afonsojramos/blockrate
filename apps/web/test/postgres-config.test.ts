@@ -6,7 +6,7 @@ const dummyUrl = "postgres://dummy:dummy@127.0.0.1:1/disposable";
 
 describe("production postgres.js connection configuration", () => {
   it("keeps verified TLS, the pool cap, timeouts and pooler-safe unprepared statements", async () => {
-    const client = postgres(dummyUrl, postgresOptions("production"));
+    const client = postgres(dummyUrl, postgresOptions(dummyUrl, "production"));
     try {
       expect(client.options).toMatchObject({
         ssl: true,
@@ -20,11 +20,39 @@ describe("production postgres.js connection configuration", () => {
     }
   });
   it("uses a single connection for migrations without disabling production TLS", () => {
-    expect(postgresOptions("production", 1)).toMatchObject({ ssl: true, prepare: false, max: 1 });
-    expect(postgresOptions("development").ssl).toBe(false);
+    expect(postgresOptions(dummyUrl, "production", 1)).toMatchObject({
+      ssl: true,
+      prepare: false,
+      max: 1,
+    });
+    expect(postgresOptions(dummyUrl, "development").ssl).toBe(false);
+  });
+  it.each([1, 5])("uses Railway private networking for a pool of %i connections", async (max) => {
+    const url = "postgres://dummy:dummy@postgres.railway.internal:5432/railway";
+    const client = postgres(url, postgresOptions(url, "production", max));
+    try {
+      expect(client.options).toMatchObject({ ssl: false, prepare: false, max });
+    } finally {
+      await client.end();
+    }
+  });
+  it.each([
+    "postgres://dummy:dummy@postgres.railway.internal.attacker.example/db",
+    "postgres://dummy:dummy@notrailway.internal/db",
+    "postgres://postgres.railway.internal:dummy@external.example/db",
+    "postgres://dummy:dummy@external.example/db?sslmode=disable",
+    "postgres://dummy:dummy@external.example,postgres.railway.internal/db",
+    "postgres://dummy:dummy@primary.example:5432,secondary.example:5432/db",
+  ])("keeps verified TLS for an external URL: %s", async (url) => {
+    const client = postgres(url, postgresOptions(url, "production"));
+    try {
+      expect(client.options.ssl).toBe(true);
+    } finally {
+      await client.end();
+    }
   });
   it("awaits the postgres pool teardown on Nitro's close hook", async () => {
-    const client = postgres(dummyUrl, postgresOptions("production"));
+    const client = postgres(dummyUrl, postgresOptions(dummyUrl, "production"));
     let release!: () => void;
     const pending = new Promise<void>((done) => {
       release = done;
