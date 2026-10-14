@@ -44,7 +44,7 @@ const env = {
 };
 function openFixture() {
   if (postgresFixture) {
-    const client = postgres(env.DATABASE_URL, postgresOptions("production", 1));
+    const client = postgres(env.DATABASE_URL, postgresOptions(env.DATABASE_URL, "production", 1));
     return {
       // SAFETY: Both fixture adapters insert and return identical PostgreSQL row schemas.
       db: drizzlePostgres(client) as unknown as ReturnType<typeof drizzle>,

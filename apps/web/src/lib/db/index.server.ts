@@ -42,7 +42,7 @@ function createDb() {
     return drizzlePglite(client, { schema });
   }
 
-  const client = postgres(env.DATABASE_URL, postgresOptions(env.NODE_ENV));
+  const client = postgres(env.DATABASE_URL, postgresOptions(env.DATABASE_URL, env.NODE_ENV));
   return drizzlePostgres(client, { schema });
 }
 

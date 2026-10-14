@@ -44,7 +44,7 @@ async function main() {
     return;
   }
 
-  const client = postgres(url, postgresOptions(env.NODE_ENV, 1));
+  const client = postgres(url, postgresOptions(url, env.NODE_ENV, 1));
   const db = drizzlePostgres(client);
   try {
     await migratePostgres(db, { migrationsFolder: MIGRATIONS_FOLDER });
