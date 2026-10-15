@@ -1,0 +1,6 @@
+scripts:
+  setup: |
+    cd "$ORCA_WORKTREE_PATH"
+    mise trust --quiet
+    mise install
+    nub install --frozen-lockfile
