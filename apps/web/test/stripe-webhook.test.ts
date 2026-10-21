@@ -39,7 +39,11 @@ async function reset() {
   await db.delete(userTable);
 }
 
-async function seedAccount(plan = "free", subId: string | null = "sub_test_123"): Promise<number> {
+async function seedAccount(
+  plan = "free",
+  subId: string | null = "sub_test_123",
+  status = "active",
+): Promise<number> {
   await db.insert(userTable).values({
     id: "u1",
     name: "u1",
@@ -55,7 +59,7 @@ async function seedAccount(plan = "free", subId: string | null = "sub_test_123")
       plan,
       stripeCustomerId: CUSTOMER,
       stripeSubscriptionId: subId,
-      stripeSubscriptionStatus: "active",
+      stripeSubscriptionStatus: status,
     })
     .returning();
   if (!account) throw new Error("seed: no account");
@@ -112,9 +116,10 @@ function subObject(opts: {
   priceId?: string;
   cancelAtPeriodEnd?: boolean;
   periodEnd?: number;
+  subscriptionId?: string;
 }): Record<string, unknown> {
   return {
-    id: "sub_test_123",
+    id: opts.subscriptionId ?? "sub_test_123",
     customer: CUSTOMER,
     status: opts.status,
     cancel_at_period_end: opts.cancelAtPeriodEnd ?? false,
@@ -126,6 +131,16 @@ function subObject(opts: {
           current_period_end: opts.periodEnd ?? 1_900_000_000,
         },
       ],
+    },
+  };
+}
+
+function invoiceObject(subscription: string | { id: string } = "sub_test_123") {
+  return {
+    customer: CUSTOMER,
+    parent: {
+      type: "subscription_details",
+      subscription_details: { subscription },
     },
   };
 }
@@ -215,7 +230,10 @@ describe("stripe webhook — plan transitions", () => {
   it("subscription.deleted reverts to free", async () => {
     const id = await seedAccount("pro");
     const req = signedRequest(
-      subscriptionEvent("customer.subscription.deleted", { customer: CUSTOMER }),
+      subscriptionEvent("customer.subscription.deleted", {
+        id: "sub_test_123",
+        customer: CUSTOMER,
+      }),
     );
     await POST({ request: req });
     const acct = await readAccount(id);
@@ -232,7 +250,7 @@ describe("stripe webhook — plan transitions", () => {
       .set({ stripeSubscriptionStatus: "past_due" })
       .where(eq(schema.appAccounts.id, id));
     await POST({
-      request: signedRequest(subscriptionEvent("invoice.paid", { customer: CUSTOMER })),
+      request: signedRequest(subscriptionEvent("invoice.paid", invoiceObject())),
     });
     const acct = await readAccount(id);
     expect(acct.stripeSubscriptionStatus).toBe("active");
@@ -241,7 +259,7 @@ describe("stripe webhook — plan transitions", () => {
   it("invoice.payment_failed marks the subscription past_due", async () => {
     const id = await seedAccount("pro");
     await POST({
-      request: signedRequest(subscriptionEvent("invoice.payment_failed", { customer: CUSTOMER })),
+      request: signedRequest(subscriptionEvent("invoice.payment_failed", invoiceObject())),
     });
     const acct = await readAccount(id);
     expect(acct.stripeSubscriptionStatus).toBe("past_due");
@@ -294,12 +312,77 @@ describe("stripe webhook — idempotency", () => {
 
   it("replaying subscription.deleted stays free, not a worse state", async () => {
     const id = await seedAccount("pro");
-    const event = subscriptionEvent("customer.subscription.deleted", { customer: CUSTOMER });
+    const event = subscriptionEvent("customer.subscription.deleted", {
+      id: "sub_test_123",
+      customer: CUSTOMER,
+    });
     await POST({ request: signedRequest(event) });
     await POST({ request: signedRequest(event) });
     const acct = await readAccount(id);
     expect(acct.plan).toBe("free");
     expect(acct.stripeSubscriptionId).toBeNull();
+  });
+});
+
+describe("stripe webhook subscription ownership", () => {
+  beforeEach(reset);
+
+  const staleEvents = [
+    subscriptionEvent(
+      "customer.subscription.updated",
+      subObject({ status: "canceled", subscriptionId: "sub_replaced" }),
+    ),
+    subscriptionEvent("customer.subscription.deleted", {
+      id: "sub_replaced",
+      customer: CUSTOMER,
+    }),
+    subscriptionEvent("invoice.paid", invoiceObject("sub_replaced")),
+    subscriptionEvent("invoice.payment_failed", invoiceObject({ id: "sub_replaced" })),
+  ];
+
+  it.each(staleEvents)("ignores a replaced subscription's $type event", async (event) => {
+    const id = await seedAccount(
+      "team",
+      "sub_current",
+      event.type === "invoice.paid" ? "past_due" : "active",
+    );
+    const before = await readAccount(id);
+    const response = await POST({ request: signedRequest(event) });
+    expect(response.status).toBe(200);
+    expect(await readAccount(id)).toEqual(before);
+  });
+
+  it.each(staleEvents)("does not relink a cleared subscription from $type", async (event) => {
+    const id = await seedAccount(
+      "free",
+      null,
+      event.type === "invoice.paid" ? "canceled" : "active",
+    );
+    const before = await readAccount(id);
+    const response = await POST({ request: signedRequest(event) });
+    expect(response.status).toBe(200);
+    expect(await readAccount(id)).toEqual(before);
+  });
+
+  it("accepts an expanded invoice subscription for the linked subscription", async () => {
+    const id = await seedAccount("pro");
+    const response = await POST({
+      request: signedRequest(
+        subscriptionEvent("invoice.payment_failed", invoiceObject({ id: "sub_test_123" })),
+      ),
+    });
+    expect(response.status).toBe(200);
+    expect((await readAccount(id)).stripeSubscriptionStatus).toBe("past_due");
+  });
+
+  it("does not change subscription status for a one-time invoice", async () => {
+    const id = await seedAccount("pro");
+    const before = await readAccount(id);
+    const response = await POST({
+      request: signedRequest(subscriptionEvent("invoice.payment_failed", { customer: CUSTOMER })),
+    });
+    expect(response.status).toBe(200);
+    expect(await readAccount(id)).toEqual(before);
   });
 });
 
