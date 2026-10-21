@@ -23,19 +23,30 @@ function getItemPeriodEnd(item: Stripe.SubscriptionItem | undefined): Date | nul
   return end ? new Date(end * 1000) : null;
 }
 
+function getInvoiceSubscriptionId(invoice: Stripe.Invoice): string | undefined {
+  const subscription = invoice.parent?.subscription_details?.subscription;
+  return typeof subscription === "string" ? subscription : subscription?.id;
+}
+
 export const Route = createFileRoute("/api/stripe/webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const [{ env }, { db }, { appAccounts }, { planFromPriceId }, { eq }, { default: Stripe }] =
-          await Promise.all([
-            import("@/lib/env.server"),
-            import("@/lib/db/index.server"),
-            import("@/lib/db/schema"),
-            import("@/lib/plans"),
-            import("drizzle-orm"),
-            import("stripe"),
-          ]);
+        const [
+          { env },
+          { db },
+          { appAccounts },
+          { planFromPriceId },
+          { and, eq },
+          { default: Stripe },
+        ] = await Promise.all([
+          import("@/lib/env.server"),
+          import("@/lib/db/index.server"),
+          import("@/lib/db/schema"),
+          import("@/lib/plans"),
+          import("drizzle-orm"),
+          import("stripe"),
+        ]);
 
         if (!env.STRIPE_SECRET_KEY || !env.STRIPE_WEBHOOK_SECRET) {
           return new Response(JSON.stringify({ error: "stripe not configured" }), { status: 503 });
@@ -152,7 +163,12 @@ export const Route = createFileRoute("/api/stripe/webhook")({
               await db
                 .update(appAccounts)
                 .set(update)
-                .where(eq(appAccounts.stripeCustomerId, customerId));
+                .where(
+                  and(
+                    eq(appAccounts.stripeCustomerId, customerId),
+                    eq(appAccounts.stripeSubscriptionId, sub.id),
+                  ),
+                );
               break;
             }
 
@@ -168,7 +184,12 @@ export const Route = createFileRoute("/api/stripe/webhook")({
                   stripeSubscriptionStatus: "canceled",
                   stripeCurrentPeriodEnd: null,
                 })
-                .where(eq(appAccounts.stripeCustomerId, customerId));
+                .where(
+                  and(
+                    eq(appAccounts.stripeCustomerId, customerId),
+                    eq(appAccounts.stripeSubscriptionId, sub.id),
+                  ),
+                );
               break;
             }
 
@@ -176,11 +197,17 @@ export const Route = createFileRoute("/api/stripe/webhook")({
               const invoice = event.data.object as Stripe.Invoice;
               const customerId =
                 typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
-              if (customerId) {
+              const subscriptionId = getInvoiceSubscriptionId(invoice);
+              if (customerId && subscriptionId) {
                 await db
                   .update(appAccounts)
                   .set({ stripeSubscriptionStatus: "active" })
-                  .where(eq(appAccounts.stripeCustomerId, customerId));
+                  .where(
+                    and(
+                      eq(appAccounts.stripeCustomerId, customerId),
+                      eq(appAccounts.stripeSubscriptionId, subscriptionId),
+                    ),
+                  );
               }
               break;
             }
@@ -189,11 +216,17 @@ export const Route = createFileRoute("/api/stripe/webhook")({
               const invoice = event.data.object as Stripe.Invoice;
               const customerId =
                 typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
-              if (customerId) {
+              const subscriptionId = getInvoiceSubscriptionId(invoice);
+              if (customerId && subscriptionId) {
                 await db
                   .update(appAccounts)
                   .set({ stripeSubscriptionStatus: "past_due" })
-                  .where(eq(appAccounts.stripeCustomerId, customerId));
+                  .where(
+                    and(
+                      eq(appAccounts.stripeCustomerId, customerId),
+                      eq(appAccounts.stripeSubscriptionId, subscriptionId),
+                    ),
+                  );
               }
               break;
             }
