@@ -39,7 +39,11 @@ async function reset() {
   await db.delete(userTable);
 }
 
-async function seedAccount(plan = "free", subId: string | null = "sub_test_123"): Promise<number> {
+async function seedAccount(
+  plan = "free",
+  subId: string | null = "sub_test_123",
+  status = "active",
+): Promise<number> {
   await db.insert(userTable).values({
     id: "u1",
     name: "u1",
@@ -55,7 +59,7 @@ async function seedAccount(plan = "free", subId: string | null = "sub_test_123")
       plan,
       stripeCustomerId: CUSTOMER,
       stripeSubscriptionId: subId,
-      stripeSubscriptionStatus: "active",
+      stripeSubscriptionStatus: status,
     })
     .returning();
   if (!account) throw new Error("seed: no account");
@@ -337,7 +341,11 @@ describe("stripe webhook subscription ownership", () => {
   ];
 
   it.each(staleEvents)("ignores a replaced subscription's $type event", async (event) => {
-    const id = await seedAccount("team", "sub_current");
+    const id = await seedAccount(
+      "team",
+      "sub_current",
+      event.type === "invoice.paid" ? "past_due" : "active",
+    );
     const before = await readAccount(id);
     const response = await POST({ request: signedRequest(event) });
     expect(response.status).toBe(200);
@@ -345,7 +353,11 @@ describe("stripe webhook subscription ownership", () => {
   });
 
   it.each(staleEvents)("does not relink a cleared subscription from $type", async (event) => {
-    const id = await seedAccount("free", null);
+    const id = await seedAccount(
+      "free",
+      null,
+      event.type === "invoice.paid" ? "canceled" : "active",
+    );
     const before = await readAccount(id);
     const response = await POST({ request: signedRequest(event) });
     expect(response.status).toBe(200);
