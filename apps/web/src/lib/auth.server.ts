@@ -90,11 +90,6 @@ export const auth = betterAuth({
       disableSignUp: false,
       storeToken: "hashed",
       sendMagicLink: async ({ email, url }) => {
-        // mailer.server.ts handles the dev/prod fork:
-        //   prod + RESEND_API_KEY  → real send
-        //   dev  + RESEND_API_KEY  → real send (handy for QA)
-        //   dev  + no key          → console.log
-        //   prod + no key          → throws (fail-closed)
         await sendEmail({
           to: email,
           subject: "Your blockrate sign-in link",

@@ -200,12 +200,20 @@ Google and GitHub providers are wired in `lib/auth.server.ts` and **conditionall
 
 `lib/mailer.server.ts` chooses dev console-log vs real Resend send via this matrix:
 
-| `NODE_ENV`     | `RESEND_API_KEY` | Behaviour                                       |
-| -------------- | ---------------- | ----------------------------------------------- |
-| development    | unset            | `console.log` (dev convenience)                 |
-| development    | set              | real Resend send (handy for QA)                 |
-| **production** | unset            | **throws**, fail-closed against deployment bugs |
-| production     | set              | real Resend send                                |
+| `NODE_ENV`     | `RESEND_API_KEY` | Behaviour                                                                                 |
+| -------------- | ---------------- | ----------------------------------------------------------------------------------------- |
+| development    | unset            | `console.log` (dev convenience)                                                           |
+| development    | set              | only exact `EMAIL_TEST_RECIPIENTS` matches                                                |
+| **production** | unset            | **throws**, fail-closed against deployment bugs                                           |
+| production     | set              | real send at `BETTER_AUTH_URL=https://blockrate.app`; other origins require the allowlist |
+
+Every provider send rejects malformed addresses and reserved domains (`test`,
+`invalid`, `localhost`, `example`, `example.com`, `example.net`, `example.org`),
+including their subdomains. `EMAIL_TEST_RECIPIENTS` is an optional comma-separated
+list of complete addresses, compared case-insensitively. An invalid list blocks
+delivery outside the production origin. Test mode never calls the provider.
+Without a key, local development and tests still log magic links for local login.
+These rules cover sign-in, alerts and digests through the shared mailer.
 
 Setup:
 

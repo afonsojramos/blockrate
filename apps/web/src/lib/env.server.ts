@@ -39,6 +39,7 @@ const schema = z.object({
 
   // Phase 5 — all optional, providers/email enabled only when present
   RESEND_API_KEY: z.string().optional(),
+  EMAIL_TEST_RECIPIENTS: z.string().optional(),
   EMAIL_FROM: z.string().default("blockrate <noreply@blockrate.app>"),
 
   GOOGLE_CLIENT_ID: z.string().optional(),
