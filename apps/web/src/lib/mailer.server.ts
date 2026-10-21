@@ -2,16 +2,11 @@
  * Transactional email via Resend. Lazy — only loads the SDK when an
  * email actually needs to be sent. Server-only.
  *
- * Behaviour matrix:
- *
- *   NODE_ENV     RESEND_API_KEY     send result
- *   ──────────   ────────────────   ────────────
- *   development  unset              console.log only (dev convenience)
- *   development  set                attempt Resend send (allows local QA)
- *   production   unset              throws (fail-closed; deployment bug)
- *   production   set                Resend send
+ * Without a key, development and test log locally. Real delivery rejects
+ * reserved recipients and requires an exact allowlist outside production.
  */
 
+import { z } from "zod";
 import { env, capabilities } from "./env.server";
 import { formatRatePercent } from "./providers";
 
@@ -35,6 +30,57 @@ export function assertCanSendEmail(opts: { nodeEnv: string; hasResend: boolean }
   }
 }
 
+const emailAddress = z
+  .email()
+  .max(254)
+  .refine((value) => {
+    const [local, domain] = value.split("@");
+    return (
+      domain !== undefined &&
+      local.length <= 64 &&
+      domain.split(".").every((label) => label.length <= 63 && !label.endsWith("-"))
+    );
+  });
+const reservedDomains = [
+  "test",
+  "invalid",
+  "localhost",
+  "example",
+  "example.com",
+  "example.net",
+  "example.org",
+];
+
+export function assertEmailRecipient(opts: {
+  recipient: string;
+  nodeEnv: string;
+  authUrl: string;
+  testRecipients?: string;
+}): void {
+  const recipient = emailAddress.safeParse(opts.recipient);
+  if (!recipient.success) throw new Error("Email delivery blocked by recipient policy");
+  const domain = recipient.data.slice(recipient.data.lastIndexOf("@") + 1).toLowerCase();
+  if (reservedDomains.some((reserved) => domain === reserved || domain.endsWith(`.${reserved}`))) {
+    throw new Error("Email delivery blocked by recipient policy");
+  }
+  if (
+    opts.nodeEnv === "production" &&
+    ["https://blockrate.app", "https://blockrate.app/"].includes(opts.authUrl)
+  )
+    return;
+
+  const allowed = z
+    .array(emailAddress)
+    .safeParse(opts.testRecipients?.split(",").map((value) => value.trim()));
+  if (
+    !["production", "development"].includes(opts.nodeEnv) ||
+    !allowed.success ||
+    !allowed.data.some((address) => address.toLowerCase() === recipient.data.toLowerCase())
+  ) {
+    throw new Error("Email delivery blocked by recipient policy");
+  }
+}
+
 export async function sendEmail({ to, subject, text }: SendArgs): Promise<void> {
   assertCanSendEmail({ nodeEnv: env.NODE_ENV, hasResend: capabilities.resend });
 
@@ -45,6 +91,12 @@ export async function sendEmail({ to, subject, text }: SendArgs): Promise<void> 
     return;
   }
 
+  assertEmailRecipient({
+    recipient: to,
+    nodeEnv: env.NODE_ENV,
+    authUrl: env.BETTER_AUTH_URL,
+    testRecipients: env.EMAIL_TEST_RECIPIENTS,
+  });
   const { Resend } = await import("resend");
   const client = new Resend(env.RESEND_API_KEY!);
   const result = await client.emails.send({
