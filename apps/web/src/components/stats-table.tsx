@@ -93,6 +93,7 @@ export function StatsTable({ stats }: { stats: StatsRow[] }) {
                   <div
                     className="relative h-2 flex-1 overflow-hidden rounded-full bg-muted"
                     role="progressbar"
+                    aria-label={`${s.provider} block rate`}
                     aria-valuenow={Number(pct)}
                     aria-valuemin={0}
                     aria-valuemax={100}

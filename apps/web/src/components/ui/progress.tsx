@@ -2,7 +2,10 @@ import { Progress as ProgressPrimitive } from "@base-ui/react/progress";
 
 import { cn } from "#/lib/utils";
 
-function Progress({ className, children, value, ...props }: ProgressPrimitive.Root.Props) {
+type ProgressProps = ProgressPrimitive.Root.Props &
+  ({ "aria-label": string } | { "aria-labelledby": string });
+
+function Progress({ className, children, value, ...props }: ProgressProps) {
   return (
     <ProgressPrimitive.Root
       value={value}
