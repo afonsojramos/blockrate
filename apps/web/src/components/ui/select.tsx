@@ -26,12 +26,15 @@ function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
   );
 }
 
+type SelectTriggerProps = SelectPrimitive.Trigger.Props &
+  ({ "aria-label": string } | { "aria-labelledby": string });
+
 function SelectTrigger({
   className,
   size = "default",
   children,
   ...props
-}: SelectPrimitive.Trigger.Props & {
+}: SelectTriggerProps & {
   size?: "sm" | "default";
 }) {
   return (

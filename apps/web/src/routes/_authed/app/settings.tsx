@@ -234,7 +234,7 @@ function Settings() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <Progress value={usagePct} />
+          <Progress value={usagePct} aria-label="Monthly event usage" />
           <div className="flex items-baseline justify-between text-sm">
             <span className="tabular-nums text-muted-foreground">
               {data.usage.used.toLocaleString()} / {data.plan.eventsPerMonth.toLocaleString()}{" "}

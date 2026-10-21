@@ -140,7 +140,7 @@ function Overview() {
                 ...data.services.map((s) => ({ value: s, label: s })),
               ]}
             >
-              <SelectTrigger className="h-9 w-[180px]">
+              <SelectTrigger className="h-9 w-[180px]" aria-label="Service">
                 <SelectValue placeholder="All services" />
               </SelectTrigger>
               <SelectContent>
